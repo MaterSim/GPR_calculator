@@ -41,7 +41,7 @@ for kernel in ['Dot', 'RBF']:
 
     print("\nRun actual NEB")
     neb = NEB(images)
-    opt = BFGS(neb, trajectory='neb.traj') 
+    opt = BFGS(neb)
     opt.run(fmax=0.01)
 
     # Plot results
