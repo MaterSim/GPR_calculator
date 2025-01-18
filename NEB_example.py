@@ -26,8 +26,9 @@ opt.run(fmax=0.01)
 neb_gp.plot_neb_path(images, figname='Ref.png')
 
 # Test gpr calculator
-images = neb_gp.generate_images(IDPP = False)
 for kernel in ['Dot', 'RBF']:
+    images = neb_gp.generate_images(IDPP = False)
+
     print("\nCreate the initial GPR model")
     neb_gp.set_GPR(kernel=kernel, noise_e=0.002)
     neb_gp.train_GPR(images)
