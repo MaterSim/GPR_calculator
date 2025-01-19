@@ -37,6 +37,7 @@ class GPR(Calculator):
 
         if E_std > e_tol or F_std > f_tol:
             # update model
+            self.parameters.ff.count_use_base += 1
             atoms.calc = self.parameters.base_calculator
             eng = atoms.get_potential_energy()
             forces = atoms.get_forces()
@@ -46,8 +47,6 @@ class GPR(Calculator):
             if self.update and self.parameters.ff.N_queue > 4:
                 print("====================== Update the model ===============", self.parameters.ff.N_queue)
                 self.parameters.ff.fit(opt=True, show=False)
-                #self.parameters.ff.sparsify()
-                #import sys; sys.exit()
                 self._calculate(atoms, properties, system_changes)
             else:
                 self.results['energy'] = eng

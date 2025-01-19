@@ -62,6 +62,10 @@ class GaussianProcess():
         self.N_forces_queue = 0
         self.N_queue = 0
 
+        # for the track of function calls
+        self.count_fits = 0
+        self.count_use_base = 0
+
     def __str__(self):
         s = "------Gaussian Process Regression------\n"
         s += "Kernel: {:s}".format(str(self.kernel))
@@ -211,7 +215,8 @@ class GaussianProcess():
         self.N_energy_queue = 0
         self.N_forces_queue = 0
         self.N_queue = 0
-        
+        self.count_fits += 1
+
         return self
 
     def predict(self, X, stress=False, total_E=False, return_std=False, return_cov=False):

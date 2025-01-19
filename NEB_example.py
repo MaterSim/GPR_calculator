@@ -7,7 +7,7 @@ from ase.calculators.emt import EMT
 initial_state = 'database/initial.traj'
 final_state = 'database/final.traj'
 num_images = 5
-
+fmax = 0.05
 
 print("\nInit the model")
 neb_gp = GP_NEB(initial_state, 
@@ -22,7 +22,7 @@ for image in images:
     image.calc = EMT()
 neb = NEB(images)
 opt = BFGS(neb) 
-opt.run(fmax=0.01)
+opt.run(fmax=fmax)
 neb_gp.plot_neb_path(images, figname='Ref.png')
 
 # Test gpr calculator
@@ -30,7 +30,8 @@ for kernel in ['Dot', 'RBF']:
     images = neb_gp.generate_images(IDPP = False)
 
     print("\nCreate the initial GPR model")
-    neb_gp.set_GPR(kernel=kernel, noise_e=0.002)
+    #neb_gp.set_GPR(kernel=kernel, noise_e=0.002)
+    neb_gp.set_GPR(kernel=kernel, noise_e=fmax/10)
     neb_gp.train_GPR(images)
     print(neb_gp.model)
 
@@ -43,7 +44,11 @@ for kernel in ['Dot', 'RBF']:
     print("\nRun actual NEB")
     neb = NEB(images)
     opt = BFGS(neb)
-    opt.run(fmax=0.01)
+    opt.run(fmax=fmax)
 
     # Plot results
     neb_gp.plot_neb_path(images, figname=kernel+'.png')
+
+    print(neb_gp.model)
+    print("Total number of base calls", neb_gp.model.count_use_base)
+    print("Total number of gpr_fit calls", neb_gp.model.count_fits)
