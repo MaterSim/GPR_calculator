@@ -60,6 +60,7 @@ class GaussianProcess():
         self.N_forces = 0
         self.N_energy_queue = 0
         self.N_forces_queue = 0
+        self.N_queue = 0
 
     def __str__(self):
         s = "------Gaussian Process Regression------\n"
@@ -132,6 +133,9 @@ class GaussianProcess():
             return MLL
 
     def optimize(self, fun, theta0, bounds):
+        """
+        Optimize the hyperparameters of the GPR model from scipy.minimize
+        """
         opt_res = minimize(fun, theta0, 
                            method="L-BFGS-B", 
                            bounds=bounds, 
@@ -202,21 +206,33 @@ class GaussianProcess():
             raise
 
         self.alpha_ = cho_solve((self.L_, True), self.y_train)  # Line 3
+
+        # reset the queue to 0
         self.N_energy_queue = 0
         self.N_forces_queue = 0
+        self.N_queue = 0
         
         return self
 
     def predict(self, X, stress=False, total_E=False, return_std=False, return_cov=False):
         """
         Internal predict function for the GPR model
+
+        Args:
+            X: a dictionary of energy/force data
+            stress: bool, return stress or not
+            total_E: bool, return total energy or not
+            return_std: bool, return variance or not
+            return_cov: bool, return covariance or not
         """
+        train_x = self.get_train_x()
         if stress:
-            K_trans, K_trans1 = self.kernel.k_total_with_stress(X, self.train_x, same=False)
+            K_trans, K_trans1 = self.kernel.k_total_with_stress(X, train_x, same=False)
             #pred1 = K_trans1.dot(self.alpha_)
         else:
-            K_trans = self.kernel.k_total(X, self.train_x)
+            K_trans = self.kernel.k_total(X, train_x)
         
+        #print('debug', K_trans.shape, self.alpha_.shape)
         pred = K_trans.dot(self.alpha_)
         y_mean = pred[:, 0]
         
@@ -270,7 +286,7 @@ class GaussianProcess():
 
         Args:
             data: a dictionary of energy/force/db data
-            mode: "w" or "a+"
+            mode: "w" or "a+", reset or append the training data
         """
         if mode == "w" or self.train_x is None: #reset
             self.train_x = {'energy': [], 'force': []}
@@ -306,6 +322,7 @@ class GaussianProcess():
         self.N_forces += N_F
         self.N_energy_queue += N_E
         self.N_forces_queue += N_F
+        self.N_queue += N_E + N_F
         #print(self.train_y['energy'], N_E, N_F, self.N_energy_queue)
 
     def remove_train_pts(self, e_ids, f_ids):
@@ -313,7 +330,7 @@ class GaussianProcess():
         Delete the training pts for the GPR model
 
         Args:
-            e_ids: ids to delete in K_EE
+            e_ids: ids to delete in K_EE 
             f_ids: ids to delete in K_FF
         """
         data = {"energy":[], "force": [], "db": []}
@@ -375,6 +392,12 @@ class GaussianProcess():
     def validate_data(self, test_data=None, total_E=False, return_std=False, show=False):
         """
         validate the given dataset
+
+        Args:
+            test_data: a dictionary of energy/force data
+            total_E: bool, return total energy or not
+            return_std: bool, return variance or not
+            show: bool, print the information or not
         """
         if test_data is None: #from train
             test_X_E = {"energy": self.train_x['energy']}
@@ -415,26 +438,37 @@ class GaussianProcess():
         """
         Get the current training data (excluding the data on the queue)
         """
-        if self.N_energy_queue + self.N_forces_queue > 0:
+        if self.N_queue > 0:
             train_x = {}
-
             (_X, _ELE, _indices) = self.train_x['energy']
             NE = self.N_energy - self.N_energy_queue
-            train_x['energy'] = (_X[:NE], _ELE[:NE], _indices[:NE])
+            if NE > 0:
+                ids = sum(_indices[:NE])
+                train_x['energy'] = (_X[:ids], _ELE[:ids], _indices[:NE])
+            else:
+                train_x['energy'] = (_X, _ELE, _indices)
 
             NF = self.N_forces - self.N_forces_queue
             (_X, _dXdR, _ELE, _indices) = self.train_x['force']
-            train_x['force'] = (_X[:NF], _dXdR[:NF], _ELE[:NF], _indices[:NF])
+            if NF > 0:
+                ids = sum(_indices[:NF])
+                #print("debug", NF, _X.shape, _dXdR.shape, _ELE.shape, _indices, sum(_indices), ids)
+                train_x['force'] = (_X[:ids], _dXdR[:ids], _ELE[:ids], _indices[:NF])
+            else:
+                train_x['force'] = (_X, _dXdR, _ELE, _indices)
             return train_x
         else:
             return self.train_x
 
     def add_train_pts_energy(self, energy_data):
         """
-        Energy_data is a list of tuples (X, E)
-        X: the descriptors for a given structure: N1*d
-        E: total energy: scalor
-        N1 is the number of atoms in the given structure
+        A function to add the energy data to the training.
+
+        Args:
+            Energy_data is a list of tuples, including the following:
+            - X: the descriptors for a given structure: (N1, d)
+            - E: total energy: scalor
+            N1 is the number of atoms in the given structure
         """
         (X, ELE, indices, E) = list_to_tuple(energy_data, include_value=True, mode='energy')
         if len(self.train_x['energy']) == 3:
@@ -451,11 +485,14 @@ class GaussianProcess():
 
     def add_train_pts_force(self, force_data):
         """
-        Force_data is a list of tuples (X, dXdR, F), where
-            X: the descriptors for a given structure: N2*d
-            dXdR: the descriptors: N2*d*3
-            F: atomic force: 1*3
-            N2 is the number of the centered atoms' neighbors within the cutoff
+        A function to add the force data to the training.
+
+        Args:
+            Force_data: a list of tuples (X, dXdR, F), where
+                - X: the descriptors for a given structure: (N2, d)
+                - dXdR: the descriptors: (N2, d, 3)
+                - F: atomic force: 1*3
+            N2 is the number of the centered atoms' neighbors 
         """
 
         # pack the new data
@@ -478,7 +515,8 @@ class GaussianProcess():
 
     def save(self, filename, db_filename):
         """
-        Save the model
+        Save the model to the files
+
         Args:
             filename: the file to save txt information
             db_filename: the file to save structural information
@@ -492,7 +530,8 @@ class GaussianProcess():
 
     def load(self, filename, N_max=None, opt=False, device=1):
         """
-        Save the model
+        Load the model from files
+        
         Args:
             filename: the file to save txt information
             db_filename: the file to save structural information
@@ -506,7 +545,7 @@ class GaussianProcess():
 
     def save_dict(self, db_filename):
         """
-        save the model as a dictionary in json
+        Save the model as a dictionary in json
         """
         noise = {"energy": self.noise_e, "f_coef": self.f_coef, "bounds": self.noise_bounds}
         dict0 = {"noise": noise,
@@ -519,6 +558,14 @@ class GaussianProcess():
         return dict0
 
     def load_from_dict(self, dict0, N_max=None, device='cpu'):
+        """
+        Load the model from dictionary
+        
+        Args:
+            dict0: a dictionary of the model
+            N_max: the maximum number of structures to load
+            device: the device to run the model
+        """
         
         #keys = ['kernel', 'descriptor', 'Noise']
 
@@ -555,12 +602,13 @@ class GaussianProcess():
         self.f_coef = dict0["noise"]["f_coef"]
         self.noise_bounds = dict0["noise"]["bounds"]
         self.noise_f = self.f_coef*self.noise_e
+
         # save structural file
         self.extract_db(dict0["db_filename"], N_max)
 
     def export_ase_db(self, db_filename, permission="w"):
         """
-        Export the structural information in ase db format
+        Export the structural information in ase db format, including
             - atoms:
             - energy:
             _ forces:
@@ -633,7 +681,7 @@ class GaussianProcess():
     def predict_structure(self, struc, stress=True, return_std=False, f_tol=1e-8):
         """
         Make prediction for a given structure.
-        This is the main API for the GPR model
+        This is a main API for the GPR model
 
         Args:
             struc: ase.Atoms object
@@ -646,7 +694,7 @@ class GaussianProcess():
         ele = np.array(ele)
         data = {"energy": [(d['x'], ele)]}
         data["force"] = []
-        _n, l = d['x'].shape
+        l = d['x'].shape[1]
         for i in range(len(struc)):
             ids = np.argwhere(d['seq'][:,1]==i).flatten()
             _i = d['seq'][ids, 0] 
@@ -700,10 +748,18 @@ class GaussianProcess():
 
     def add_structure(self, data, N_max=10, tol_e_var=1.2, tol_f_var=1.2, add_force=True):
         """
-        add the training points from a given structure base on the followings:
+        Add the training points from a given structure base on the followings:
             1, compute the (E, F, E_var, F_var) based on the current model
             2, if E_var is greater than tol_e_var, add energy data
             3, if F_var is greater than tol_f_var, add force data
+        This is a main API for the GPR model
+
+        Args:
+            data: a tuple of (atoms, energy, force)
+            N_max: the maximum number of force points to add
+            tol_e_var: the threshold for energy variance
+            tol_f_var: the threshold for force variance
+            add_force: bool, add force data or not
         """
         tol_e_var *= self.noise_e
         tol_f_var *= self.noise_f
@@ -720,6 +776,7 @@ class GaussianProcess():
         energy -= energy_off
         force -= force_off
         my_data = convert_train_data([(atoms, energy, force)], self.descriptor)
+
         if self.alpha_ is not None:
             E, E1, E_std, F, F1, F_std = self.validate_data(my_data, return_std=True)
             E_std = E_std[0]
@@ -727,8 +784,8 @@ class GaussianProcess():
         else:
             E = E1 = [energy]
             F = F1 = force.flatten()
-            E_std = 2*tol_e_var
-            F_std = 2*tol_f_var*np.ones((len(atoms), 3))
+            E_std = 2 * tol_e_var
+            F_std = 2 * tol_f_var * np.ones((len(atoms), 3))
            
         if E_std > tol_e_var:
             pts_to_add["energy"] = my_data["energy"]
@@ -777,6 +834,7 @@ class GaussianProcess():
         """
         Sparsify the covariance matrix by removing unimportant 
         configurations from the training database
+        This is a main API for the GPR model
         """
         K = self.kernel.k_total(self.train_x)
         N_e = len(self.train_x["energy"][-1])

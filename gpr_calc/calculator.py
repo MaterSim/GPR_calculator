@@ -3,7 +3,6 @@ from ase import units
 from ase.calculators.calculator import Calculator, all_changes#, PropertyNotImplementedError
 from ase.neighborlist import NeighborList
 from ase.constraints import full_3x3_to_voigt_6_stress
-from cspbo.utilities import metric_single
 import jsonpickle
 from pyscf.pbc.tools import pyscf_ase
 import pyscf.pbc.gto as pbcgto
@@ -18,9 +17,6 @@ class GPR(Calculator):
 
     def __init__(self, **kwargs):
         Calculator.__init__(self, **kwargs)
-        #self.base_calculator = base_calculator # temperorally
-        #self.e_tol = e_tol
-        #self.f_tol = f_tol
         self.results = {}
         self.update = True
         self.verbose = False
@@ -31,10 +27,8 @@ class GPR(Calculator):
     def unfreeze(self):
         self.update = True
 
-    def calculate(self, atoms=None,
-                  properties=['energy'],
-                  system_changes=all_changes):
-        self._calculate(atoms, properties)
+    def calculate(self, atoms=None, properties=['energy'], system_changes=all_changes):
+        self._calculate(atoms, properties, system_changes)
 
         e_tol = 1.2 * self.parameters.ff.noise_e
         f_tol = 1.2 * self.parameters.ff.noise_f
@@ -47,22 +41,22 @@ class GPR(Calculator):
             eng = atoms.get_potential_energy()
             forces = atoms.get_forces()
             data = (atoms, eng, forces)
-            print("Switch to base calculator, E_std: {:.3f}/{:.3f}/{:.3f}, F_std: {:.3f}".format(E_std, E, data[1], F_std))
+            print(f"Use the base model,  E: {E_std:.3f}/{E:.3f}/{eng:.3f}, F: {F_std:.3f}")
             self.parameters.ff.add_structure(data)
-            if self.update: # and self.parameters.ff.N_energy_queue + self.parameters.ff.N_forces_queue > 5:
+            if self.update and self.parameters.ff.N_queue > 4:
+                print("====================== Update the model ===============", self.parameters.ff.N_queue)
                 self.parameters.ff.fit(opt=True, show=False)
                 #self.parameters.ff.sparsify()
                 #import sys; sys.exit()
-                self._calculate(atoms, properties)
+                self._calculate(atoms, properties, system_changes)
             else:
                 self.results['energy'] = eng
                 self.results['forces'] = forces
             atoms.calc = self
         else:
-            print("Using the surrogate model, E_std: {:.3f}/{:.3f}/{:.3f}, F_std: {:.3f}/{:.3f}".format(E_std, E, e_tol, F_std, f_tol))
+            print(f"Use surrogate model, E: {E_std:.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}")
 
-    def _calculate(self, atoms, properties,
-                  system_changes=all_changes):
+    def _calculate(self, atoms, properties, system_changes):
 
         Calculator.calculate(self, atoms, properties, system_changes)
         if hasattr(self.parameters, 'stress'):
@@ -98,7 +92,7 @@ class GPR(Calculator):
 
     def get_var_e(self, total=False):
         if total:
-            return self.results["var_e"]*len(self.results["forces"]) # eV
+            return self.results["var_e"] * len(self.results["forces"]) # eV
         else:
             return self.results["var_e"] # eV/atom
 
@@ -107,10 +101,9 @@ class GPR(Calculator):
 
     def get_e(self, peratom=True):
         if peratom:
-            return self.results["energy"]/len(self.results["forces"])
+            return self.results["energy"] / len(self.results["forces"])
         else:
             return self.results["energy"]
-
 
 
 class LJ():
@@ -261,5 +254,3 @@ if __name__ == '__main__':
     #dyn_prod.run(fmax=0.05)
 
     #images = ]
-
-
