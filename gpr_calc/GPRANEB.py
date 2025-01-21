@@ -4,7 +4,8 @@ from ase.io import read
 from ase.mep import NEB
 from ase.calculators.emt import EMT
 
-from gpr_calc.utilities import metric_single, build_desc
+from gpr_calc.SO3 import SO3
+from gpr_calc.utilities import metric_single
 from gpr_calc.gaussianprocess import GaussianProcess as gpr
 from gpr_calc.calculator import GPR
 
@@ -43,13 +44,21 @@ print(".............GPRANEB module loaded.............\n")
 print("You're welcome to modify the code to suit your needs\n")
 print("..........Good luck with your calculations..........\n")
 
+def set_pbc(atoms, vacuum=10):
+    atoms.cell[2, 2] += vacuum
+    atoms.center()
+    atoms.pbc = [True, True, True]
+    return atoms
+    
+
 class GP_NEB:
     def __init__(self, initial_state, final_state, 
                  num_images = 5, 
                  k_spring = 0.1, 
                  iterMax = 100, 
                  f_cov = 0.05, 
-                 useCalc=EMT()):
+                 useCalc=EMT(),
+                 pbc=True):
 
         self.initial_state = read(initial_state)
         self.final_state = read(final_state)
@@ -61,6 +70,10 @@ class GP_NEB:
         self.model = None
         self.useCalc = useCalc
 
+        if pbc and not self.initial_state.pbc[-1]:
+            self.initial_state = set_pbc(self.initial_state)
+            self.final_state = set_pbc(self.final_state)
+
     def set_GPR(self, kernel='Dot', zeta=2.0, noise_e=0.002, 
                 lm=4, nm=3, rcut=5.0, device='cpu',
                 json=None):
@@ -71,7 +84,8 @@ class GP_NEB:
             self.model = gpr()
             self.model.load(json)
         else:
-            des = build_desc("SO3", lmax=lm, nmax=nm, rcut=rcut)
+            #des = build_desc("SO3", lmax=lm, nmax=nm, rcut=rcut)
+            des = SO3(nmax=nm, lmax=lm, rcut=rcut)
             if kernel == 'Dot':
                 from gpr_calc.kernels.Dot_mb import Dot_mb 
                 gp_kernel = Dot_mb(para=[2, 2.0], 
@@ -111,7 +125,7 @@ class GP_NEB:
         if IDPP:
             neb.interpolate(method='idpp')
         else:
-            neb.interpolate()
+            neb.interpolate(apply_constraint=False)
         # Linear interpolation is the default but IDPP can be used
         # We definitely implement our own interpolation method
         return images

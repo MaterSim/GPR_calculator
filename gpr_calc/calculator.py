@@ -3,10 +3,10 @@ from ase import units
 from ase.calculators.calculator import Calculator, all_changes#, PropertyNotImplementedError
 from ase.neighborlist import NeighborList
 from ase.constraints import full_3x3_to_voigt_6_stress
-import jsonpickle
-from pyscf.pbc.tools import pyscf_ase
-import pyscf.pbc.gto as pbcgto
-import pyscf.pbc.dft as pbcdft
+#import jsonpickle
+#from pyscf.pbc.tools import pyscf_ase
+#import pyscf.pbc.gto as pbcgto
+#import pyscf.pbc.dft as pbcdft
 
 
 eV2GPa = 160.21766
@@ -216,18 +216,18 @@ class LJ():
         #print(energy)
         return energy, forces, stress
 
-def get_pyscf_calc(atoms, basis='gth-szv-molopt-sr', pseudo='gth-pade', xc='lda,vwn'):
-
-    cell = pbcgto.Cell()
-    cell.a = atoms.cell
-    cell.basis = basis
-    cell.pseudo = pseudo
-    cell.verbose = 0
-    mf_class = pbcdft.RKS
-    mf_class = lambda cell: pbcdft.KRKS(cell, kpts=cell.make_kpts([1, 1, 1]))
-    mf_dict = { 'xc' : xc}
-        
-    return pyscf_ase.PySCF(molcell=cell, mf_class=mf_class, mf_dict=mf_dict)
+#def get_pyscf_calc(atoms, basis='gth-szv-molopt-sr', pseudo='gth-pade', xc='lda,vwn'):
+#
+#    cell = pbcgto.Cell()
+#    cell.a = atoms.cell
+#    cell.basis = basis
+#    cell.pseudo = pseudo
+#    cell.verbose = 0
+#    mf_class = pbcdft.RKS
+#    mf_class = lambda cell: pbcdft.KRKS(cell, kpts=cell.make_kpts([1, 1, 1]))
+#    mf_dict = { 'xc' : xc}
+#        
+#    return pyscf_ase.PySCF(molcell=cell, mf_class=mf_class, mf_dict=mf_dict)
 
 if __name__ == '__main__':
     import pyscf
