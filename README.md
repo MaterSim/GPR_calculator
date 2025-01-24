@@ -19,6 +19,10 @@ Many atomistic simulations—such as geometry optimization, barrier calculations
 4.	Once the model achieves sufficient accuracy, it begins predicting the mean and variance of energy, forces, and stress tensors, enabling efficient on-the-fly calculations.
 5.	If the predicted uncertainty is low, the model replaces the expensive DFT evaluations. Otherwise, the base calculator is called again to refine the model.
 
+## Installation
+```
+export CC=g++ && pip install .
+```
 
 ## A quick example
 

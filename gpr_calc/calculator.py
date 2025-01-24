@@ -3,13 +3,6 @@ from ase import units
 from ase.calculators.calculator import Calculator, all_changes#, PropertyNotImplementedError
 from ase.neighborlist import NeighborList
 from ase.constraints import full_3x3_to_voigt_6_stress
-import jsonpickle
-from pyscf.pbc.tools import pyscf_ase
-import pyscf.pbc.gto as pbcgto
-import pyscf.pbc.dft as pbcdft
-
-
-eV2GPa = 160.21766
 
 class GPR(Calculator):
     implemented_properties = ['energy', 'forces', 'stress', 'var_e', 'var_f']
@@ -34,17 +27,19 @@ class GPR(Calculator):
         f_tol = 1.2 * self.parameters.ff.noise_f
         E_std, F_std = self.results['var_e'], self.results['var_f'].max()
         E = self.results['energy']
+        Fmax = np.abs(self.results['forces']).max()
 
-        if E_std > e_tol or F_std > f_tol:
+        if E_std > e_tol or F_std > min([f_tol, Fmax/10]):
             # update model
             self.parameters.ff.count_use_base += 1
             atoms.calc = self.parameters.base_calculator
             eng = atoms.get_potential_energy()
             forces = atoms.get_forces()
             data = (atoms, eng, forces)
-            print(f"Use the base model,  E: {E_std:.3f}/{E:.3f}/{eng:.3f}, F: {F_std:.3f}")
+            f_max = np.abs(forces).max()
+            print(f"From base model, E: {E_std:.3f}/{E:.3f}/{eng:.3f}, F: {F_std:.3f}/{Fmax:.3f}/{f_max:.3f}")
             self.parameters.ff.add_structure(data)
-            if self.update and self.parameters.ff.N_queue > 4:
+            if self.update and self.parameters.ff.N_queue > self.parameters.freq:
                 print("====================== Update the model ===============", self.parameters.ff.N_queue)
                 self.parameters.ff.fit(opt=True, show=False)
                 self._calculate(atoms, properties, system_changes)
@@ -53,7 +48,8 @@ class GPR(Calculator):
                 self.results['forces'] = forces
             atoms.calc = self
         else:
-            print(f"Use surrogate model, E: {E_std:.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}")
+            #print(F_std > max([f_tol, Fmax/10]), F_std, f_tol, Fmax/10)
+            print(f"From surrogate,  E: {E_std:.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}/{Fmax:.3f}")
 
     def _calculate(self, atoms, properties, system_changes):
 
@@ -217,6 +213,10 @@ class LJ():
         return energy, forces, stress
 
 def get_pyscf_calc(atoms, basis='gth-szv-molopt-sr', pseudo='gth-pade', xc='lda,vwn'):
+
+    from pyscf.pbc.tools import pyscf_ase
+    import pyscf.pbc.gto as pbcgto
+    import pyscf.pbc.dft as pbcdft
 
     cell = pbcgto.Cell()
     cell.a = atoms.cell
