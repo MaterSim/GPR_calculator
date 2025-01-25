@@ -30,7 +30,6 @@ for kernel in ['Dot', 'RBF']:
     images = neb_gp.generate_images(IDPP = False)
 
     print("\nCreate the initial GPR model")
-    #neb_gp.set_GPR(kernel=kernel, noise_e=0.002)
     neb_gp.set_GPR(kernel=kernel, noise_e=fmax/10)
     neb_gp.train_GPR(images)
     print(neb_gp.model)
@@ -39,7 +38,7 @@ for kernel in ['Dot', 'RBF']:
     for image in images:
         image.calc = GPR(base_calculator=neb_gp.useCalc,
                          ff=neb_gp.model,
-                         freq=10,
+                         freq=10, #update frequency
                          return_std=True)
 
     print("\nRun actual NEB")
@@ -51,5 +50,6 @@ for kernel in ['Dot', 'RBF']:
     neb_gp.plot_neb_path(images, figname=kernel+'.png')
 
     print(neb_gp.model)
-    print("Total number of base calls", neb_gp.model.count_use_base)
+    print("\nTotal number of base calls", neb_gp.model.count_use_base)
+    print("Total number of surrogate calls", neb_gp.model.count_use_surrogate)
     print("Total number of gpr_fit calls", neb_gp.model.count_fits)

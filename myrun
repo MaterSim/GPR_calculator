@@ -1,0 +1,13 @@
+#!/bin/sh -l
+#SBATCH --partition=Apus
+#SBATCH -J test_neb
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --cpus-per-task=1
+#SBATCH --time=2:00:00
+#SBATCH --mem=96G     
+
+module load vasp/6.4.3
+echo "Running on node: $(hostname)"
+python NEB_example.py > log-neb
+

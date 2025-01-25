@@ -48,6 +48,7 @@ class GPR(Calculator):
                 self.results['forces'] = forces
             atoms.calc = self
         else:
+            self.parameters.ff.count_use_surrogate += 1
             #print(F_std > max([f_tol, Fmax/10]), F_std, f_tol, Fmax/10)
             print(f"From surrogate,  E: {E_std:.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}/{Fmax:.3f}")
 

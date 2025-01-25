@@ -65,6 +65,7 @@ class GaussianProcess():
         # for the track of function calls
         self.count_fits = 0
         self.count_use_base = 0
+        self.count_use_surrogate = 0
 
     def __str__(self):
         s = "------Gaussian Process Regression------\n"
