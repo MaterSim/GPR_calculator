@@ -28,8 +28,7 @@ class GPR(Calculator):
         E_std, F_std = self.results['var_e'], self.results['var_f'].max()
         E = self.results['energy']
         Fmax = np.abs(self.results['forces']).max()
-
-        if E_std > e_tol or F_std > min([f_tol, Fmax/10]):
+        if E_std > e_tol or F_std > max([f_tol, Fmax/10]):
             # update model
             self.parameters.ff.count_use_base += 1
             atoms.calc = self.parameters.base_calculator
