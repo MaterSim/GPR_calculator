@@ -29,7 +29,6 @@ class GPR(Calculator):
         E = self.results['energy']
         Fmax = np.abs(self.results['forces']).max()
         if E_std > e_tol or F_std > max([f_tol, Fmax/10]):
-            # update model
             self.parameters.ff.count_use_base += 1
             atoms.calc = self.parameters.base_calculator
             eng = atoms.get_potential_energy()
@@ -38,13 +37,14 @@ class GPR(Calculator):
             f_max = np.abs(forces).max()
             print(f"From base model, E: {E_std:.3f}/{E:.3f}/{eng:.3f}, F: {F_std:.3f}/{Fmax:.3f}/{f_max:.3f}")
             self.parameters.ff.add_structure(data)
+
+            # update model
             if self.update and self.parameters.ff.N_queue > self.parameters.freq:
                 print("====================== Update the model ===============", self.parameters.ff.N_queue)
                 self.parameters.ff.fit(opt=True, show=False)
-                self._calculate(atoms, properties, system_changes)
-            else:
-                self.results['energy'] = eng
-                self.results['forces'] = forces
+
+            self.results['energy'] = eng
+            self.results['forces'] = forces
             atoms.calc = self
         else:
             self.parameters.ff.count_use_surrogate += 1
