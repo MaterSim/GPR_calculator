@@ -10,18 +10,18 @@ num_images = 5
 fmax = 0.05
 
 print("\nInit the model")
-neb_gp = GP_NEB(initial_state, 
-                final_state, 
+neb_gp = GP_NEB(initial_state,
+                final_state,
                 num_images=num_images)
 
 print("\nGet the initial images")
 images = neb_gp.generate_images(IDPP = False)
-    
+
 # Set Base calculator and Run NEB
-for image in images: 
+for image in images:
     image.calc = EMT()
 neb = NEB(images)
-opt = BFGS(neb) 
+opt = BFGS(neb)
 opt.run(fmax=fmax)
 neb_gp.plot_neb_path(images, figname='Ref.png')
 
@@ -39,7 +39,9 @@ for kernel in ['Dot', 'RBF']:
         image.calc = GPR(base_calculator=neb_gp.useCalc,
                          ff=neb_gp.model,
                          freq=10, #update frequency
+                         tag=f'test-{kernel}',
                          return_std=True)
+        #image.calc.verbose = True
 
     print("\nRun actual NEB")
     neb = NEB(images)

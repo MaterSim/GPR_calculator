@@ -10,8 +10,8 @@ import os
 from copy import deepcopy
 
 class GaussianProcess():
-    """ 
-    Gaussian Process Regressor class to fit the interatomic potential 
+    """
+    Gaussian Process Regressor class to fit the interatomic potential
     from the reference energy/forces.
 
     Main APIs:
@@ -27,21 +27,21 @@ class GaussianProcess():
         - noise_e: the energy noise
         - f_coef: the coefficient of force noise relative to energy
         - K: the covariance matrix
-        - _K_inv: the inverse of the covariance matrix 
+        - _K_inv: the inverse of the covariance matrix
 
     Arg:
         kernel (callable): compute the covariance matrix
         descriptor (callable): compute the structure to descriptor
-        base_potential (callable): compute the base potential before GPR 
+        base_potential (callable): compute the base potential before GPR
         f_coef (float): the coefficient of force noise relative to energy
         noise_e (list): define the energy noise (init, lower, upper)
     """
 
-    def __init__(self, kernel, descriptor, 
-                 base_potential=None, 
-                 f_coef=5, 
+    def __init__(self, kernel, descriptor,
+                 base_potential=None,
+                 f_coef=5,
                  noise_e=[5e-3, 2e-3, 1e-1]):
-        
+
         self.noise_e = noise_e[0]
         self.f_coef = f_coef
         self.noise_f = self.f_coef*self.noise_e
@@ -74,7 +74,7 @@ class GaussianProcess():
             s += " {:d} energy ({:.3f})".format(self.N_energy, self.noise_e)
             s += " {:d} forces ({:.3f})\n".format(self.N_forces, self.noise_f)
         return s
-    
+
     def todict(self):
         """
         Added for ASE compatibility
@@ -84,12 +84,12 @@ class GaussianProcess():
             #'param2': self.param2,
             # Add other parameters and attributes as needed
         }
-    
+
     def __repr__(self):
         return str(self)
-    
+
     def log_marginal_likelihood(self, params, eval_gradient=False, clone_kernel=False):
-        
+
         if clone_kernel:
             kernel = self.kernel.update(params[:-1])
         else:
@@ -141,10 +141,10 @@ class GaussianProcess():
         """
         Optimize the hyperparameters of the GPR model from scipy.minimize
         """
-        opt_res = minimize(fun, theta0, 
-                           method="L-BFGS-B", 
-                           bounds=bounds, 
-                           jac=True, 
+        opt_res = minimize(fun, theta0,
+                           method="L-BFGS-B",
+                           bounds=bounds,
+                           jac=True,
                            options={'maxiter': 10, 'ftol': 1e-2})
         return opt_res.x, opt_res.fun
 
@@ -237,11 +237,11 @@ class GaussianProcess():
             #pred1 = K_trans1.dot(self.alpha_)
         else:
             K_trans = self.kernel.k_total(X, train_x)
-        
+
         #print('debug', K_trans.shape, self.alpha_.shape)
         pred = K_trans.dot(self.alpha_)
         y_mean = pred[:, 0]
-        
+
         Npts = 0
         if 'energy' in X:
             if isinstance(X["energy"], tuple): #big array
@@ -258,15 +258,15 @@ class GaussianProcess():
 
         if total_E:
             if isinstance(X["energy"], tuple): #big array
-                N_atoms = np.array([x for x in X["energy"][-1]]) 
+                N_atoms = np.array([x for x in X["energy"][-1]])
             else:
-                N_atoms = np.array([len(x) for x in X["energy"]]) 
+                N_atoms = np.array([len(x) for x in X["energy"]])
             factors[:len(N_atoms)] = N_atoms
         y_mean *= factors
-        
+
         if return_cov:
-            v = cho_solve((self.L_, True), K_trans.T) 
-            y_cov = self.kernel.k_total(X) - K_trans.dot(v) 
+            v = cho_solve((self.L_, True), K_trans.T)
+            y_cov = self.kernel.k_total(X) - K_trans.dot(v)
             return y_mean, y_cov
         elif return_std:
             if self._K_inv is None:
@@ -284,7 +284,7 @@ class GaussianProcess():
             return y_mean, np.sqrt(y_var)*factors
         else:
             return y_mean
-    
+
     def set_train_pts(self, data, mode="w"):
         """
         Set the training pts for the GPR mode
@@ -336,7 +336,7 @@ class GaussianProcess():
         Delete the training pts for the GPR model
 
         Args:
-            e_ids: ids to delete in K_EE 
+            e_ids: ids to delete in K_EE
             f_ids: ids to delete in K_FF
         """
         data = {"energy":[], "force": [], "db": []}
@@ -361,13 +361,13 @@ class GaussianProcess():
             keep = False
             if e_id in e_ids:
                 energy_in = False
-            _force_in = []       
+            _force_in = []
             for i, f_id in enumerate(_f_ids):
                 if f_id not in f_ids:
                     _force_in.append(force_in[i])
             if energy_in or len(_force_in)>0:
                 data['db'].append((atoms, energy, force, energy_in, _force_in))
-        
+
         self.set_train_pts(data) # reset the train data
         self.fit()
 
@@ -375,10 +375,10 @@ class GaussianProcess():
         """
         Compute the energy/forces/stress from the base_potential
         """
-        return self.base_potential.calculate(atoms) 
+        return self.base_potential.calculate(atoms)
 
     def update_y_train(self):
-        """ 
+        """
         convert self.train_y to 1D numpy array
         """
         Npt_E = len(self.train_y["energy"])
@@ -391,7 +391,7 @@ class GaussianProcess():
             else:
                 if (i-Npt_E)%3 == 0:
                     #print(i, count, y_train.shape, self.train_y["force"][count])
-                    y_train[i:i+3,0] = self.train_y["force"][count] 
+                    y_train[i:i+3,0] = self.train_y["force"][count]
                     count += 1
         self.y_train=y_train
 
@@ -421,7 +421,7 @@ class GaussianProcess():
         if total_E:
             for i in range(len(E)):
                 E[i] *= len(test_X_E['energy'][i])
-                
+
         E_Pred, E_std, F_Pred, F_std = None, None, None, None
         if return_std:
             if len(test_X_E['energy']) > 0:
@@ -431,13 +431,13 @@ class GaussianProcess():
             return E, E_Pred, E_std, F, F_Pred, F_std
         else:
             if len(test_X_E['energy']) > 0:
-                E_Pred = self.predict(test_X_E, total_E=total_E)  
+                E_Pred = self.predict(test_X_E, total_E=total_E)
             if len(test_X_F['force']) > 0:
                 F_Pred = self.predict(test_X_F)
 
             if show:
                 metric_single(E, E_Pred, "Train Energy")
-                metric_single(F, F_Pred, "Train Forces")               
+                metric_single(F, F_Pred, "Train Forces")
             return E, E_Pred, F, F_Pred
 
     def get_train_x(self):
@@ -498,7 +498,7 @@ class GaussianProcess():
                 - X: the descriptors for a given structure: (N2, d)
                 - dXdR: the descriptors: (N2, d, 3)
                 - F: atomic force: 1*3
-            N2 is the number of the centered atoms' neighbors 
+            N2 is the number of the centered atoms' neighbors
         """
 
         # pack the new data
@@ -537,7 +537,7 @@ class GaussianProcess():
     def load(self, filename, N_max=None, opt=False, device=1):
         """
         Load the model from files
-        
+
         Args:
             filename: the file to save txt information
             db_filename: the file to save structural information
@@ -566,13 +566,13 @@ class GaussianProcess():
     def load_from_dict(self, dict0, N_max=None, device='cpu'):
         """
         Load the model from dictionary
-        
+
         Args:
             dict0: a dictionary of the model
             N_max: the maximum number of structures to load
             device: the device to run the model
         """
-        
+
         #keys = ['kernel', 'descriptor', 'Noise']
 
         if dict0["kernel"]["name"] == "RBF_mb":
@@ -649,10 +649,10 @@ class GaussianProcess():
         """
         convert the structures to the descriptors from a given ase db
         """
-               
+
         pts_to_add = {"energy": [], "force": [], "db": []}
 
-        with connect(db_filename) as db: 
+        with connect(db_filename) as db:
             count = 0
             for row in db.select():
                 count += 1
@@ -662,7 +662,7 @@ class GaussianProcess():
 
                 energy_in = row.data.energy_in
                 force_in = row.data.force_in
-                
+
                 # QZ: todo, add mpi support, this is the most expensive part
                 d = self.descriptor.calculate(atoms)
 
@@ -672,7 +672,7 @@ class GaussianProcess():
                 if energy_in:
                     pts_to_add["energy"].append((d['x'], energy/len(atoms), ele))
                 for id in force_in:
-                    ids = np.argwhere(d['seq'][:,1]==id).flatten() 
+                    ids = np.argwhere(d['seq'][:,1]==id).flatten()
                     _i = d['seq'][ids, 0]
                     pts_to_add["force"].append((d['x'][_i,:], d['dxdr'][ids], force[id], ele[_i]))
                 pts_to_add["db"].append((atoms, energy, force, energy_in, force_in))
@@ -695,7 +695,7 @@ class GaussianProcess():
             return_std bool, return variance or not
             f_tol float, precision to compute force
         """
-        d = self.descriptor.calculate(struc) 
+        d = self.descriptor.calculate(struc)
         ele = [Element(ele).z for ele in d['elements']]
         ele = np.array(ele)
         data = {"energy": [(d['x'], ele)]}
@@ -703,7 +703,7 @@ class GaussianProcess():
         l = d['x'].shape[1]
         for i in range(len(struc)):
             ids = np.argwhere(d['seq'][:,1]==i).flatten()
-            _i = d['seq'][ids, 0] 
+            _i = d['seq'][ids, 0]
             _x, _dxdr, ele0 = d['x'][_i,:], d['dxdr'][ids], ele[_i]
 
             if stress:
@@ -745,7 +745,7 @@ class GaussianProcess():
             y_var -= np.einsum("ij,ij->i", np.dot(K_trans, self._K_inv), K_trans)
             y_var_negative = y_var < 0
             y_var[y_var_negative] = 0.0
-            y_var = np.sqrt(y_var) 
+            y_var = np.sqrt(y_var)
             E_std = y_var[0]  # eV/atom
             F_std = y_var[1:].reshape([len(struc), 3])
             return E, F, S, E_std, F_std
@@ -769,7 +769,7 @@ class GaussianProcess():
         """
         tol_e_var *= self.noise_e
         tol_f_var *= self.noise_f
-               
+
         pts_to_add = {"energy": [], "force": [], "db": []}
         (atoms, energy, force) = data
 
@@ -792,7 +792,7 @@ class GaussianProcess():
             F = F1 = force.flatten()
             E_std = 2 * tol_e_var
             F_std = 2 * tol_f_var * np.ones((len(atoms), 3))
-           
+
         if E_std > tol_e_var:
             pts_to_add["energy"] = my_data["energy"]
             N_energy = 1
@@ -806,12 +806,12 @@ class GaussianProcess():
         #energy_in = False
 
         force_in = []
-        
+
         if add_force:
             xs_added = []
             for f_id in range(len(atoms)):
                 include = False
-                if np.max(F_std[f_id]) > tol_f_var: 
+                if np.max(F_std[f_id]) > tol_f_var:
                     X = my_data["energy"][0][0][f_id]
                     _ele = my_data["energy"][0][2][f_id]
                     if len(xs_added) == 0:
@@ -832,20 +832,20 @@ class GaussianProcess():
             pts_to_add["db"].append((atoms, energy, force, energy_in, force_in))
             self.set_train_pts(pts_to_add, mode="a+")
             #print("{:d} energy and {:d} forces will be added".format(N_energy, N_forces))
-        errors = (E[0]+energy_off, E1[0]+energy_off, E_std, F+force_off.flatten(), F1+force_off.flatten(), F_std) 
+        errors = (E[0]+energy_off, E1[0]+energy_off, E_std, F+force_off.flatten(), F1+force_off.flatten(), F_std)
         return pts_to_add, N_pts, errors
 
 
     def sparsify(self, e_tol=1e-10, f_tol=1e-10):
         """
-        Sparsify the covariance matrix by removing unimportant 
+        Sparsify the covariance matrix by removing unimportant
         configurations from the training database
         This is a main API for the GPR model
         """
         K = self.kernel.k_total(self.train_x)
         N_e = len(self.train_x["energy"][-1])
         N_f = len(self.train_x["force"][-1])
-        
+
         pts_e = CUR(K[:N_e,:N_e], e_tol)
         pts = CUR(K[N_e:,N_e:], f_tol)
         pts_f = []
@@ -865,7 +865,7 @@ def CUR(K, l_tol=1e-10):
 
     Args:
         K: N*N covariance matrix
-        N_e: number of 
+        N_e: number of
     """
     L, U = np.linalg.eigh(K)
     N_low = len(L[L<l_tol])

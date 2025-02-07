@@ -23,9 +23,9 @@ class GPR(Calculator):
 
     def calculate(self, atoms=None, properties=['energy'], system_changes=all_changes):
         self._calculate(atoms, properties, system_changes)
-
         e_tol = 1.2 * self.parameters.ff.noise_e
         f_tol = 1.2 * self.parameters.ff.noise_f
+        label = self.parameters.tag
         E_std, F_std = self.results['var_e'], self.results['var_f'].max()
         E = self.results['energy']
         Fmax = np.abs(self.results['forces']).max()
@@ -48,6 +48,7 @@ class GPR(Calculator):
                     l1 = metric_single(train_E, train_E1, "Train Energy")
                     l2 = metric_single(train_F, train_F1, "Train Forces")
                     print(self.parameters.ff)
+                self.parameters.ff.save(f'{label}-gpr.json', f'{label}-gpr.db')
 
             self.results['energy'] = eng
             self.results['forces'] = forces
