@@ -40,8 +40,8 @@ def kee_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False):
     pdat_x2 = ffi.new('double['+str(m2p*d)+']', x2.ravel().tolist())
     pdat_ele1 = ffi.new('int['+str(m1p)+']', ele1.tolist())
     pdat_ele2 = ffi.new('int['+str(m2p)+']', ele2.tolist())
-    pdat_x1_inds=ffi.new('int['+str(m1p)+']', x1_inds)
-    pdat_x2_inds=ffi.new('int['+str(m2p)+']', x2_inds)
+    pdat_x1_inds = ffi.new('int['+str(m1p)+']', x1_inds)
+    pdat_x2_inds = ffi.new('int['+str(m2p)+']', x2_inds)
     if grad:
         _l3 = 1 / (l * l2)
         pout = ffi.new('double['+str(m1*m2)+']')
@@ -123,8 +123,8 @@ def kef_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, transpos
     pdat_x2 = ffi.new('double['+str(m2p*d)+']', x2.ravel().tolist())
     pdat_ele1 = ffi.new('int['+str(m1p)+']', ele1.tolist())
     pdat_ele2 = ffi.new('int['+str(m2p)+']', ele2.tolist())
-    pdat_x1_inds=ffi.new('int['+str(m1p)+']', x1_inds)
-    pdat_x2_inds=ffi.new('int['+str(m2p)+']', x2_inds)
+    pdat_x1_inds = ffi.new('int['+str(m1p)+']', x1_inds)
+    pdat_x2_inds = ffi.new('int['+str(m2p)+']', x2_inds)
 
     if stress:
         pdat_dx2dr=ffi.new('double['+str(m2p*d*9)+']', list(dx2dr.ravel()))
@@ -200,8 +200,8 @@ def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, tol=1e-1
         C_s: the force-force kernel derivative w.r.t. sigma
         C_l: the force-force kernel derivative w.r.t. l
     """
-    comm=MPI.COMM_WORLD 
-    rank=comm.Get_rank()
+    comm = MPI.COMM_WORLD 
+    rank = comm.Get_rank()
 
     sigma2, l2 = sigma*sigma, l*l
 
@@ -214,39 +214,40 @@ def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, tol=1e-1
     x1_inds, x2_inds = [], []
     for i, ind in enumerate(x1_indices):
         x1_inds.extend([i]*ind)
+
     for i, ind in enumerate(x2_indices):
         x2_inds.extend([i]*ind)
 
     m1, m2, m1p, m2p, d = len(x1_indices), len(x2_indices), len(x1), len(x2), x1.shape[1]
 
     nprocs = comm.Get_size()
-    ish=int(m2p/nprocs)
-    irest=m2p-ish*nprocs
-    ndim_pr = np.zeros([nprocs],dtype = int)
-    n_mpi_pr = np.zeros([nprocs],dtype = int)
+    ish = int(m2p/nprocs)
+    irest = m2p - ish*nprocs
+    ndim_pr = np.zeros([nprocs], dtype = int)
+    n_mpi_pr = np.zeros([nprocs], dtype = int)
     for i in range(irest):
-      ndim_pr[i]=ish+1
+        ndim_pr[i]=ish+1
     for i in range(irest,nprocs):
-      ndim_pr[i]=ish
+        ndim_pr[i]=ish
 
     ind=0
     for i in range(nprocs):
-       n_mpi_pr[i]=ind
-       ind=ind+ndim_pr[i]
-    m2p_start=n_mpi_pr[comm.rank]
-    m2p_end=m2p_start+ndim_pr[comm.rank]
+        n_mpi_pr[i]=ind
+        ind=ind+ndim_pr[i]
+    m2p_start = n_mpi_pr[comm.rank]
+    m2p_end = m2p_start + ndim_pr[comm.rank]
     
-    pdat_x1=ffi.new('double['+str(m1p*d)+']', x1.ravel().tolist())
-    pdat_x2=ffi.new('double['+str(m2p*d)+']', x2.ravel().tolist())
-    pdat_ele1=ffi.new('int['+str(m1p)+']', ele1.tolist())
-    pdat_ele2=ffi.new('int['+str(m2p)+']', ele2.tolist())
-    pdat_x1_inds=ffi.new('int['+str(m1p)+']', x1_inds)
-    pdat_x2_inds=ffi.new('int['+str(m2p)+']', x2_inds)
-    pdat_dx2dr=ffi.new('double['+str(m2p*d*3)+']', dx2dr.ravel().tolist())
+    pdat_x1 = ffi.new('double['+str(m1p*d)+']', x1.ravel().tolist())
+    pdat_x2 = ffi.new('double['+str(m2p*d)+']', x2.ravel().tolist())
+    pdat_ele1 = ffi.new('int['+str(m1p)+']', ele1.tolist())
+    pdat_ele2 = ffi.new('int['+str(m2p)+']', ele2.tolist())
+    pdat_x1_inds = ffi.new('int['+str(m1p)+']', x1_inds)
+    pdat_x2_inds = ffi.new('int['+str(m2p)+']', x2_inds)
+    pdat_dx2dr = ffi.new('double['+str(m2p*d*3)+']', dx2dr.ravel().tolist())
 
     if stress:
-        pdat_dx1dr=ffi.new('double['+str(m1p*d*9)+']', list(dx1dr.ravel()))
-        pout=ffi.new('double['+str(m1*9*m2*3)+']')
+        pdat_dx1dr = ffi.new('double['+str(m1p*d*9)+']', list(dx1dr.ravel()))
+        pout = ffi.new('double['+str(m1*9*m2*3)+']')
         lib.rbf_kff_many_stress(m1p, m2p, m2p_start, m2p_end, d, m2, zeta, sigma2, l2, tol, 
                      pdat_x1, pdat_dx1dr, pdat_ele1, pdat_x1_inds,
                      pdat_x2, pdat_dx2dr, pdat_ele2, pdat_x2_inds,
@@ -255,18 +256,14 @@ def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, tol=1e-1
         out.shape = (m1, 9, m2*3)
         Cout = np.zeros([m1, 9, m2*3])
         comm.Barrier()
-        comm.Allreduce(
-            [out, MPI.DOUBLE],
-            [Cout, MPI.DOUBLE],
-            op = MPI.SUM,
-            )
+        comm.Allreduce([out, MPI.DOUBLE], [Cout, MPI.DOUBLE], op = MPI.SUM)
 
         C = Cout[:, :3, :].reshape([m1*3, m2*3])
         Cs = Cout[:, 3:, :].reshape([m1*6, m2*3])
     
     elif grad:
-        pdat_dx1dr = ffi.new('double['+str(m1p*d*3)+']', dx1dr.ravel().tolist())
-        pout = ffi.new('double['+str(m1*3*m2*3*2)+']')
+        pdat_dx1dr = ffi.new('double[' + str(m1p*d*3) + ']', dx1dr.ravel().tolist())
+        pout = ffi.new('double[' + str(m1*3*m2*3*2) +']')
         dpout_dl = ffi.new('double['+str(m1*3*m2*3*2)+']')
         lib.rbf_kff_many_with_grad(m1p, m2p, m2p_start, m2p_end, d, m2, zeta, sigma2, l, 
                                pdat_x1, pdat_dx1dr, pdat_ele1, pdat_x1_inds,
@@ -276,22 +273,14 @@ def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, tol=1e-1
         out.shape = (m1, 3, m2*3)
         Cout = np.zeros([m1, 3, m2*3])
         comm.Barrier()
-        comm.Allreduce(
-            [out, MPI.DOUBLE],
-            [Cout, MPI.DOUBLE],
-            op = MPI.SUM,
-            )
+        comm.Allreduce([out, MPI.DOUBLE], [Cout, MPI.DOUBLE], op = MPI.SUM)
         C = Cout[:, :3, :].reshape([m1*3, m2*3])
 
         dout_dl = np.frombuffer(ffi.buffer(dpout_dl, m1*3*m2*3*8), dtype=np.float64)
         dout_dl.shape = (m1, 3, m2*3)
         Cout = np.zeros([m1, 3, m2*3])
         comm.Barrier()
-        comm.Allreduce(
-            [dout_dl, MPI.DOUBLE],
-            [Cout, MPI.DOUBLE],
-            op = MPI.SUM,
-            )
+        comm.Allreduce([dout_dl, MPI.DOUBLE], [Cout, MPI.DOUBLE], op = MPI.SUM)
 
         C_l = Cout[:, :3, :].reshape([m1*3, m2*3])
         C_s = (2/sigma)*C
@@ -307,11 +296,7 @@ def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, tol=1e-1
         out.shape = (m1, 3, m2*3)
         Cout = np.zeros([m1, 3, m2*3])
         comm.Barrier()
-        comm.Allreduce(
-            [out, MPI.DOUBLE],
-            [Cout, MPI.DOUBLE],
-            op = MPI.SUM,
-            )
+        comm.Allreduce([out, MPI.DOUBLE], [Cout, MPI.DOUBLE], op = MPI.SUM)
 
         C = Cout[:, :3, :].reshape([m1*3, m2*3])
 
@@ -324,6 +309,7 @@ def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, tol=1e-1
     ffi.release(pdat_ele2)
     ffi.release(pdat_x2_inds)  
     ffi.release(pout)
+
     if grad:
         ffi.release(dpout_dl)
         return C, C_s, C_l

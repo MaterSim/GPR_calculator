@@ -4,6 +4,9 @@ from ase.calculators.calculator import Calculator, all_changes#, PropertyNotImpl
 from ase.neighborlist import NeighborList
 from ase.constraints import full_3x3_to_voigt_6_stress
 from .utilities import metric_single
+from mpi4py import MPI
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
 
 class GPR(Calculator):
     implemented_properties = ['energy', 'forces', 'stress', 'var_e', 'var_f']
@@ -36,14 +39,15 @@ class GPR(Calculator):
             forces = atoms.get_forces()
             data = (atoms, eng, forces)
             f_max = np.abs(forces).max()
-            print(f"From base model, E: {E_std:.3f}/{E:.3f}/{eng:.3f}, F: {F_std:.3f}/{Fmax:.3f}/{f_max:.3f}")
+            if rank == 0:
+                print(f"From base model, E: {E_std:.3f}/{E:.3f}/{eng:.3f}, F: {F_std:.3f}/{Fmax:.3f}/{f_max:.3f}")
             self.parameters.ff.add_structure(data)
 
             # update model
             if self.update and self.parameters.ff.N_queue > self.parameters.freq:
                 print("====================== Update the model ===============", self.parameters.ff.N_queue)
                 self.parameters.ff.fit(opt=True, show=False)
-                if self.verbose:
+                if rank ==0 and self.verbose:
                     train_E, train_E1, train_F, train_F1 = self.parameters.ff.validate_data()
                     l1 = metric_single(train_E, train_E1, "Train Energy")
                     l2 = metric_single(train_F, train_F1, "Train Forces")
@@ -56,7 +60,8 @@ class GPR(Calculator):
         else:
             self.parameters.ff.count_use_surrogate += 1
             #print(F_std > max([f_tol, Fmax/10]), F_std, f_tol, Fmax/10)
-            print(f"From surrogate,  E: {E_std:.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}/{Fmax:.3f}")
+            if rank == 0:
+                print(f"From surrogate,  E: {E_std:.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}/{Fmax:.3f}")
 
     def _calculate(self, atoms, properties, system_changes):
 
