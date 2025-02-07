@@ -3,7 +3,6 @@ from ase import units
 from ase.calculators.calculator import Calculator, all_changes#, PropertyNotImplementedError
 from ase.neighborlist import NeighborList
 from ase.constraints import full_3x3_to_voigt_6_stress
-from .utilities import metric_single
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
@@ -48,9 +47,7 @@ class GPR(Calculator):
                 print("====================== Update the model ===============", self.parameters.ff.N_queue)
                 self.parameters.ff.fit(opt=True, show=False)
                 if rank ==0 and self.verbose:
-                    train_E, train_E1, train_F, train_F1 = self.parameters.ff.validate_data()
-                    l1 = metric_single(train_E, train_E1, "Train Energy")
-                    l2 = metric_single(train_F, train_F1, "Train Forces")
+                    train_E, train_E1, train_F, train_F1 = self.parameters.ff.validate_data(show=True)
                     print(self.parameters.ff)
                 self.parameters.ff.save(f'{label}-gpr.json', f'{label}-gpr.db')
 

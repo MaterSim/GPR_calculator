@@ -46,6 +46,7 @@ class GaussianProcess():
         self.f_coef = f_coef
         self.noise_f = self.f_coef*self.noise_e
         self.noise_bounds = noise_e[1:]
+        self.error = None
 
         self.descriptor = descriptor
         self.kernel = kernel
@@ -423,11 +424,14 @@ class GaussianProcess():
                 E[i] *= len(test_X_E['energy'][i])
 
         E_Pred, E_std, F_Pred, F_std = None, None, None, None
+
         if return_std:
             if len(test_X_E['energy']) > 0:
                 E_Pred, E_std = self.predict(test_X_E, total_E=total_E, return_std=True)
             if len(test_X_F['force']) > 0:
                 F_Pred, F_std = self.predict(test_X_F, return_std=True)
+            if show:
+                self.update_error(E, E_Pred, F, F_Pred)
             return E, E_Pred, E_std, F, F_Pred, F_std
         else:
             if len(test_X_E['energy']) > 0:
@@ -436,9 +440,15 @@ class GaussianProcess():
                 F_Pred = self.predict(test_X_F)
 
             if show:
-                metric_single(E, E_Pred, "Train Energy")
-                metric_single(F, F_Pred, "Train Forces")
+                self.update_error(E, E_Pred, F, F_Pred)
             return E, E_Pred, F, F_Pred
+
+    def update_error(self, E, E_Pred, F, F_Pred):
+        """
+        update the training error for the model
+        """
+        self.error = {"energy": metric_single(E, E_Pred, "Train Energy"),
+                      "forces": metric_single(F, F_Pred, "Train Forces")}
 
     def get_train_x(self):
         """
@@ -524,12 +534,12 @@ class GaussianProcess():
         Save the model to the files
 
         Args:
-            filename: the file to save txt information
+            filename: the file to save json information
             db_filename: the file to save structural information
         """
         dict0 = self.save_dict(db_filename)
         with open(filename, "w") as fp:
-            json.dump(dict0, fp)
+            json.dump(dict0, fp, indent=4)
         self.export_ase_db(db_filename, permission="w")
 
         print("save the GP model to", filename, "and database to", db_filename)
@@ -539,7 +549,7 @@ class GaussianProcess():
         Load the model from files
 
         Args:
-            filename: the file to save txt information
+            filename: the file to save json information
             db_filename: the file to save structural information
         """
         #print(filename)
@@ -553,12 +563,16 @@ class GaussianProcess():
         """
         Save the model as a dictionary in json
         """
-        noise = {"energy": self.noise_e, "f_coef": self.f_coef, "bounds": self.noise_bounds}
+        noise = {"energy": self.noise_e,
+                 "f_coef": self.f_coef,
+                 "bounds": self.noise_bounds}
         dict0 = {"noise": noise,
                 "kernel": self.kernel.save_dict(),
                 "descriptor": self.descriptor.save_dict(),
                 "db_filename": db_filename,
                 }
+        if self.error is not None:
+            dict0["error"] = self.error
         if self.base_potential is not None:
             dict0["base_potential"] = self.base_potential.save_dict()
         return dict0
