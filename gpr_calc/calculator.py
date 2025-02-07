@@ -3,6 +3,7 @@ from ase import units
 from ase.calculators.calculator import Calculator, all_changes#, PropertyNotImplementedError
 from ase.neighborlist import NeighborList
 from ase.constraints import full_3x3_to_voigt_6_stress
+from .utilities import metric_single
 
 class GPR(Calculator):
     implemented_properties = ['energy', 'forces', 'stress', 'var_e', 'var_f']
@@ -42,6 +43,11 @@ class GPR(Calculator):
             if self.update and self.parameters.ff.N_queue > self.parameters.freq:
                 print("====================== Update the model ===============", self.parameters.ff.N_queue)
                 self.parameters.ff.fit(opt=True, show=False)
+                if self.verbose:
+                    train_E, train_E1, train_F, train_F1 = self.parameters.ff.validate_data()
+                    l1 = metric_single(train_E, train_E1, "Train Energy")
+                    l2 = metric_single(train_F, train_F1, "Train Forces")
+                    print(self.parameters.ff)
 
             self.results['energy'] = eng
             self.results['forces'] = forces
@@ -119,10 +125,10 @@ class LJ():
         _parameters = {
                        'name': 'LJ',
                        'rc': 5.0,
-                       'sigma': 1.0, 
+                       'sigma': 1.0,
                        'epsilon': 1.0,
                       }
-    
+
         if parameters is not None:
             _parameters.update(parameters)
 
@@ -139,7 +145,7 @@ class LJ():
         self.sigma = self._parameters["sigma"]
         self.rc = self._parameters["rc"]
 
-       
+
     def save_dict(self):
         """
         save the model as a dictionary in json
@@ -149,7 +155,7 @@ class LJ():
     def calculate(self, atoms):
         """
         Compute the E/F/S
-        
+
         Args:
             atom: ASE atoms object
         """
@@ -226,7 +232,7 @@ def get_pyscf_calc(atoms, basis='gth-szv-molopt-sr', pseudo='gth-pade', xc='lda,
     mf_class = pbcdft.RKS
     mf_class = lambda cell: pbcdft.KRKS(cell, kpts=cell.make_kpts([1, 1, 1]))
     mf_dict = { 'xc' : xc}
-        
+
     return pyscf_ase.PySCF(molcell=cell, mf_class=mf_class, mf_dict=mf_dict)
 
 if __name__ == '__main__':
@@ -234,7 +240,7 @@ if __name__ == '__main__':
     from ase import Atoms
     from ase.io import read
     from ase.optimize import LBFGS
-    
+
     from ase.lattice.cubic import Diamond
     si=Diamond(symbol='C', latticeconstant=3.5668)
     si.set_calculator(get_pyscf_calc(si))
