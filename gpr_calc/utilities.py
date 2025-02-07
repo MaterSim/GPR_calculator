@@ -63,24 +63,29 @@ def r2(true, predicted):
         return 1 - square_error / true_variance
 
 def metrics(y_train, y_test, y_train_pred, y_test_pred, header):
-    r2_train = 'R2 {:6.4f}'.format(r2(y_train, y_train_pred))
-    r2_test  = 'R2 {:6.4f}'.format(r2(y_test, y_test_pred))
-    mae_train  = 'MAE {:6.3f}'.format(mae(y_train, y_train_pred))
-    mae_test   = 'MAE {:6.3f}'.format(mae(y_test, y_test_pred))
-    rmse_train = 'RMSE {:6.3f}'.format(rmse(y_train, y_train_pred))
-    rmse_test  = 'RMSE {:6.3f}'.format(rmse(y_test, y_test_pred))
-    str1 = "{:s} Train[{:4d}]: {:s} {:s} {:s}".format(\
-            header, len(y_train), r2_train, mae_train, rmse_train)
-    str2 = "{:s} Test [{:4d}]: {:s} {:s} {:s}".format(\
-            header, len(y_test), r2_test, mae_test, rmse_test)
+    r2_1, mae_1, rmse_1 = metric_values(y_train, y_train_pred)
+    r2_2, mae_2, rmse_2 = metric_values(y_test, y_test_pred)
+
+    r2_train = 'R2 {:6.4f}'.format(r2_1)
+    r2_test  = 'R2 {:6.4f}'.format(r2_2)
+    mae_train  = 'MAE {:6.3f}'.format(mae_1)
+    mae_test   = 'MAE {:6.3f}'.format(mae_2)
+    rmse_train = 'RMSE {:6.3f}'.format(rmse_1)
+    rmse_test  = 'RMSE {:6.3f}'.format(rmse_2)
+    str1 = f"{header} Train[{len(y_train):4d}]: {r2_train:s} {mae_train:s} {rmse_train:s}"
+    str2 = f"{header} Test [{len(y_test):4d}]: {r2_test:s} {mae_test:s} {rmse_test:s}"
     print(str1)
     print(str2)
     return (str1, str2)
 
+def metric_values(y_train, y_train_pred):
+    r2_train = r2(y_train, y_train_pred)
+    mae_train  = mae(y_train, y_train_pred)
+    rmse_train = rmse(y_train, y_train_pred)
+    return r2_train, mae_train, rmse_train
+
 def metric_single(y_train, y_train_pred, header, show_max=False):
-    r2_train = 'R2 {:6.4f}'.format(r2(y_train, y_train_pred))
-    mae_train  = 'MAE {:6.3f}'.format(mae(y_train, y_train_pred))
-    rmse_train = 'RMSE {:6.3f}'.format(rmse(y_train, y_train_pred))
+    r2_train, mae_train, rmse_train = metric_values(y_train, y_train_pred)
     str1 = "{:s} [{:4d}]: {:s} {:s} {:s}".format(\
             header, len(y_train), r2_train, mae_train, rmse_train)
     if show_max:

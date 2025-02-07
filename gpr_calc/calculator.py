@@ -46,10 +46,16 @@ class GPR(Calculator):
             if self.update and self.parameters.ff.N_queue > self.parameters.freq:
                 print("====================== Update the model ===============", self.parameters.ff.N_queue)
                 self.parameters.ff.fit(opt=True, show=False)
-                if rank ==0 and self.verbose:
-                    train_E, train_E1, train_F, train_F1 = self.parameters.ff.validate_data(show=True)
-                    print(self.parameters.ff)
                 self.parameters.ff.save(f'{label}-gpr.json', f'{label}-gpr.db')
+                if rank ==0:
+                    self.parameters.ff.validate_data(show=True)
+                    print(self.parameters.ff)
+                    if self.parameters.ff.error['energy_mae'] > 0.1 or \
+                        self.parameters.ff.error['forces_mae'] > 0.3:
+                        print("ERROR: The error is too large, check the data.")
+                        print(self.parameters.ff.error)
+                        print("The program stops here!\n")
+                        import sys; sys.exit()
 
             self.results['energy'] = eng
             self.results['forces'] = forces

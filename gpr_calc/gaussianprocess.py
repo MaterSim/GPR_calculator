@@ -1,6 +1,6 @@
 import numpy as np
 from pyxtal.database.element import Element
-from .utilities import new_pt, convert_train_data, list_to_tuple, tuple_to_list, metric_single
+from .utilities import new_pt, convert_train_data, list_to_tuple, tuple_to_list, metric_values
 from scipy.linalg import cholesky, cho_solve, solve_triangular
 from scipy.optimize import minimize
 import warnings
@@ -447,8 +447,14 @@ class GaussianProcess():
         """
         update the training error for the model
         """
-        self.error = {"energy": metric_single(E, E_Pred, "Train Energy"),
-                      "forces": metric_single(F, F_Pred, "Train Forces")}
+        e_r2, e_mae, e_rmse = metric_values(E, E_Pred)
+        f_r2, f_mae, f_rmse = metric_values(F, F_Pred)
+        self.error = {"energy_r2": e_r2,
+                      "energy_mae": e_mae,
+                      "energy_rmse": e_rmse,
+                      "forces_r2": f_r2,
+                      "forces_mae": f_mae,
+                      "forces_rmse": f_rmse}
 
     def get_train_x(self):
         """
@@ -566,11 +572,13 @@ class GaussianProcess():
         noise = {"energy": self.noise_e,
                  "f_coef": self.f_coef,
                  "bounds": self.noise_bounds}
+
         dict0 = {"noise": noise,
-                "kernel": self.kernel.save_dict(),
-                "descriptor": self.descriptor.save_dict(),
-                "db_filename": db_filename,
+                 "kernel": self.kernel.save_dict(),
+                 "descriptor": self.descriptor.save_dict(),
+                 "db_filename": db_filename,
                 }
+
         if self.error is not None:
             dict0["error"] = self.error
         if self.base_potential is not None:
@@ -588,7 +596,6 @@ class GaussianProcess():
         """
 
         #keys = ['kernel', 'descriptor', 'Noise']
-
         if dict0["kernel"]["name"] == "RBF_mb":
             from .kernels.RBF_mb import RBF_mb
             self.kernel = RBF_mb()
@@ -621,7 +628,7 @@ class GaussianProcess():
         self.noise_e = dict0["noise"]["energy"]
         self.f_coef = dict0["noise"]["f_coef"]
         self.noise_bounds = dict0["noise"]["bounds"]
-        self.noise_f = self.f_coef*self.noise_e
+        self.noise_f = self.f_coef * self.noise_e
 
         # save structural file
         self.extract_db(dict0["db_filename"], N_max)
