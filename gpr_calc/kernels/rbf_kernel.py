@@ -195,13 +195,15 @@ def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, tol=1e-1
         zeta:
         grad: if True, compute gradient w.r.t. hyperparameters
         stress: if True, compute force-stress relation
+
     Returns:
         C: the force-force kernel
         C_s: the force-force kernel derivative w.r.t. sigma
         C_l: the force-force kernel derivative w.r.t. l
     """
-    comm = MPI.COMM_WORLD 
-    rank = comm.Get_rank()
+    comm = MPI.COMM_WORLD
+    nprocs = comm.Get_size()
+    #rank = comm.Get_rank()
 
     sigma2, l2 = sigma*sigma, l*l
 
@@ -214,26 +216,25 @@ def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, tol=1e-1
     x1_inds, x2_inds = [], []
     for i, ind in enumerate(x1_indices):
         x1_inds.extend([i]*ind)
-
     for i, ind in enumerate(x2_indices):
         x2_inds.extend([i]*ind)
 
     m1, m2, m1p, m2p, d = len(x1_indices), len(x2_indices), len(x1), len(x2), x1.shape[1]
 
-    nprocs = comm.Get_size()
     ish = int(m2p/nprocs)
     irest = m2p - ish*nprocs
     ndim_pr = np.zeros([nprocs], dtype = int)
     n_mpi_pr = np.zeros([nprocs], dtype = int)
     for i in range(irest):
-        ndim_pr[i]=ish+1
+        ndim_pr[i] = ish + 1
     for i in range(irest,nprocs):
-        ndim_pr[i]=ish
+        ndim_pr[i] = ish
 
-    ind=0
+    ind = 0
     for i in range(nprocs):
-        n_mpi_pr[i]=ind
-        ind=ind+ndim_pr[i]
+        n_mpi_pr[i] = ind
+        ind = ind + ndim_pr[i]
+
     m2p_start = n_mpi_pr[comm.rank]
     m2p_end = m2p_start + ndim_pr[comm.rank]
     

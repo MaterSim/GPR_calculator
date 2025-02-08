@@ -8,6 +8,7 @@ import json
 from ase.db import connect
 import os
 from copy import deepcopy
+from mpi4py import MPI
 
 class GaussianProcess():
     """
@@ -35,13 +36,16 @@ class GaussianProcess():
         base_potential (callable): compute the base potential before GPR
         f_coef (float): the coefficient of force noise relative to energy
         noise_e (list): define the energy noise (init, lower, upper)
+        ncpu (int): number of cpu to run the model
     """
 
     def __init__(self, kernel, descriptor,
                  base_potential=None,
                  f_coef=5,
-                 noise_e=[5e-3, 2e-3, 1e-1]):
-
+                 noise_e=[5e-3, 2e-3, 1e-1],
+                 ncpu=1):
+        comm = MPI.COMM_WORLD
+        self.rank = comm.Get_rank()
         self.noise_e = noise_e[0]
         self.f_coef = f_coef
         self.noise_f = self.f_coef*self.noise_e
@@ -62,6 +66,7 @@ class GaussianProcess():
         self.N_energy_queue = 0
         self.N_forces_queue = 0
         self.N_queue = 0
+        self.ncpu = ncpu
 
         # for the track of function calls
         self.count_fits = 0
@@ -163,7 +168,7 @@ class GaussianProcess():
         else:
             self.set_train_pts(TrainData)
 
-        if show:
+        if self.rank ==0 and show:
             print(self)
 
         def obj_func(params, eval_gradient=True):
@@ -174,7 +179,8 @@ class GaussianProcess():
                     strs = "Loss: {:12.3f} ".format(-lml)
                     for para in params:
                         strs += "{:6.3f} ".format(para)
-                    print(strs)
+                    if self.rank == 0:
+                        print(strs)
                     #from scipy.optimize import approx_fprime
                     #print("from ", grad, lml)
                     #print("scipy", approx_fprime(params, self.log_marginal_likelihood, 1e-3))
@@ -186,7 +192,7 @@ class GaussianProcess():
         hyper_params = self.kernel.parameters() + [self.noise_e]
         hyper_bounds = self.kernel.bounds + [self.noise_bounds]
         if opt:
-            params, loss = self.optimize(obj_func, hyper_params, hyper_bounds)
+            params, _ = self.optimize(obj_func, hyper_params, hyper_bounds)
             self.kernel.update(params[:-1])
             self.noise_e = params[-1]
             self.noise_f = self.f_coef*params[-1]
@@ -551,7 +557,7 @@ class GaussianProcess():
         print("save the GP model to", filename, "and database to", db_filename)
 
     @classmethod
-    def load(cls, filename, N_max=None, opt=False, device=1):
+    def load(cls, filename, N_max=None, device=1):
         """
         Load the model from files
 
@@ -563,8 +569,8 @@ class GaussianProcess():
         with open(filename, "r") as fp:
             dict0 = json.load(fp)
         instance = cls.load_from_dict(dict0, N_max=N_max, device=device)
-        instance.fit(opt=opt)
-        print("load the GP model from ", filename)
+        if instance.rank == 0:
+            print("load the GP model from ", filename)
         return instance
 
     def save_dict(self, db_filename):

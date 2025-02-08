@@ -1,18 +1,25 @@
 import numpy as np
 from .base import build_covariance, get_mask
 from .rbf_kernel import kee_C, kff_C, kef_C
+from mpi4py import MPI
 
 class RBF_mb():
     r"""
     .. math::
         k(x_i, x_j) = \sigma ^2 * \\exp\\left(- \\frac{d(x_i, x_j)^2}{2l^2} \\right)
     """
-    def __init__(self, para=[1., 1.], bounds=[[1e-2, 5e+1], [1e-1, 1e+1]], zeta=2, device='cpu'):
+    def __init__(self, 
+                 para=[1., 1.], 
+                 bounds=[[1e-2, 5e+1], [1e-1, 1e+1]], 
+                 zeta=2,
+                 ncpu=1, 
+                 device='cpu'):
         self.name = 'RBF_mb'
         self.bounds = bounds
         self.update(para)
         self.zeta = zeta
         self.device = device
+        self.ncpu = ncpu
             
     def __str__(self):
         return "{:.3f}**2 *RBF(length={:.3f})".format(self.sigma, self.l)
@@ -125,26 +132,36 @@ class RBF_mb():
         Used for energy/force training
         """
         sigma, l, zeta = self.sigma, self.l, self.zeta
+        data2 = data1
+        rank = MPI.COMM_WORLD.Get_rank()
 
-        data2 = data1   
-        C_ee, C_ef, C_fe, C_ff = None, None, None, None
-        C_ee_s, C_ef_s, C_fe_s, C_ff_s = None, None, None, None
-        C_ee_l, C_ef_l, C_fe_l, C_ff_l = None, None, None, None
-        for key1 in data1.keys():
-            d1 = data1[key1]
-            for key2 in data2.keys():
-                d2 = data2[key2]
-                if len(d1)>0 and len(d2)>0:
-                    if key1 == 'energy' and key2 == 'energy':
-                        C_ee, C_ee_s, C_ee_l = kee_C(d1, d2, sigma, l, zeta, grad=True)
-                    elif key1 == 'energy' and key2 == 'force':
-                        C_ef, C_ef_s, C_ef_l = kef_C(d1, d2, sigma, l, zeta, grad=True)
-                        C_fe, C_fe_s, C_fe_l = C_ef.T, C_ef_s.T, C_ef_l.T
-                    elif key1 == 'force' and key2 == 'force':
-                        C_ff, C_ff_s, C_ff_l = kff_C(d1, d2, sigma, l, zeta, grad=True)
-        C = build_covariance(C_ee, C_ef, C_fe, C_ff, None, None)
-        C_s = build_covariance(C_ee_s, C_ef_s, C_fe_s, C_ff_s, None, None)
-        C_l = build_covariance(C_ee_l, C_ef_l, C_fe_l, C_ff_l, None, None)
+
+        if rank == 0:
+            C_ee, C_ef, C_fe, C_ff = None, None, None, None
+            C_ee_s, C_ef_s, C_fe_s, C_ff_s = None, None, None, None
+            C_ee_l, C_ef_l, C_fe_l, C_ff_l = None, None, None, None
+            for key1 in data1.keys():
+                d1 = data1[key1]
+                for key2 in data2.keys():
+                    d2 = data2[key2]
+                    if len(d1)>0 and len(d2)>0:
+                        if key1 == 'energy' and key2 == 'energy':
+                            C_ee, C_ee_s, C_ee_l = kee_C(d1, d2, sigma, l, zeta, grad=True)
+                        elif key1 == 'energy' and key2 == 'force':
+                            C_ef, C_ef_s, C_ef_l = kef_C(d1, d2, sigma, l, zeta, grad=True)
+                            C_fe, C_fe_s, C_fe_l = C_ef.T, C_ef_s.T, C_ef_l.T
+                        elif key1 == 'force' and key2 == 'force':
+                            C_ff, C_ff_s, C_ff_l = kff_C(d1, d2, sigma, l, zeta, grad=True)
+            C = build_covariance(C_ee, C_ef, C_fe, C_ff, None, None)
+            C_s = build_covariance(C_ee_s, C_ef_s, C_fe_s, C_ff_s, None, None)
+            C_l = build_covariance(C_ee_l, C_ef_l, C_fe_l, C_ff_l, None, None)
+        else:
+            C, C_s, C_l = None, None, None
+        
+        # Broadcast the result to all ranks
+        C = MPI.COMM_WORLD.bcast(C, root=0)
+        C_s = MPI.COMM_WORLD.bcast(C_s, root=0)
+        C_l = MPI.COMM_WORLD.bcast(C_l, root=0)
         return C, np.dstack((C_s, C_l))
 
     def k_total_with_stress(self, data1, data2, tol=1e-10):
