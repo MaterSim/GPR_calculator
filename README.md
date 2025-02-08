@@ -187,3 +187,20 @@ Total number of base calls 21
 Total number of surrogate calls 29
 Total number of gpr_fit calls 4
 ```
+
+
+The generated model will be stored as
+
+- a `json` file to store the parameters
+- a `db` file to store training structure
+
+It can be reused as follows
+
+```python
+from gpr_calc.gaussianprocess import GaussianProcess as GPR
+
+gpr = GPR.load('test-RBF-gpr.json')
+print(gpr)
+gpr.validate_data(show=True)
+gpr.fit(opt)
+```
