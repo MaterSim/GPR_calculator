@@ -320,7 +320,7 @@ def write_db(data, db_filename='viz.db', permission='w'):
  
 def plot_two_body(model, figname, rs=[1.0, 5.0]):
     from ase import Atoms
-    from cspbo.calculator import GPR
+    from .calculator import GPR
     
     rs = np.linspace(rs[0], rs[1], 50)
     cell = 10*np.eye(3)

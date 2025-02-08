@@ -550,7 +550,8 @@ class GaussianProcess():
 
         print("save the GP model to", filename, "and database to", db_filename)
 
-    def load(self, filename, N_max=None, opt=False, device=1):
+    @classmethod
+    def load(cls, filename, N_max=None, opt=False, device=1):
         """
         Load the model from files
 
@@ -561,9 +562,10 @@ class GaussianProcess():
         #print(filename)
         with open(filename, "r") as fp:
             dict0 = json.load(fp)
-        self.load_from_dict(dict0, N_max=N_max, device=device)
-        self.fit(opt=opt)
+        instance = cls.load_from_dict(dict0, N_max=N_max, device=device)
+        instance.fit(opt=opt)
         print("load the GP model from ", filename)
+        return instance
 
     def save_dict(self, db_filename):
         """
@@ -585,7 +587,8 @@ class GaussianProcess():
             dict0["base_potential"] = self.base_potential.save_dict()
         return dict0
 
-    def load_from_dict(self, dict0, N_max=None, device='cpu'):
+    @classmethod
+    def load_from_dict(cls, dict0, N_max=None, device='cpu'):
         """
         Load the model from dictionary
 
@@ -595,22 +598,23 @@ class GaussianProcess():
             device: the device to run the model
         """
 
+        instance = cls(kernel=None, descriptor=None, base_potential=None)
         #keys = ['kernel', 'descriptor', 'Noise']
         if dict0["kernel"]["name"] == "RBF_mb":
             from .kernels.RBF_mb import RBF_mb
-            self.kernel = RBF_mb()
+            instance.kernel = RBF_mb()
         elif dict0["kernel"]["name"] == "Dot_mb":
             from .kernels.Dot_mb import Dot_mb
-            self.kernel = Dot_mb()
+            instance.kernel = Dot_mb()
         else:
             msg = "unknow kernel {:s}".format(dict0["kernel"]["name"])
             raise NotImplementedError(msg)
-        self.kernel.load_from_dict(dict0["kernel"])
+        instance.kernel.load_from_dict(dict0["kernel"])
 
         if dict0["descriptor"]["_type"] == "SO3":
-            from cspbo.SO3 import SO3
-            self.descriptor = SO3()
-            self.descriptor.load_from_dict(dict0["descriptor"])
+            from .SO3 import SO3
+            instance.descriptor = SO3()
+            instance.descriptor.load_from_dict(dict0["descriptor"])
         else:
             msg = "unknow descriptors {:s}".format(dict0["descriptor"]["name"])
             raise NotImplementedError(msg)
@@ -618,20 +622,22 @@ class GaussianProcess():
         if "base_potential" in dict0.keys():
             if dict0["base_potential"]["name"] == "LJ":
                 from .calculator import LJ
-                self.base_potential = LJ()
-                self.base_potential.load_from_dict(dict0["base_potential"])
+                instance.base_potential = LJ()
+                instance.base_potential.load_from_dict(dict0["base_potential"])
             else:
                 msg = "unknow base potential {:s}".format(dict0["base_potential"]["name"])
                 raise NotImplementedError(msg)
-        self.kernel.device = device
+        instance.kernel.device = device
 
-        self.noise_e = dict0["noise"]["energy"]
-        self.f_coef = dict0["noise"]["f_coef"]
-        self.noise_bounds = dict0["noise"]["bounds"]
-        self.noise_f = self.f_coef * self.noise_e
+        instance.noise_e = dict0["noise"]["energy"]
+        instance.f_coef = dict0["noise"]["f_coef"]
+        instance.noise_bounds = dict0["noise"]["bounds"]
+        instance.noise_f = instance.f_coef * instance.noise_e
 
         # save structural file
-        self.extract_db(dict0["db_filename"], N_max)
+        instance.extract_db(dict0["db_filename"], N_max)
+
+        return instance
 
     def export_ase_db(self, db_filename, permission="w"):
         """
