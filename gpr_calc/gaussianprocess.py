@@ -168,7 +168,7 @@ class GaussianProcess():
         else:
             self.set_train_pts(TrainData)
 
-        if self.rank ==0 and show:
+        if self.rank == 0 and show:
             print(self)
 
         def obj_func(params, eval_gradient=True):

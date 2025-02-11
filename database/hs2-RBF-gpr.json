@@ -32,7 +32,7 @@
         "stress": false,
         "_type": "SO3"
     },
-    "db_filename": "hs2-RBF-gpr.db",
+    "db_filename": "database/hs2-RBF-gpr.db",
     "error": {
         "energy_r2": 0.9969131631049237,
         "energy_mae": 0.0007654842812824469,
