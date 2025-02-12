@@ -9,6 +9,7 @@ from ase.db import connect
 import os
 from copy import deepcopy
 from mpi4py import MPI
+import pickle
 
 class GaussianProcess():
     """
@@ -44,11 +45,12 @@ class GaussianProcess():
                  f_coef=5,
                  noise_e=[5e-3, 2e-3, 1e-1],
                  ncpu=1):
-        comm = MPI.COMM_WORLD
-        self.rank = comm.Get_rank()
+        self.comm = MPI.COMM_WORLD
+        self.rank = self.comm.Get_rank()
+        self.size = self.comm.Get_size()
         self.noise_e = noise_e[0]
         self.f_coef = f_coef
-        self.noise_f = self.f_coef*self.noise_e
+        self.noise_f = self.f_coef * self.noise_e
         self.noise_bounds = noise_e[1:]
         self.error = None
 
@@ -557,7 +559,7 @@ class GaussianProcess():
         print("save the GP model to", filename, "and database to", db_filename)
 
     @classmethod
-    def load(cls, filename, N_max=None, device=1):
+    def load(cls, filename, N_max=None, device='cpu'):
         """
         Load the model from files
 
@@ -565,12 +567,10 @@ class GaussianProcess():
             filename: the file to save json information
             db_filename: the file to save structural information
         """
-        #print(filename)
-        with open(filename, "r") as fp:
-            dict0 = json.load(fp)
-        instance = cls.load_from_dict(dict0, N_max=N_max, device=device)
-        if instance.rank == 0:
-            print("load the GP model from ", filename)
+        with open(filename, "r") as fp: dict0 = json.load(fp)
+        instance = cls.load_from_dict(dict0, device=device)
+        print(f"load GP model from {filename} in rank-{instance.rank}")
+        instance.extract_db(dict0["db_filename"], N_max)
         return instance
 
     def save_dict(self, db_filename):
@@ -594,13 +594,12 @@ class GaussianProcess():
         return dict0
 
     @classmethod
-    def load_from_dict(cls, dict0, N_max=None, device='cpu'):
+    def load_from_dict(cls, dict0, device='cpu'):
         """
         Load the model from dictionary
 
         Args:
             dict0: a dictionary of the model
-            N_max: the maximum number of structures to load
             device: the device to run the model
         """
 
@@ -634,14 +633,10 @@ class GaussianProcess():
                 msg = "unknow base potential {:s}".format(dict0["base_potential"]["name"])
                 raise NotImplementedError(msg)
         instance.kernel.device = device
-
         instance.noise_e = dict0["noise"]["energy"]
         instance.f_coef = dict0["noise"]["f_coef"]
         instance.noise_bounds = dict0["noise"]["bounds"]
         instance.noise_f = instance.f_coef * instance.noise_e
-
-        # save structural file
-        instance.extract_db(dict0["db_filename"], N_max)
 
         return instance
 
@@ -680,41 +675,134 @@ class GaussianProcess():
 
     def extract_db(self, db_filename, N_max=None):
         """
-        convert the structures to the descriptors from a given ase db
+        Convert the structures to descriptors from a given ASE database 
+        with MPI support
         """
 
+        # Initialize data structures
+        rows_data = None
+        n_total = None
+    
+        # Only rank 0 reads database
+        if self.rank == 0:
+            rows_data = []
+            with connect(db_filename, serial=True) as db:
+                for row in db.select():
+                    atoms = db.get_atoms(id=row.id)
+                    data = {
+                        'atoms': atoms,
+                        'energy': row.data.energy,
+                        'force': row.data.force.copy(),
+                        'energy_in': row.data.energy_in,
+                        'force_in': row.data.force_in
+                    }
+                    rows_data.append(data)
+
+                n_total = len(rows_data)
+                if N_max is not None:
+                    n_total = min(n_total, N_max)
+                    rows_data = rows_data[:n_total]
+                print(f"Rank 0: Loaded {n_total} structures")
+
+        # Broadcast the n_total to all ranks
+        n_total = self.comm.bcast(n_total, root=0)
+
+        """
+        test_array = np.array([1.0, 2.0, 3.0, 4.0, 5.0], dtype=np.float64)  
+        if self.rank == 0:
+            # Root rank has the actual data
+            size_to_send = np.array([5], dtype=np.int32)  # Use int32 for size
+            print(f"[DEBUG] Rank 0: Sending size {size_to_send[0]}")
+        else:
+            # Other ranks prepare to receive
+            size_to_send = np.array([0], dtype=np.int32)
+
+        # Broadcast size first
+        size_to_send = self.comm.bcast(size_to_send, root=0)
+        print(f"[DEBUG] Rank {self.rank}: Received size {size_to_send}")
+        
+        # Now prepare and broadcast the actual data
+        if self.rank == 0:
+            print(f"[DEBUG] Rank {self.rank}: Preparing broadcast array of size {size_to_send[0]}")
+            bcast_data = test_array
+        else:
+            print(f"[DEBUG] Rank {self.rank}: Preparing empty array of size {size_to_send[0]}")
+            bcast_data = np.empty(size_to_send[0], dtype=np.float64)
+        # Broadcast data with timing
+        t_start = MPI.Wtime()
+        bcast_data = self.comm.bcast(bcast_data, root=0)
+        t_end = MPI.Wtime()
+
+        print(f"[DEBUG] Rank {self.rank} at {t_end:.3f}: Received data shape {bcast_data.shape}, took {t_end-t_start:.3f}s")
+
+        # Verify broadcast
+        test_data = np.array([1.0, 2.0, 3.0, 4.0, 5.0], dtype=np.float64)
+        if np.array_equal(bcast_data, test_data):
+            print(f"Rank {self.rank}: Broadcast successful")
+        else:
+            print(f"Rank {self.rank}: Broadcast mismatch")
+            print(f"Expected: {test_data}")
+            print(f"Got: {bcast_data}")     
+
+        """
+        # Distribute rows across ranks
+        if self.rank == 0:
+            chunk_size = (n_total + self.size - 1) // self.size
+            chunks = [rows_data[i:i + chunk_size] for i in range(0, n_total, chunk_size)]
+            while len(chunks) < self.size:
+                chunks.append([])
+        else:
+            chunks = None
+
+        # Scatter the row_chunks to all ranks
+        my_chunk = self.comm.scatter(chunks, root=0)
+        # print(f"Rank {self.rank}: {len(my_chunk)} structures")
+
+        # Process the data
+        local_pts = {"energy": [], "force": [], "db": []}
+        for data in my_chunk:
+            atoms = data['atoms']
+            energy = data['energy']
+            force = data['force']
+            energy_in = data['energy_in']
+            force_in = data['force_in']
+
+            # Calculate the descriptor
+            d = self.descriptor.calculate(atoms)
+            ele = [Element(ele).z for ele in d['elements']]
+            ele = np.array(ele)
+
+            if energy_in:
+                local_pts["energy"].append((d['x'], energy/len(atoms), ele))
+
+            for id in force_in:
+                ids = np.argwhere(d['seq'][:,1]==id).flatten()
+                _i = d['seq'][ids, 0]
+                local_pts["force"].append((d['x'][_i,:], d['dxdr'][ids], force[id], ele[_i]))
+                
+            local_pts["db"].append((atoms, energy, force, energy_in, force_in))
+
+        print(f"Rank {self.rank}: Processed {len(local_pts['db'])} structures")
+        all_pts = self.comm.gather(local_pts, root=0)
+
+        # Initialize pts_to_add for all ranks
         pts_to_add = {"energy": [], "force": [], "db": []}
 
-        with connect(db_filename) as db:
-            count = 0
-            for row in db.select():
-                count += 1
-                atoms = db.get_atoms(id=row.id)
-                energy = row.data.energy
-                force = row.data.force.copy()
+        # Combine results on rank 0
+        if self.rank == 0:   
+            # Combine all gathered results
+            for pts in all_pts:
+                if pts["db"]:  # Only extend if there's data
+                    pts_to_add["energy"].extend(pts["energy"])
+                    pts_to_add["force"].extend(pts["force"]) 
+                    pts_to_add["db"].extend(pts["db"])
+            #print(f"Rank 0: Combined {len(pts_to_add['db'])} structures")
+            
+        # Broadcast the combined results to all ranks
+        pts_to_add = self.comm.bcast(pts_to_add, root=0)
+        #print(f"Rank {self.rank}: Received {len(pts_to_add['db'])} structures")
 
-                energy_in = row.data.energy_in
-                force_in = row.data.force_in
-
-                # QZ: todo, add mpi support, this is the most expensive part
-                d = self.descriptor.calculate(atoms)
-
-                ele = [Element(ele).z for ele in d['elements']]
-                ele = np.array(ele)
-
-                if energy_in:
-                    pts_to_add["energy"].append((d['x'], energy/len(atoms), ele))
-                for id in force_in:
-                    ids = np.argwhere(d['seq'][:,1]==id).flatten()
-                    _i = d['seq'][ids, 0]
-                    pts_to_add["force"].append((d['x'][_i,:], d['dxdr'][ids], force[id], ele[_i]))
-                pts_to_add["db"].append((atoms, energy, force, energy_in, force_in))
-
-                if count % 50 == 0:
-                    print("Processed {:d} structures".format(count))
-                if N_max is not None and count == N_max:
-                    break
-
+        # Add the structures to the training data
         self.set_train_pts(pts_to_add, "w")
 
     def predict_structure(self, struc, stress=True, return_std=False, f_tol=1e-8):
