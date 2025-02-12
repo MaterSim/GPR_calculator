@@ -191,13 +191,22 @@ class GaussianProcess():
                 return (-lml, -grad)
             else:
                 return -self.log_marginal_likelihood(params, clone_kernel=False)
+
         hyper_params = self.kernel.parameters() + [self.noise_e]
         hyper_bounds = self.kernel.bounds + [self.noise_bounds]
+
         if opt:
-            params, _ = self.optimize(obj_func, hyper_params, hyper_bounds)
+            if self.rank == 0:
+                params, _ = self.optimize(obj_func, hyper_params, hyper_bounds)
+            else:
+                params = None
+            # Broadcast the optimized parameters to all ranks
+            params = self.comm.bcast(params, root=0)
+
             self.kernel.update(params[:-1])
             self.noise_e = params[-1]
             self.noise_f = self.f_coef*params[-1]
+
         K = self.kernel.k_total(self.train_x)#; print(K)
 
         # add noise matrix (assuming force/energy has a coupling)
@@ -226,8 +235,6 @@ class GaussianProcess():
         self.N_forces_queue = 0
         self.N_queue = 0
         self.count_fits += 1
-
-        return self
 
     def predict(self, X, stress=False, total_E=False, return_std=False, return_cov=False):
         """
@@ -675,14 +682,18 @@ class GaussianProcess():
 
     def extract_db(self, db_filename, N_max=None):
         """
-        Convert the structures to descriptors from a given ASE database 
+        Convert the structures to descriptors from a given ASE database
         with MPI support
+
+        Args:
+            db_filename: the file to save structural information
+            N_max: the maximum number of structures
         """
 
         # Initialize data structures
         rows_data = None
         n_total = None
-    
+
         # Only rank 0 reads database
         if self.rank == 0:
             rows_data = []
@@ -707,44 +718,6 @@ class GaussianProcess():
         # Broadcast the n_total to all ranks
         n_total = self.comm.bcast(n_total, root=0)
 
-        """
-        test_array = np.array([1.0, 2.0, 3.0, 4.0, 5.0], dtype=np.float64)  
-        if self.rank == 0:
-            # Root rank has the actual data
-            size_to_send = np.array([5], dtype=np.int32)  # Use int32 for size
-            print(f"[DEBUG] Rank 0: Sending size {size_to_send[0]}")
-        else:
-            # Other ranks prepare to receive
-            size_to_send = np.array([0], dtype=np.int32)
-
-        # Broadcast size first
-        size_to_send = self.comm.bcast(size_to_send, root=0)
-        print(f"[DEBUG] Rank {self.rank}: Received size {size_to_send}")
-        
-        # Now prepare and broadcast the actual data
-        if self.rank == 0:
-            print(f"[DEBUG] Rank {self.rank}: Preparing broadcast array of size {size_to_send[0]}")
-            bcast_data = test_array
-        else:
-            print(f"[DEBUG] Rank {self.rank}: Preparing empty array of size {size_to_send[0]}")
-            bcast_data = np.empty(size_to_send[0], dtype=np.float64)
-        # Broadcast data with timing
-        t_start = MPI.Wtime()
-        bcast_data = self.comm.bcast(bcast_data, root=0)
-        t_end = MPI.Wtime()
-
-        print(f"[DEBUG] Rank {self.rank} at {t_end:.3f}: Received data shape {bcast_data.shape}, took {t_end-t_start:.3f}s")
-
-        # Verify broadcast
-        test_data = np.array([1.0, 2.0, 3.0, 4.0, 5.0], dtype=np.float64)
-        if np.array_equal(bcast_data, test_data):
-            print(f"Rank {self.rank}: Broadcast successful")
-        else:
-            print(f"Rank {self.rank}: Broadcast mismatch")
-            print(f"Expected: {test_data}")
-            print(f"Got: {bcast_data}")     
-
-        """
         # Distribute rows across ranks
         if self.rank == 0:
             chunk_size = (n_total + self.size - 1) // self.size
@@ -779,7 +752,7 @@ class GaussianProcess():
                 ids = np.argwhere(d['seq'][:,1]==id).flatten()
                 _i = d['seq'][ids, 0]
                 local_pts["force"].append((d['x'][_i,:], d['dxdr'][ids], force[id], ele[_i]))
-                
+
             local_pts["db"].append((atoms, energy, force, energy_in, force_in))
 
         print(f"Rank {self.rank}: Processed {len(local_pts['db'])} structures")
@@ -789,18 +762,17 @@ class GaussianProcess():
         pts_to_add = {"energy": [], "force": [], "db": []}
 
         # Combine results on rank 0
-        if self.rank == 0:   
+        if self.rank == 0:
             # Combine all gathered results
             for pts in all_pts:
                 if pts["db"]:  # Only extend if there's data
                     pts_to_add["energy"].extend(pts["energy"])
-                    pts_to_add["force"].extend(pts["force"]) 
+                    pts_to_add["force"].extend(pts["force"])
                     pts_to_add["db"].extend(pts["db"])
-            #print(f"Rank 0: Combined {len(pts_to_add['db'])} structures")
-            
+            # print(f"Rank 0: Combined {len(pts_to_add['db'])} structures")
+
         # Broadcast the combined results to all ranks
         pts_to_add = self.comm.bcast(pts_to_add, root=0)
-        #print(f"Rank {self.rank}: Received {len(pts_to_add['db'])} structures")
 
         # Add the structures to the training data
         self.set_train_pts(pts_to_add, "w")

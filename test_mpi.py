@@ -8,8 +8,8 @@ rank = comm.Get_rank()
 t0 = time()
 
 #try:
-gpr = GPR.load('database/hs2-RBF-gpr.json')
-#gpr.fit(opt=True)
+gpr = GPR.load('database/hs2-RBF-gpr.json', N_max=50)
+gpr.fit()
 print(gpr)
 print(f'Time: {time() - t0:.2f}s')
 #except Exception as e:

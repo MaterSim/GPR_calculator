@@ -8,11 +8,11 @@ class RBF_mb():
     .. math::
         k(x_i, x_j) = \sigma ^2 * \\exp\\left(- \\frac{d(x_i, x_j)^2}{2l^2} \\right)
     """
-    def __init__(self, 
-                 para=[1., 1.], 
-                 bounds=[[1e-2, 5e+1], [1e-1, 1e+1]], 
+    def __init__(self,
+                 para=[1., 1.],
+                 bounds=[[1e-2, 5e+1], [1e-1, 1e+1]],
                  zeta=2,
-                 ncpu=1, 
+                 ncpu=1,
                  device='cpu'):
         self.name = 'RBF_mb'
         self.bounds = bounds
@@ -20,7 +20,7 @@ class RBF_mb():
         self.zeta = zeta
         self.device = device
         self.ncpu = ncpu
-            
+
     def __str__(self):
         return "{:.3f}**2 *RBF(length={:.3f})".format(self.sigma, self.l)
 
@@ -30,7 +30,7 @@ class RBF_mb():
         self.zeta = dict0["zeta"]
         self.bounds = dict0["bounds"]
         self.name = dict0["name"]
-        
+
     def save_dict(self):
         """
         save the model as a dictionary in json
@@ -45,7 +45,7 @@ class RBF_mb():
 
     def parameters(self):
         return [self.sigma, self.l]
- 
+
     def update(self, para):
         self.sigma, self.l = para[0], para[1]
 
@@ -55,7 +55,7 @@ class RBF_mb():
         """
         sigma2, l2, zeta = self.sigma**2, self.l**2, self.zeta
         C_ee, C_ff = None, None
-               
+
         if "energy" in data:
             try:
                 NE = len(data["energy"])
@@ -63,7 +63,7 @@ class RBF_mb():
                 for i in range(NE):
                     (x1, ele1) = data["energy"][i]
                     mask = get_mask(ele1, ele1)
-                    C_ee[i] = K_ee(x1, x1, sigma2, l2, zeta, mask=mask) 
+                    C_ee[i] = K_ee(x1, x1, sigma2, l2, zeta, mask=mask)
             except:
                 NE = data['energy'][-1]
                 C_ee = np.zeros(len(NE))
@@ -118,14 +118,14 @@ class RBF_mb():
                         if not same:
                             C_fe = kef_C(d2, d1, sigma, l, zeta, transpose=True)
                         else:
-                            C_fe = C_ef.T 
+                            C_fe = C_ef.T
                     elif key1 == 'force' and key2 == 'force':
                         C_ff = kff_C(d1, d2, sigma, l, zeta, tol=tol)
-        # print("C_ee", C_ee)               
-        # print("C_ef", C_ef)               
+        # print("C_ee", C_ee)
+        # print("C_ef", C_ef)
         # import sys; sys.exit()
         return build_covariance(C_ee, C_ef, C_fe, C_ff)
-        
+
     def k_total_with_grad(self, data1):
         """
         Compute the covairance for train data
@@ -133,13 +133,18 @@ class RBF_mb():
         """
         sigma, l, zeta = self.sigma, self.l, self.zeta
         data2 = data1
-        rank = MPI.COMM_WORLD.Get_rank()
 
+        # Get MPI info
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+        size = comm.Get_size()
+
+
+        C_ee, C_ef, C_fe, C_ff = None, None, None, None
+        C_ee_s, C_ef_s, C_fe_s, C_ff_s = None, None, None, None
+        C_ee_l, C_ef_l, C_fe_l, C_ff_l = None, None, None, None
 
         if rank == 0:
-            C_ee, C_ef, C_fe, C_ff = None, None, None, None
-            C_ee_s, C_ef_s, C_fe_s, C_ff_s = None, None, None, None
-            C_ee_l, C_ef_l, C_fe_l, C_ff_l = None, None, None, None
             for key1 in data1.keys():
                 d1 = data1[key1]
                 for key2 in data2.keys():
@@ -150,18 +155,53 @@ class RBF_mb():
                         elif key1 == 'energy' and key2 == 'force':
                             C_ef, C_ef_s, C_ef_l = kef_C(d1, d2, sigma, l, zeta, grad=True)
                             C_fe, C_fe_s, C_fe_l = C_ef.T, C_ef_s.T, C_ef_l.T
-                        elif key1 == 'force' and key2 == 'force':
-                            C_ff, C_ff_s, C_ff_l = kff_C(d1, d2, sigma, l, zeta, grad=True)
+
+        # Parallelize force-force calculations
+        if 'force' in data1 and len(data1['force']) > 0:
+            force_data = data1['force']
+            x1, dx1dr, ele1, x1_indices = force_data
+            n_forces = len(x1)
+
+            # Divide work among ranks
+            chunk_size = (n_forces + size - 1) // size
+            start = rank * chunk_size
+            end = min(start + chunk_size, n_forces)
+
+            # Calculate local portion of force-force kernel
+            local_ff = None
+            local_ff_s = None
+            local_ff_l = None
+
+            if start < n_forces:
+                local_ff, local_ff_s, local_ff_l = kff_C(
+                (x1[start:end], dx1dr[start:end], ele1[start:end], x1_indices[start:end]),
+                force_data,
+                sigma, l, zeta,
+                grad=True)
+
+            # Gather results to rank 0
+            all_ff = comm.gather(local_ff, root=0)
+            all_ff_s = comm.gather(local_ff_s, root=0)
+            all_ff_l = comm.gather(local_ff_l, root=0)
+
+            # Combine results on rank 0
+            if rank == 0:
+                C_ff = np.vstack([ff for ff in all_ff if ff is not None])
+                C_ff_s = np.vstack([ff_s for ff_s in all_ff_s if ff_s is not None])
+                C_ff_l = np.vstack([ff_l for ff_l in all_ff_l if ff_l is not None])
+
+        if rank == 0:
             C = build_covariance(C_ee, C_ef, C_fe, C_ff, None, None)
             C_s = build_covariance(C_ee_s, C_ef_s, C_fe_s, C_ff_s, None, None)
             C_l = build_covariance(C_ee_l, C_ef_l, C_fe_l, C_ff_l, None, None)
         else:
             C, C_s, C_l = None, None, None
-        
+
         # Broadcast the result to all ranks
-        C = MPI.COMM_WORLD.bcast(C, root=0)
-        C_s = MPI.COMM_WORLD.bcast(C_s, root=0)
-        C_l = MPI.COMM_WORLD.bcast(C_l, root=0)
+        C = comm.bcast(C, root=0)
+        C_s = comm.bcast(C_s, root=0)
+        C_l = comm.bcast(C_l, root=0)
+
         return C, np.dstack((C_s, C_l))
 
     def k_total_with_stress(self, data1, data2, tol=1e-10):
@@ -226,18 +266,18 @@ def K_ff(x1, x2, dx1dr, dx2dr, sigma2, l2, zeta=2, mask=None, eps=1e-8):
     l3 = l*l2
 
     x1_norm = np.linalg.norm(x1, axis=1) + eps
-    x1_norm2 = x1_norm**2       
-    x1_norm3 = x1_norm**3        
+    x1_norm2 = x1_norm**2
+    x1_norm3 = x1_norm**3
     x1x2_dot = x1@x2.T
     x1_x1_norm3 = x1/x1_norm3[:,None]
 
     x2_norm = np.linalg.norm(x2, axis=1) + eps
-    x2_norm2 = x2_norm**2      
+    x2_norm2 = x2_norm**2
     tmp30 = np.ones(x2.shape)/x2_norm[:,None]
     tmp33 = np.eye(x2.shape[1])[None,:,:] - x2[:,:,None] * (x2/x2_norm2[:,None])[:,None,:]
 
 
-    x2_norm3 = x2_norm**3    
+    x2_norm3 = x2_norm**3
     x1x2_norm = x1_norm[:,None]*x2_norm[None,:]
     x2_x2_norm3 = x2/x2_norm3[:,None]
 
@@ -247,9 +287,9 @@ def K_ff(x1, x2, dx1dr, dx2dr, sigma2, l2, zeta=2, mask=None, eps=1e-8):
     D = d*D1
     k = sigma2*np.exp(-(0.5/l2)*(1-D))
 
-    if mask is not None: 
+    if mask is not None:
         k[mask] = 0
-    
+
     dk_dD = (-0.5/l2)*k
     zd2 = -0.5/l2*zeta*zeta*(D1**2)
 
@@ -257,8 +297,8 @@ def K_ff(x1, x2, dx1dr, dx2dr, sigma2, l2, zeta=2, mask=None, eps=1e-8):
 
     #t0 = time()
     tmp11 = x2[None, :, :] * x1_norm[:, None, None]
-    tmp12 = x1x2_dot[:,:,None] * (x1/x1_norm[:, None])[:,None,:] 
-    tmp13 = x1_norm2[:, None, None] * x2_norm[None, :, None] 
+    tmp12 = x1x2_dot[:,:,None] * (x1/x1_norm[:, None])[:,None,:]
+    tmp13 = x1_norm2[:, None, None] * x2_norm[None, :, None]
     dd_dx1 = (tmp11-tmp12)/tmp13
 
     tmp21 = x1[:, None, :] * x2_norm[None,:,None]
@@ -274,13 +314,13 @@ def K_ff(x1, x2, dx1dr, dx2dr, sigma2, l2, zeta=2, mask=None, eps=1e-8):
     d2d_dx1dx2 = out2 - out1
 
     dd_dx1_dd_dx2 = dd_dx1[:,:,:,None] * dd_dx2[:,:,None,:]
-    dD_dx1_dD_dx2 = zd2[:,:,None,None] * dd_dx1_dd_dx2 
+    dD_dx1_dD_dx2 = zd2[:,:,None,None] * dd_dx1_dd_dx2
 
     d2D_dx1dx2 = dd_dx1_dd_dx2 * D2[:,:,None,None] * (zeta-1)
     d2D_dx1dx2 += D1[:,:,None,None]*d2d_dx1dx2
     d2D_dx1dx2 *= zeta
     d2k_dx1dx2 = -d2D_dx1dx2 + dD_dx1_dD_dx2 # m, n, d1, d2
-   
+
     tmp0 = d2k_dx1dx2 * dk_dD[:,:,None,None] #n1, n2, d, d
     _kff1 = (dx1dr[:,None,:,None,:] * tmp0[:,:,:,:,None]).sum(axis=(0,2)) # n1,n2,3
     kff = (_kff1[:,:,:,None] * dx2dr[:,:,None,:]).sum(axis=1)  # n2, 3, 9
