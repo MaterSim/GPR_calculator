@@ -236,7 +236,6 @@ def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, tol=1e-1
     for i, ind in enumerate(x2_indices):
         x2_inds[idx:idx+ind] = i
         idx += ind
-
     m1, m2 = len(x1_indices), len(x2_indices)
     m1p, m2p = len(x1), len(x2)
     d = x1.shape[1]
@@ -265,22 +264,44 @@ def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, tol=1e-1
 
     elif grad:
         # Handle gradient calculation
-        pdat_dx1dr = ffi.new('double['+str(m1p*d*3)+']', dx1dr.ravel().tolist())
-        pout = ffi.new('double['+str(m1*3*m2*3*2)+']')
-        dpout_dl = ffi.new('double['+str(m1*3*m2*3*2)+']')
-        lib.rbf_kff_many_with_grad(m1p, m2p, 0, m2p, d, m2, zeta, sigma2, l,
-                                 pdat_x1, pdat_dx1dr, pdat_ele1, pdat_x1_inds,
-                                 pdat_x2, pdat_dx2dr, pdat_ele2, pdat_x2_inds,
-                                 pout, dpout_dl)
+
+        #print(f"[Debug] Size info - m1: {m1}, m2: {m2}, m1p: {m1p}, m2p: {m2p}, d: {d}")
+        # Allocate memory for dx1dr array with explicit size check
+        dx1dr_size = m1p * d * 3
+        pdat_dx1dr = ffi.new(f'double[{dx1dr_size}]')
+        
+        # Copy data in chunks if needed
+        chunk_size = 1000000  # Adjust based on available memory
+        for i in range(0, len(dx1dr.ravel()), chunk_size):
+            end = min(i + chunk_size, len(dx1dr.ravel()))
+            pdat_dx1dr[i:end] = dx1dr.ravel()[i:end].tolist()
+
+        # Allocate output arrays with size verification
+        out_size = m1 * 3 * m2 * 3 * 2
+        pout = ffi.new(f'double[{out_size}]')
+        dpout_dl = ffi.new(f'double[{out_size}]')
+        #print(f"[Debug] Allocated arrays - dx1dr: {dx1dr_size}, out: {out_size}")
+
+        # Call C function with explicit error checking
+        lib.rbf_kff_many_with_grad(
+            m1p, m2p, 0, m2p, d, m2, zeta, sigma2, l,
+            pdat_x1, pdat_dx1dr, pdat_ele1, pdat_x1_inds,
+            pdat_x2, pdat_dx2dr, pdat_ele2, pdat_x2_inds,
+            pout, dpout_dl
+        )
+        
+        # Convert output to numpy arrays safely
         out = np.frombuffer(ffi.buffer(pout, m1*3*m2*3*8), dtype=np.float64)
-        out.shape = (m1, 3, m2*3)
+        out = out.reshape((m1, 3, m2*3))
         C = out[:, :3, :].reshape([m1*3, m2*3])
 
         dout_dl = np.frombuffer(ffi.buffer(dpout_dl, m1*3*m2*3*8), dtype=np.float64)
-        dout_dl.shape = (m1, 3, m2*3)
+        dout_dl = dout_dl.reshape((m1, 3, m2*3))
         C_l = dout_dl[:, :3, :].reshape([m1*3, m2*3])
         C_s = (2/sigma)*C
 
+        #print(f"[Debug] Successfully processed arrays")
+            
     else:
         # Handle standard calculation
         pdat_dx1dr = ffi.new('double['+str(m1p*d*3)+']', dx1dr.ravel().tolist())

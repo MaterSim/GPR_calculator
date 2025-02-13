@@ -9,7 +9,6 @@ from ase.db import connect
 import os
 from copy import deepcopy
 from mpi4py import MPI
-import pickle
 
 class GaussianProcess():
     """
@@ -177,6 +176,11 @@ class GaussianProcess():
             if eval_gradient:
                 lml, grad = self.log_marginal_likelihood(
                     params, eval_gradient=True, clone_kernel=False)
+
+                # Reduce results across ranks
+                lml = self.comm.allreduce(lml, op=MPI.SUM)
+                grad = self.comm.allreduce(grad, op=MPI.SUM)
+
                 if show:
                     strs = "Loss: {:12.3f} ".format(-lml)
                     for para in params:
@@ -190,19 +194,18 @@ class GaussianProcess():
                     #import sys; sys.exit()
                 return (-lml, -grad)
             else:
-                return -self.log_marginal_likelihood(params, clone_kernel=False)
+                lml = self.log_marginal_likelihood(params, clone_kernel=False)
+                lml = self.comm.allreduce(lml, op=MPI.SUM)
+                return -lml
 
         hyper_params = self.kernel.parameters() + [self.noise_e]
         hyper_bounds = self.kernel.bounds + [self.noise_bounds]
 
         if opt:
-            if self.rank == 0:
-                params, _ = self.optimize(obj_func, hyper_params, hyper_bounds)
-            else:
-                params = None
-            # Broadcast the optimized parameters to all ranks
-            params = self.comm.bcast(params, root=0)
+            params, _ = self.optimize(obj_func, hyper_params, hyper_bounds)
 
+            params = self.comm.bcast(params, root=0)
+            
             self.kernel.update(params[:-1])
             self.noise_e = params[-1]
             self.noise_f = self.f_coef*params[-1]
@@ -969,4 +972,5 @@ def CUR(K, l_tol=1e-10):
                 omega[j] += U[j,eta]*U[j,eta]
     ids = np.argsort(-1*omega)
     return ids[:N_low]
+
 

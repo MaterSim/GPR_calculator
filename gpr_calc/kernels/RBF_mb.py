@@ -134,50 +134,60 @@ class RBF_mb():
         sigma, l, zeta = self.sigma, self.l, self.zeta
         data2 = data1
 
-        # Get MPI info
-        comm = MPI.COMM_WORLD
-        rank = comm.Get_rank()
-        size = comm.Get_size()
+        # All ranks compute energy terms
+        if len(data1['energy']) > 0: 
+        	C_ee, C_ee_s, C_ee_l = kee_C(data1['energy'], data2['energy'], 
+                    				sigma, l, zeta, grad=True)
+        else:
+            C_ee = C_ee_s = C_ee_l = None
+    
+        if len(data1['energy']) > 0:
+        	C_ef, C_ef_s, C_ef_l = kef_C(data1['energy'], data2['force'],
+                                    sigma, l, zeta, grad=True)
+        else:
+            C_ee = C_ee_s = C_ee_l = None
 
-
-        C_ee, C_ef, C_fe, C_ff = None, None, None, None
-        C_ee_s, C_ef_s, C_fe_s, C_ff_s = None, None, None, None
-        C_ee_l, C_ef_l, C_fe_l, C_ff_l = None, None, None, None
-
-        if rank == 0:
-            for key1 in data1.keys():
-                d1 = data1[key1]
-                for key2 in data2.keys():
-                    d2 = data2[key2]
-                    if len(d1)>0 and len(d2)>0:
-                        if key1 == 'energy' and key2 == 'energy':
-                            C_ee, C_ee_s, C_ee_l = kee_C(d1, d2, sigma, l, zeta, grad=True)
-                        elif key1 == 'energy' and key2 == 'force':
-                            C_ef, C_ef_s, C_ef_l = kef_C(d1, d2, sigma, l, zeta, grad=True)
-                            C_fe, C_fe_s, C_fe_l = C_ef.T, C_ef_s.T, C_ef_l.T
+        if C_ef is not None:
+            C_fe, C_fe_s, C_fe_l = C_ef.T, C_ef_s.T, C_ef_l.T
+        else:
+            C_fe = C_fe_s = C_fe_l = None
 
         # Parallelize force-force calculations
         if 'force' in data1 and len(data1['force']) > 0:
+            # Get MPI info
+            comm = MPI.COMM_WORLD
+            rank = comm.Get_rank()
+            size = comm.Get_size()
+            
             force_data = data1['force']
             x1, dx1dr, ele1, x1_indices = force_data
-            n_forces = len(x1)
 
-            # Divide work among ranks
+            # Get number of forces and Divide work among ranks
+            # Sum of x1_indices gives the total number of X1 points
+            # len(x1_indices) gives the number of forces
+            n_forces = len(x1_indices)
             chunk_size = (n_forces + size - 1) // size
             start = rank * chunk_size
             end = min(start + chunk_size, n_forces)
 
-            # Calculate local portion of force-force kernel
-            local_ff = None
-            local_ff_s = None
-            local_ff_l = None
+            # Get the start and end indices for (x1, dx1dr, ele1)
+            start1 = sum(x1_indices[:start])
+            end1 = sum(x1_indices[:end])
+            x1_local = x1[start1:end1]
+            dx1dr_local = dx1dr[start1:end1]
+            ele1_local = ele1[start1:end1]
+            x1_indices_local = x1_indices[start:end]
 
             if start < n_forces:
-                local_ff, local_ff_s, local_ff_l = kff_C(
-                (x1[start:end], dx1dr[start:end], ele1[start:end], x1_indices[start:end]),
-                force_data,
-                sigma, l, zeta,
-                grad=True)
+                local_data = (x1_local, dx1dr_local, ele1_local, x1_indices_local)
+                local_ff, local_ff_s, local_ff_l = kff_C(local_data,
+                                                         force_data,
+                                                         sigma, l, zeta, 
+                                                         grad=True)
+                #print(f"Rank {rank}: Local calculation successful")
+            else:
+                local_ff = local_ff_s = local_ff_l = None
+            #print(f"[Debug]-Cff-Rank-{rank}\n", local_ff[:3, :3])
 
             # Gather results to rank 0
             all_ff = comm.gather(local_ff, root=0)
@@ -189,18 +199,18 @@ class RBF_mb():
                 C_ff = np.vstack([ff for ff in all_ff if ff is not None])
                 C_ff_s = np.vstack([ff_s for ff_s in all_ff_s if ff_s is not None])
                 C_ff_l = np.vstack([ff_l for ff_l in all_ff_l if ff_l is not None])
+            else:
+                C_ff = C_ff_s = C_ff_l = None
 
-        if rank == 0:
-            C = build_covariance(C_ee, C_ef, C_fe, C_ff, None, None)
-            C_s = build_covariance(C_ee_s, C_ef_s, C_fe_s, C_ff_s, None, None)
-            C_l = build_covariance(C_ee_l, C_ef_l, C_fe_l, C_ff_l, None, None)
-        else:
-            C, C_s, C_l = None, None, None
+            # Broadcast the result to all ranks
+            C_ff = comm.bcast(C_ff, root=0)
+            C_ff_s = comm.bcast(C_ff_s, root=0)
+            C_ff_l = comm.bcast(C_ff_l, root=0)
 
-        # Broadcast the result to all ranks
-        C = comm.bcast(C, root=0)
-        C_s = comm.bcast(C_s, root=0)
-        C_l = comm.bcast(C_l, root=0)
+        # Build final matrices
+        C = build_covariance(C_ee, C_ef, C_fe, C_ff, None, None)
+        C_s = build_covariance(C_ee_s, C_ef_s, C_fe_s, C_ff_s, None, None)
+        C_l = build_covariance(C_ee_l, C_ef_l, C_fe_l, C_ff_l, None, None)
 
         return C, np.dstack((C_s, C_l))
 
@@ -326,4 +336,5 @@ def K_ff(x1, x2, dx1dr, dx2dr, sigma2, l2, zeta=2, mask=None, eps=1e-8):
     kff = (_kff1[:,:,:,None] * dx2dr[:,:,None,:]).sum(axis=1)  # n2, 3, 9
     kff = kff.sum(axis=0)
     return kff
+
 
