@@ -9,6 +9,8 @@ from ase.db import connect
 import os
 from copy import deepcopy
 from mpi4py import MPI
+import logging
+
 
 class GaussianProcess():
     """
@@ -36,14 +38,21 @@ class GaussianProcess():
         base_potential (callable): compute the base potential before GPR
         f_coef (float): the coefficient of force noise relative to energy
         noise_e (list): define the energy noise (init, lower, upper)
-        ncpu (int): number of cpu to run the model
     """
 
     def __init__(self, kernel, descriptor,
                  base_potential=None,
                  f_coef=5,
                  noise_e=[5e-3, 2e-3, 1e-1],
-                 ncpu=1):
+                 log_file="gpr.log"):
+
+        # Setup logging
+        loggint.getLogger().handlers.clear()
+        logging.basicConfig(level=logging.INFO,
+                            format='%(asctime)s| %(message)s',
+                            filename=self.log_file)
+        self.logging = logging
+
         self.comm = MPI.COMM_WORLD
         self.rank = self.comm.Get_rank()
         self.size = self.comm.Get_size()
@@ -67,12 +76,14 @@ class GaussianProcess():
         self.N_energy_queue = 0
         self.N_forces_queue = 0
         self.N_queue = 0
-        self.ncpu = ncpu
 
-        # for the track of function calls
+        # For the track of function calls
         self.count_fits = 0
         self.count_use_base = 0
         self.count_use_surrogate = 0
+
+        # For the track of parameters
+        if self.rank == 0: self.logging.info(self)
 
     def __str__(self):
         s = "------Gaussian Process Regression------\n"
@@ -80,6 +91,7 @@ class GaussianProcess():
         if hasattr(self, "train_x"):
             s += " {:d} energy ({:.3f})".format(self.N_energy, self.noise_e)
             s += " {:d} forces ({:.3f})\n".format(self.N_forces, self.noise_f)
+        s += "NCPU: {:d}\n".format(self.size)
         return s
 
     def todict(self):
@@ -96,7 +108,17 @@ class GaussianProcess():
         return str(self)
 
     def log_marginal_likelihood(self, params, eval_gradient=False, clone_kernel=False):
+        """
+        Compute the log marginal likelihood and its gradient
 
+        Args:
+            params: hyperparameters
+            eval_gradient: bool, evaluate the gradient or not
+            clone_kernel: bool, clone the kernel or not
+        
+        Returns:
+            log marginal likelihood and its gradient
+        """
         if clone_kernel:
             kernel = self.kernel.update(params[:-1])
         else:
@@ -147,6 +169,11 @@ class GaussianProcess():
     def optimize(self, fun, theta0, bounds):
         """
         Optimize the hyperparameters of the GPR model from scipy.minimize
+
+        Args:
+            fun: the function to minimize
+            theta0: initial guess of hyperparameters
+            bounds: bounds of hyperparameters
         """
         opt_res = minimize(fun, theta0,
                            method="L-BFGS-B",
@@ -157,7 +184,7 @@ class GaussianProcess():
 
     def fit(self, TrainData=None, show=True, opt=True):
         """
-        Fit the GPR model
+        Fit the GPR model with optional MPI support
 
         Args:
             TrainData: a dictionary of energy/force/db data
@@ -187,6 +214,7 @@ class GaussianProcess():
                         strs += "{:6.3f} ".format(para)
                     if self.rank == 0:
                         print(strs)
+                        self.log_file.info(strs)
                     #from scipy.optimize import approx_fprime
                     #print("from ", grad, lml)
                     #print("scipy", approx_fprime(params, self.log_marginal_likelihood, 1e-3))
@@ -398,7 +426,7 @@ class GaussianProcess():
 
     def update_y_train(self):
         """
-        convert self.train_y to 1D numpy array
+        Convert self.train_y to 1D numpy array
         """
         Npt_E = len(self.train_y["energy"])
         Npt_F = 3*len(self.train_y["force"])
@@ -416,7 +444,7 @@ class GaussianProcess():
 
     def validate_data(self, test_data=None, total_E=False, return_std=False, show=False):
         """
-        validate the given dataset
+        Validate the given dataset
 
         Args:
             test_data: a dictionary of energy/force data
@@ -463,7 +491,7 @@ class GaussianProcess():
 
     def update_error(self, E, E_Pred, F, F_Pred):
         """
-        update the training error for the model
+        Update the training error for the model
         """
         e_r2, e_mae, e_rmse = metric_values(E, E_Pred)
         f_r2, f_mae, f_rmse = metric_values(F, F_Pred)
@@ -473,6 +501,9 @@ class GaussianProcess():
                       "forces_r2": f_r2,
                       "forces_mae": f_mae,
                       "forces_rmse": f_rmse}
+        if self.rank == 0:
+            for key in self.error.keys():
+                self.logging.info(self.error[key])
 
     def get_train_x(self):
         """
@@ -571,7 +602,7 @@ class GaussianProcess():
     @classmethod
     def load(cls, filename, N_max=None, device='cpu'):
         """
-        Load the model from files
+        Load the model from files with MPI support
 
         Args:
             filename: the file to save json information
@@ -580,7 +611,8 @@ class GaussianProcess():
         with open(filename, "r") as fp: dict0 = json.load(fp)
         instance = cls.load_from_dict(dict0, device=device)
         if instance.rank == 0:
-            print(f"load GP model from {filename} in rank-{instance.rank}")
+            print(f"load GP model from {filename}")
+            instance.log.info(f"load GP model from {filename}")
         instance.extract_db(dict0["db_filename"], N_max)
         return instance
 
@@ -654,11 +686,15 @@ class GaussianProcess():
     def export_ase_db(self, db_filename, permission="w"):
         """
         Export the structural information in ase db format, including
-            - atoms:
-            - energy:
-            _ forces:
-            - energy_in:
-            - forces_in:
+            - atoms: ase.Atoms object
+            - energy: energy value
+            _ forces: forces value
+            - energy_in: bool whether the energy is included in the training
+            - forces_in: bool whether the forces are included in the training
+
+        Args:
+            db_filename: the file to save structural information
+            permission: "w" or "a+", reset or append the training data
         """
         if permission=="w" and os.path.exists(db_filename):
             os.remove(db_filename)
