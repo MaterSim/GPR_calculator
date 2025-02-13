@@ -6,7 +6,7 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
 t0 = time()
-gpr = GPR.load('database/hs2-RBF-gpr.json')#, N_max=10)
+gpr = GPR.load('database/hs2-RBF-gpr.json', N_max=100)
 gpr.fit()
 
 if rank == 0:

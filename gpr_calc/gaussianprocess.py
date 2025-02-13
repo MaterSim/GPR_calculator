@@ -32,7 +32,7 @@ class GaussianProcess():
         - K: the covariance matrix
         - _K_inv: the inverse of the covariance matrix
 
-    Arg:
+    Args:
         kernel (callable): compute the covariance matrix
         descriptor (callable): compute the structure to descriptor
         base_potential (callable): compute the base potential before GPR
@@ -47,7 +47,8 @@ class GaussianProcess():
                  log_file="gpr.log"):
 
         # Setup logging
-        loggint.getLogger().handlers.clear()
+        self.log_file = log_file
+        logging.getLogger().handlers.clear()
         logging.basicConfig(level=logging.INFO,
                             format='%(asctime)s| %(message)s',
                             filename=self.log_file)
@@ -86,12 +87,11 @@ class GaussianProcess():
         if self.rank == 0: self.logging.info(self)
 
     def __str__(self):
-        s = "------Gaussian Process Regression------\n"
+        s = f"------Gaussian Process Regression ({self.size})------\n"
         s += "Kernel: {:s}".format(str(self.kernel))
         if hasattr(self, "train_x"):
             s += " {:d} energy ({:.3f})".format(self.N_energy, self.noise_e)
             s += " {:d} forces ({:.3f})\n".format(self.N_forces, self.noise_f)
-        s += "NCPU: {:d}\n".format(self.size)
         return s
 
     def todict(self):
@@ -214,7 +214,7 @@ class GaussianProcess():
                         strs += "{:6.3f} ".format(para)
                     if self.rank == 0:
                         print(strs)
-                        self.log_file.info(strs)
+                        self.logging.info(strs)
                     #from scipy.optimize import approx_fprime
                     #print("from ", grad, lml)
                     #print("scipy", approx_fprime(params, self.log_marginal_likelihood, 1e-3))
@@ -231,7 +231,8 @@ class GaussianProcess():
 
         if opt:
             params, _ = self.optimize(obj_func, hyper_params, hyper_bounds)
-
+            if self.rank == 0:
+                self.logging.info("Optimization is Complete")
             params = self.comm.bcast(params, root=0)
             
             self.kernel.update(params[:-1])
@@ -239,27 +240,52 @@ class GaussianProcess():
             self.noise_f = self.f_coef*params[-1]
 
         K = self.kernel.k_total(self.train_x)#; print(K)
+        """
+        if self.size > 1:
+            if self.rank == 0:
+                K_shape = K.shape
+            else:
+                K_shape = None
+        # Broadcast the shape of K to all ranks
+        K_shape = self.comm.bcast(K_shape, root=0)
 
-        # add noise matrix (assuming force/energy has a coupling)
-        noise = np.eye(len(K))
-        NE = len(self.train_x['energy'][-1])
-        noise[:NE, :NE] *= self.noise_e**2
-        noise[NE:, NE:] *= (self.f_coef * self.noise_e)**2
-        K += noise
+        # Create a local K array with the same shape
+        if self.rank != 0:
+            K = np.zeros(K_shape)
+        
+        # Broadcast the K array to all ranks
+        self.comm.Bcast(K, root=0)
+        """
 
-        try:
-            self.L_ = cholesky(K, lower=True)  # Line 2
-            # self.L_ changed, self._K_inv needs to be recomputed
-            self._K_inv = None
-        except np.linalg.LinAlgError as exc:
-            exc.args = ("The kernel, %s, is not returning a "
-                        "positive definite matrix. Try gradually "
-                        "increasing the 'alpha' parameter of your "
-                        "GaussianProcessRegressor estimator."
-                        % self.kernel,) + exc.args
-            raise
+        if self.rank == 0:
+            # add noise matrix (assuming force/energy has a coupling)
+            noise = np.eye(len(K))
+            NE = len(self.train_x['energy'][-1])
+            noise[:NE, :NE] *= self.noise_e**2
+            noise[NE:, NE:] *= (self.f_coef * self.noise_e)**2
+            K += noise
 
-        self.alpha_ = cho_solve((self.L_, True), self.y_train)  # Line 3
+            self.logging.info("Starting Cholesky Decomp on rank 0")
+            try:
+                self.L_ = cholesky(K, lower=True)  # Line 2
+                # self.L_ changed, self._K_inv needs to be recomputed
+                self._K_inv = None
+            except np.linalg.LinAlgError as exc:
+                exc.args = ("The kernel, %s, is not returning a "
+                            "positive definite matrix. Try gradually "
+                            "increasing the 'alpha' parameter of your "
+                            "GaussianProcessRegressor estimator."
+                            % self.kernel,) + exc.args
+                raise
+            self.alpha_ = cho_solve((self.L_, True), self.y_train)
+            self.logging.info("Cholesky Decomp is Complete on rank 0")
+        else:
+            self.L_ = None
+            self.alpha_ = None
+        
+        # Broadcast L_ and alpha_ to all ranks
+        self.L_ = self.comm.bcast(self.L_, root=0)
+        self.alpha_ = self.comm.bcast(self.alpha_, root=0)
 
         # reset the queue to 0
         self.N_energy_queue = 0
@@ -612,7 +638,7 @@ class GaussianProcess():
         instance = cls.load_from_dict(dict0, device=device)
         if instance.rank == 0:
             print(f"load GP model from {filename}")
-            instance.log.info(f"load GP model from {filename}")
+            instance.logging.info(f"load GP model from {filename}")
         instance.extract_db(dict0["db_filename"], N_max)
         return instance
 
@@ -795,7 +821,7 @@ class GaussianProcess():
 
             local_pts["db"].append((atoms, energy, force, energy_in, force_in))
 
-        print(f"Rank {self.rank}: Processed {len(local_pts['db'])} structures")
+        # print(f"Rank {self.rank}: Processed {len(local_pts['db'])} structures")
         all_pts = self.comm.gather(local_pts, root=0)
 
         # Initialize pts_to_add for all ranks

@@ -105,6 +105,82 @@ class RBF_mb():
             same = False
 
         C_ee, C_ef, C_fe, C_ff = None, None, None, None
+        
+        # Compute energy-energy terms
+        if 'energy' in data1 and 'energy' in data2:
+            if len(data1['energy']) > 0 and len(data2['energy']) > 0:
+                C_ee = kee_C(data1['energy'], 
+                             data2['energy'], 
+                             sigma, l, zeta)
+
+        # Compute energy-force terms
+        if 'energy' in data1 and 'force' in data2:
+            if len(data1['energy']) > 0 and len(data2['force']) > 0:
+                C_ef = kef_C(data1['energy'], 
+                             data2['force'], 
+                             sigma, l, zeta)
+
+        # Compute force-energy terms
+        if 'force' in data1 and 'energy' in data2:
+            if len(data1['force']) > 0 and len(data2['energy']) > 0:
+                if not same:
+                    C_fe = kef_C(data2['energy'], 
+                                 data1['force'], 
+                                 sigma, l, zeta, transpose=True)
+                else:
+                    C_fe = C_ef.T if C_ef is not None else None
+
+        # Compute force-force terms with MPI parallelization
+        if 'force' in data1 and 'force' in data2 \
+            and len(data1['force']) > 0 \
+            and len(data2['force']) > 0:
+        
+            # Get MPI info
+            comm = MPI.COMM_WORLD
+            rank = comm.Get_rank()
+            size = comm.Get_size()
+
+            force_data1 = data1['force']
+            x1, dx1dr, ele1, x1_indices = force_data1
+
+            # Calculate number of forces and divide work
+            n_forces = len(x1_indices)
+            chunk_size = (n_forces + size - 1) // size
+            start = rank * chunk_size
+            end = min(start + chunk_size, n_forces)
+
+            # Get local data slice
+            start1 = sum(x1_indices[:start])
+            end1 = sum(x1_indices[:end])
+            x1_local = x1[start1:end1]
+            dx1dr_local = dx1dr[start1:end1]
+            ele1_local = ele1[start1:end1]
+            x1_indices_local = x1_indices[start:end]
+
+            if start < n_forces:
+                local_data = (x1_local, dx1dr_local, ele1_local, x1_indices_local)
+                local_ff = kff_C(local_data,
+                           data2['force'] if not same else force_data1,
+                           sigma, l, zeta,
+                           tol=tol)
+            else:
+                local_ff = None
+
+            # Gather results to rank 0
+            all_ff = comm.gather(local_ff, root=0)
+
+            # Combine results on rank 0
+            if rank == 0:
+                C_ff = np.vstack([ff for ff in all_ff if ff is not None])
+            else:
+                C_ff = None
+
+            # Broadcast the result to all ranks
+            C_ff = comm.bcast(C_ff, root=0)
+
+        return build_covariance(C_ee, C_ef, C_fe, C_ff)        
+        
+        '''
         for key1 in data1.keys():
             d1 = data1[key1]
             for key2 in data2.keys():
@@ -125,6 +201,7 @@ class RBF_mb():
         # print("C_ef", C_ef)
         # import sys; sys.exit()
         return build_covariance(C_ee, C_ef, C_fe, C_ff)
+        '''
 
     def k_total_with_grad(self, data1):
         """
