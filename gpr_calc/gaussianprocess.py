@@ -178,8 +178,8 @@ class GaussianProcess():
                     params, eval_gradient=True, clone_kernel=False)
 
                 # Reduce results across ranks
-                lml = self.comm.allreduce(lml, op=MPI.SUM)
-                grad = self.comm.allreduce(grad, op=MPI.SUM)
+                lml = self.comm.allreduce(lml, op=MPI.SUM) / self.size
+                grad = self.comm.allreduce(grad, op=MPI.SUM) / self.size
 
                 if show:
                     strs = "Loss: {:12.3f} ".format(-lml)
@@ -195,7 +195,7 @@ class GaussianProcess():
                 return (-lml, -grad)
             else:
                 lml = self.log_marginal_likelihood(params, clone_kernel=False)
-                lml = self.comm.allreduce(lml, op=MPI.SUM)
+                lml = self.comm.allreduce(lml, op=MPI.SUM) / self.size
                 return -lml
 
         hyper_params = self.kernel.parameters() + [self.noise_e]
@@ -579,7 +579,8 @@ class GaussianProcess():
         """
         with open(filename, "r") as fp: dict0 = json.load(fp)
         instance = cls.load_from_dict(dict0, device=device)
-        print(f"load GP model from {filename} in rank-{instance.rank}")
+        if instance.rank == 0:
+            print(f"load GP model from {filename} in rank-{instance.rank}")
         instance.extract_db(dict0["db_filename"], N_max)
         return instance
 
