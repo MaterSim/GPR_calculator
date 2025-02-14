@@ -1,4 +1,5 @@
 import numpy as np
+from ..utilities import list_to_tuple
 from .base import build_covariance, get_mask
 from .rbf_kernel import kee_C, kff_C, kef_C
 from mpi4py import MPI
@@ -139,8 +140,10 @@ class RBF_mb():
             comm = MPI.COMM_WORLD
             rank = comm.Get_rank()
             size = comm.Get_size()
-
             force_data1 = data1['force']
+            if isinstance(force_data1, list):
+                force_data1 = list_to_tuple(force_data1, stress=False)
+            
             x1, dx1dr, ele1, x1_indices = force_data1
 
             # Calculate number of forces and divide work

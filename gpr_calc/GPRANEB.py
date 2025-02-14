@@ -133,6 +133,9 @@ class GP_NEB:
     def train_GPR(self, images):
         for i, image in enumerate(images):
             image.calc = self.useCalc
+            if hasattr(image.calc, 'set'):
+                image.calc.set(directory=f"neb_calc_{i}")
+
             data = (image, image.get_potential_energy(), image.get_forces())
             pts, N_pts, _ = self.model.add_structure(data)
 
