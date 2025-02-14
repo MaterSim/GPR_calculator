@@ -282,10 +282,12 @@ class GaussianProcess():
         else:
             self.L_ = None
             self.alpha_ = None
+            self._K_inv = None
         
         # Broadcast L_ and alpha_ to all ranks
         self.L_ = self.comm.bcast(self.L_, root=0)
         self.alpha_ = self.comm.bcast(self.alpha_, root=0)
+        self._K_inv = self.comm.bcast(self._K_inv, root=0)
 
         # reset the queue to 0
         self.N_energy_queue = 0
@@ -854,6 +856,7 @@ class GaussianProcess():
             return_std bool, return variance or not
             f_tol float, precision to compute force
         """
+        print(f"[Debug]-predict_structure in Rank-{self.rank}", struc.numbers)
         d = self.descriptor.calculate(struc)
         ele = [Element(ele).z for ele in d['elements']]
         ele = np.array(ele)

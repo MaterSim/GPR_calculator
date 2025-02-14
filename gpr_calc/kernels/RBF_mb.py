@@ -97,6 +97,11 @@ class RBF_mb():
         Compute the covairance for train data
         Used for energy/force prediction
         """
+        # Get MPI info
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+        size = comm.Get_size()
+
         sigma, l, zeta = self.sigma, self.l, self.zeta
 
         if data2 is None:
@@ -105,21 +110,27 @@ class RBF_mb():
         else:
             same = False
 
+
         C_ee, C_ef, C_fe, C_ff = None, None, None, None
-        
+        print("[Debug]-K_toal-from rank", rank)
+
         # Compute energy-energy terms
         if 'energy' in data1 and 'energy' in data2:
+            print(f"[Debug]-Eng-rank-{rank}", len(data1['energy']), len(data2['energy']))
             if len(data1['energy']) > 0 and len(data2['energy']) > 0:
-                C_ee = kee_C(data1['energy'], 
-                             data2['energy'], 
-                             sigma, l, zeta)
+                eng_data1 = data1['energy']
+                if isinstance(eng_data1, list):
+                    eng_data1 = list_to_tuple(eng_data1, mode="energy")
+                C_ee = kee_C(eng_data1, data2['energy'], sigma, l, zeta)
+            print(f"[Debug]-Cee-rank-{rank}", C_ee.shape, len(data2['energy']))
 
         # Compute energy-force terms
         if 'energy' in data1 and 'force' in data2:
             if len(data1['energy']) > 0 and len(data2['force']) > 0:
-                C_ef = kef_C(data1['energy'], 
-                             data2['force'], 
-                             sigma, l, zeta)
+                eng_data1 = data1['energy']
+                if isinstance(eng_data1, list):
+                    eng_data1 = list_to_tuple(eng_data1, mode="energy")
+                C_ef = kef_C(eng_data1, data2['force'], sigma, l, zeta)
 
         # Compute force-energy terms
         if 'force' in data1 and 'energy' in data2:
@@ -135,11 +146,7 @@ class RBF_mb():
         if 'force' in data1 and 'force' in data2 \
             and len(data1['force']) > 0 \
             and len(data2['force']) > 0:
-        
-            # Get MPI info
-            comm = MPI.COMM_WORLD
-            rank = comm.Get_rank()
-            size = comm.Get_size()
+
             force_data1 = data1['force']
             if isinstance(force_data1, list):
                 force_data1 = list_to_tuple(force_data1, stress=False)
@@ -181,31 +188,11 @@ class RBF_mb():
             # Broadcast the result to all ranks
             C_ff = comm.bcast(C_ff, root=0)
 
+            print(f"[Debug]-Cff-Rank-{rank}", C_ff.shape)
+            if C_ee is not None:
+                print(f"[Debug]-Cee-Rank-{rank}", C_ee.shape)
         return build_covariance(C_ee, C_ef, C_fe, C_ff)        
         
-        '''
-        for key1 in data1.keys():
-            d1 = data1[key1]
-            for key2 in data2.keys():
-                d2 = data2[key2]
-                if len(d1)>0 and len(d2)>0:
-                    if key1 == 'energy' and key2 == 'energy':
-                        C_ee = kee_C(d1, d2, sigma, l, zeta)
-                    elif key1 == 'energy' and key2 == 'force':
-                        C_ef = kef_C(d1, d2, sigma, l, zeta)
-                    elif key1 == 'force' and key2 == 'energy':
-                        if not same:
-                            C_fe = kef_C(d2, d1, sigma, l, zeta, transpose=True)
-                        else:
-                            C_fe = C_ef.T
-                    elif key1 == 'force' and key2 == 'force':
-                        C_ff = kff_C(d1, d2, sigma, l, zeta, tol=tol)
-        # print("C_ee", C_ee)
-        # print("C_ef", C_ef)
-        # import sys; sys.exit()
-        return build_covariance(C_ee, C_ef, C_fe, C_ff)
-        '''
-
     def k_total_with_grad(self, data1):
         """
         Compute the covairance for train data

@@ -53,7 +53,7 @@ class GPR(Calculator):
 
             # update model
             if self.update and self.parameters.ff.N_queue > self.parameters.freq:
-                print("====================== Update the model ===============", self.parameters.ff.N_queue)
+                print("================ Update the model ===============", self.parameters.ff.N_queue)
                 self.parameters.ff.fit(opt=True, show=False)
                 if rank == 0:
                     self.parameters.ff.save(f'{label}-gpr.json', f'{label}-gpr.db')
