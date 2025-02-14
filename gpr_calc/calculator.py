@@ -31,23 +31,32 @@ class GPR(Calculator):
         E_std, F_std = self.results['var_e'], self.results['var_f'].max()
         E = self.results['energy']
         Fmax = np.abs(self.results['forces']).max()
+
+        # Switch to base model if the surrogate model is not good
         if E_std > e_tol or F_std > max([f_tol, Fmax/10]):
-            self.parameters.ff.count_use_base += 1
-            atoms.calc = self.parameters.base_calculator
-            eng = atoms.get_potential_energy()
-            forces = atoms.get_forces()
-            data = (atoms, eng, forces)
-            f_max = np.abs(forces).max()
             if rank == 0:
+                self.parameters.ff.count_use_base += 1
+                atoms.calc = self.parameters.base_calculator
+                eng = atoms.get_potential_energy()
+                forces = atoms.get_forces()
+                atoms.calc = None
+                data = (atoms, eng, forces)
+                f_max = np.abs(forces).max()
                 print(f"From base model, E: {E_std:.3f}/{E:.3f}/{eng:.3f}, F: {F_std:.3f}/{Fmax:.3f}/{f_max:.3f}")
+            else:
+                data, eng, forces = None, None, None
+
+            data, eng, forces = comm.bcast((data, eng, forces), root=0)
             self.parameters.ff.add_structure(data)
+            self.results['energy'] = eng
+            self.results['forces'] = forces
 
             # update model
             if self.update and self.parameters.ff.N_queue > self.parameters.freq:
                 print("====================== Update the model ===============", self.parameters.ff.N_queue)
                 self.parameters.ff.fit(opt=True, show=False)
-                self.parameters.ff.save(f'{label}-gpr.json', f'{label}-gpr.db')
-                if rank ==0:
+                if rank == 0:
+                    self.parameters.ff.save(f'{label}-gpr.json', f'{label}-gpr.db')
                     self.parameters.ff.validate_data(show=True)
                     print(self.parameters.ff)
                     if self.parameters.ff.error['energy_mae'] > 0.1 or \
@@ -57,8 +66,6 @@ class GPR(Calculator):
                         print("The program stops here!\n")
                         import sys; sys.exit()
 
-            self.results['energy'] = eng
-            self.results['forces'] = forces
             atoms.calc = self
         else:
             self.parameters.ff.count_use_surrogate += 1

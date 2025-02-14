@@ -26,7 +26,7 @@ opt.run(fmax=fmax)
 neb_gp.plot_neb_path(images, figname='Ref.png')
 
 # Test gpr calculator
-for kernel in ['Dot', 'RBF']:
+for kernel in ['RBF']: #, 'Dot']:
     images = neb_gp.generate_images(IDPP = False)
 
     print("\nCreate the initial GPR model")
@@ -41,7 +41,7 @@ for kernel in ['Dot', 'RBF']:
                          freq=10, #update frequency
                          tag=f'test-{kernel}',
                          return_std=True)
-        #image.calc.verbose = True
+        image.calc.verbose = True
 
     print("\nRun actual NEB")
     neb = NEB(images)

@@ -34,14 +34,14 @@ os.environ["ASE_VASP_COMMAND"] = "mpirun -np 32 vasp_std"
 os.environ["VASP_PP_PATH"] = "/projects/mmi/potcarFiles/VASP6.4"
 
 # Read the initial and final images
-initial = read("POSCAR_initial")
-final = read("POSCAR_final")
+initial = read("database/POSCAR_initial")
+final = read("database/POSCAR_final")
 nimages = 5
 fmax = 0.05
 
 # Set the GP model
-neb_gp = GP_NEB("POSCAR_initial",
-                "POSCAR_final",
+neb_gp = GP_NEB("database/POSCAR_initial",
+                "database/POSCAR_final",
                 num_images = nimages,
                 useCalc = base,
                 pbc = False)
