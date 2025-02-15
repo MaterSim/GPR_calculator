@@ -3,7 +3,9 @@ from gpr_calc.calculator import GPR
 from ase.optimize import BFGS
 from ase.mep import NEB
 from ase.calculators.emt import EMT
+from time import time
 
+t0 = time()
 initial_state = 'database/initial.traj'
 final_state = 'database/final.traj'
 num_images = 5
@@ -44,14 +46,16 @@ for kernel in ['RBF']: #, 'Dot']:
         image.calc.verbose = True
 
     print("\nRun actual NEB")
-    neb = NEB(images)
+    neb = NEB(images, parallel=False)
     opt = BFGS(neb) # add callback function to update the F_std threshold
     opt.run(fmax=fmax)
 
     # Plot results
-    neb_gp.plot_neb_path(images, figname=kernel+'.png')
+    #neb_gp.plot_neb_path(images, figname=kernel+'.png')
 
     print(neb_gp.model)
     print("\nTotal number of base calls", neb_gp.model.count_use_base)
     print("Total number of surrogate calls", neb_gp.model.count_use_surrogate)
     print("Total number of gpr_fit calls", neb_gp.model.count_fits)
+
+print("\nTotal time", time()-t0)

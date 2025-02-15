@@ -32,8 +32,9 @@ class GPR(Calculator):
         E = self.results['energy']
         Fmax = np.abs(self.results['forces']).max()
 
-        # Switch to base model if the surrogate model is not good
+        #print(f"# Decide model choice in rank-{rank}, {E:.4f}, {Fmax:.4f}")
         if E_std > e_tol or F_std > max([f_tol, Fmax/10]):
+            #print(f"# Enter loop in rank-{rank}, {E:.4f}, {Fmax:.4f}")
             if rank == 0:
                 self.parameters.ff.count_use_base += 1
                 atoms.calc = self.parameters.base_calculator
@@ -42,36 +43,45 @@ class GPR(Calculator):
                 atoms.calc = None
                 data = (atoms, eng, forces)
                 f_max = np.abs(forces).max()
-                print(f"From base model, E: {E_std:.3f}/{E:.3f}/{eng:.3f}, F: {F_std:.3f}/{Fmax:.3f}/{f_max:.3f}")
+                print(f"From base model in rank-0, E: {E_std:.3f}/{E:.3f}/{eng:.3f}, F: {F_std:.3f}/{Fmax:.3f}/{f_max:.3f}")
             else:
                 data, eng, forces = None, None, None
 
             data, eng, forces = comm.bcast((data, eng, forces), root=0)
+            comm.barrier()
+
             self.parameters.ff.add_structure(data)
             self.results['energy'] = eng
             self.results['forces'] = forces
 
             # update model
             if self.update and self.parameters.ff.N_queue > self.parameters.freq:
-                print("================ Update the model ===============", self.parameters.ff.N_queue)
                 self.parameters.ff.fit(opt=True, show=False)
                 if rank == 0:
                     self.parameters.ff.save(f'{label}-gpr.json', f'{label}-gpr.db')
-                    self.parameters.ff.validate_data(show=True)
                     print(self.parameters.ff)
-                    if self.parameters.ff.error['energy_mae'] > 0.1 or \
-                        self.parameters.ff.error['forces_mae'] > 0.3:
-                        print("ERROR: The error is too large, check the data.")
-                        print(self.parameters.ff.error)
-                        print("The program stops here!\n")
-                        import sys; sys.exit()
 
+                #print("Validate the model")
+                self.parameters.ff.validate_data(show=True)
+                if self.parameters.ff.error['energy_mae'] > 0.1 or \
+                    self.parameters.ff.error['forces_mae'] > 0.3:
+                    print("ERROR: The error is too large, check the data.")
+                    print(self.parameters.ff.error)
+                    print("The program stops here!\n")
+                    import sys; sys.exit()
+
+                #comm.barrier()
+                #print(f"Test-[Debug]-dummy-calc-ff-{rank}")
+                #dummy = comm.bcast([1, 2, 3, 4], root=0)
+                #print(f"[Debug]-dummy-calc-ff-{rank}", dummy)
+                #import sys; sys.exit()
             atoms.calc = self
         else:
+            #print(f"Enter surrogate in rank-{rank}")
             self.parameters.ff.count_use_surrogate += 1
             #print(F_std > max([f_tol, Fmax/10]), F_std, f_tol, Fmax/10)
             if rank == 0:
-                print(f"From surrogate,  E: {E_std:.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}/{Fmax:.3f}")
+                print(f"From surrogate rank-{rank},  E: {E_std:.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}/{Fmax:.3f}")
 
     def _calculate(self, atoms, properties, system_changes):
 
@@ -90,14 +100,13 @@ class GPR(Calculator):
         else:
             return_std=False
 
+        res = self.parameters.ff.predict_structure(atoms, stress, return_std, f_tol=f_tol)
+
+        # Ensure the results are the same across ranks
+        res = comm.bcast(res, root=0)
         if return_std:
-            #print(atoms)
-            res = self.parameters.ff.predict_structure(atoms, stress, True, f_tol=f_tol)
             self.results['var_e'] = res[3] #/20
             self.results['var_f'] = res[4]
-
-        else:
-            res = self.parameters.ff.predict_structure(atoms, stress, False, f_tol=f_tol)
 
         self.results['energy'] = res[0]
         self.results['free_energy'] = res[0]

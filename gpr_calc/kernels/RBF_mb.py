@@ -101,8 +101,12 @@ class RBF_mb():
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
         size = comm.Get_size()
+        # Dummy test
+        #dummy = comm.bcast([1, 2, 3, 4], root=0)
+        #print(f"[Debug]-dummy-{rank}", dummy)
 
         sigma, l, zeta = self.sigma, self.l, self.zeta
+        C_ee, C_ef, C_fe, C_ff = None, None, None, None
 
         if data2 is None:
             data2 = data1
@@ -110,19 +114,13 @@ class RBF_mb():
         else:
             same = False
 
-
-        C_ee, C_ef, C_fe, C_ff = None, None, None, None
-        print("[Debug]-K_toal-from rank", rank)
-
         # Compute energy-energy terms
         if 'energy' in data1 and 'energy' in data2:
-            print(f"[Debug]-Eng-rank-{rank}", len(data1['energy']), len(data2['energy']))
             if len(data1['energy']) > 0 and len(data2['energy']) > 0:
                 eng_data1 = data1['energy']
                 if isinstance(eng_data1, list):
                     eng_data1 = list_to_tuple(eng_data1, mode="energy")
                 C_ee = kee_C(eng_data1, data2['energy'], sigma, l, zeta)
-            print(f"[Debug]-Cee-rank-{rank}", C_ee.shape, len(data2['energy']))
 
         # Compute energy-force terms
         if 'energy' in data1 and 'force' in data2:
@@ -150,7 +148,6 @@ class RBF_mb():
             force_data1 = data1['force']
             if isinstance(force_data1, list):
                 force_data1 = list_to_tuple(force_data1, stress=False)
-            
             x1, dx1dr, ele1, x1_indices = force_data1
 
             # Calculate number of forces and divide work
@@ -188,9 +185,6 @@ class RBF_mb():
             # Broadcast the result to all ranks
             C_ff = comm.bcast(C_ff, root=0)
 
-            print(f"[Debug]-Cff-Rank-{rank}", C_ff.shape)
-            if C_ee is not None:
-                print(f"[Debug]-Cee-Rank-{rank}", C_ee.shape)
         return build_covariance(C_ee, C_ef, C_fe, C_ff)        
         
     def k_total_with_grad(self, data1):

@@ -87,7 +87,7 @@ class GaussianProcess():
         if self.rank == 0: self.logging.info(self)
 
     def __str__(self):
-        s = f"------Gaussian Process Regression ({self.size})------\n"
+        s = f"------Gaussian Process Regression ({self.rank}/{self.size})------\n"
         s += "Kernel: {:s}".format(str(self.kernel))
         if hasattr(self, "train_x"):
             s += " {:d} energy ({:.3f})".format(self.N_energy, self.noise_e)
@@ -230,9 +230,8 @@ class GaussianProcess():
         hyper_bounds = self.kernel.bounds + [self.noise_bounds]
 
         if opt:
+            if self.rank == 0: print("\nUpdate GP model => ", self.N_queue)
             params, _ = self.optimize(obj_func, hyper_params, hyper_bounds)
-            if self.rank == 0:
-                self.logging.info("Optimization is Complete")
             params = self.comm.bcast(params, root=0)
             
             self.kernel.update(params[:-1])
@@ -240,22 +239,6 @@ class GaussianProcess():
             self.noise_f = self.f_coef*params[-1]
 
         K = self.kernel.k_total(self.train_x)#; print(K)
-        """
-        if self.size > 1:
-            if self.rank == 0:
-                K_shape = K.shape
-            else:
-                K_shape = None
-        # Broadcast the shape of K to all ranks
-        K_shape = self.comm.bcast(K_shape, root=0)
-
-        # Create a local K array with the same shape
-        if self.rank != 0:
-            K = np.zeros(K_shape)
-        
-        # Broadcast the K array to all ranks
-        self.comm.Bcast(K, root=0)
-        """
 
         if self.rank == 0:
             # add noise matrix (assuming force/energy has a coupling)
@@ -265,7 +248,7 @@ class GaussianProcess():
             noise[NE:, NE:] *= (self.f_coef * self.noise_e)**2
             K += noise
 
-            self.logging.info("Starting Cholesky Decomp on rank 0")
+            # self.logging.info("Starting Cholesky Decomp on rank 0")
             try:
                 self.L_ = cholesky(K, lower=True)  # Line 2
                 # self.L_ changed, self._K_inv needs to be recomputed
@@ -288,6 +271,9 @@ class GaussianProcess():
         self.L_ = self.comm.bcast(self.L_, root=0)
         self.alpha_ = self.comm.bcast(self.alpha_, root=0)
         self._K_inv = self.comm.bcast(self._K_inv, root=0)
+
+        # Synchronize the ranks
+        self.comm.barrier()
 
         # reset the queue to 0
         self.N_energy_queue = 0
@@ -531,7 +517,7 @@ class GaussianProcess():
                       "forces_rmse": f_rmse}
         if self.rank == 0:
             for key in self.error.keys():
-                self.logging.info(self.error[key])
+                self.logging.info(f"{key:<12s}: {self.error[key]:.4f}")
 
     def get_train_x(self):
         """
@@ -727,7 +713,7 @@ class GaussianProcess():
         if permission=="w" and os.path.exists(db_filename):
             os.remove(db_filename)
 
-        with connect(db_filename) as db:
+        with connect(db_filename, serial=True) as db:
             for _data in self.train_db:
                 (struc, energy, force, energy_in, force_in, _, _) = _data
                 actual_energy = deepcopy(energy)
@@ -856,13 +842,13 @@ class GaussianProcess():
             return_std bool, return variance or not
             f_tol float, precision to compute force
         """
-        print(f"[Debug]-predict_structure in Rank-{self.rank}", struc.numbers)
+        train_x = self.get_train_x()
         d = self.descriptor.calculate(struc)
         ele = [Element(ele).z for ele in d['elements']]
         ele = np.array(ele)
-        data = {"energy": [(d['x'], ele)]}
-        data["force"] = []
-        l = d['x'].shape[1]
+        data = {"energy": list_to_tuple([(d['x'], ele)], mode='energy')}
+        #print(f"[Debug]-predict_structure in {self.rank}", d['x'].shape)
+        force_data = []
         for i in range(len(struc)):
             ids = np.argwhere(d['seq'][:,1]==i).flatten()
             _i = d['seq'][ids, 0]
@@ -870,12 +856,13 @@ class GaussianProcess():
 
             if stress:
                 _rdxdr = d['rdxdr'][ids]
-                _rdxdr = _rdxdr.reshape([len(ids), l, 9])[:, :, [0, 4, 8, 1, 2, 5]]
-                data["force"].append((_x, np.concatenate((_dxdr, _rdxdr), axis=2), ele0))
+                _rdxdr = _rdxdr.reshape([len(ids), d['x'].shape[1], 9])[:, :, [0, 4, 8, 1, 2, 5]]
+                force_data.append((_x, np.concatenate((_dxdr, _rdxdr), axis=2), ele0))
             else:
-                data["force"].append((_x, _dxdr, ele0))
+                force_data.append((_x, _dxdr, ele0))
+        data["force"] = force_data
+        #print(f"[Debug]-predict_structure in {self.rank}", list_to_tuple(force_data)[0].shape)
 
-        train_x = self.get_train_x()
         if stress:
             K_trans, K_trans1 = self.kernel.k_total_with_stress(data, train_x, f_tol)
         else:
