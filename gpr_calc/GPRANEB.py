@@ -136,8 +136,8 @@ class GP_NEB:
             if hasattr(image.calc, 'set'):
                 image.calc.set(directory=f"neb_calc_{i}")
 
-            data = (image, image.get_potential_energy(), image.get_forces())
-            pts, N_pts, _ = self.model.add_structure(data)
+            data = (image.copy(), image.get_potential_energy(), image.get_forces())
+            self.model.add_structure(data)
 
         self.model.fit()
         self.model.validate_data(show=True)
@@ -151,8 +151,8 @@ class GP_NEB:
         self.model.set_train_pts(pts, mode='a+')
         self.model.fit(opt=True)
         train_E, train_E1, train_F, train_F1 = self.model.validate_data()
-        l1 = metric_single(train_E, train_E1, "Train Energy")
-        l2 = metric_single(train_F, train_F1, "Train Forces")
+        metric_single(train_E, train_E1, "Train Energy")
+        metric_single(train_F, train_F1, "Train Forces")
         print(self.model)
 
    
