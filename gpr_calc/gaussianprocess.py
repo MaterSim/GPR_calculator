@@ -90,8 +90,8 @@ class GaussianProcess():
         s = f"------Gaussian Process Regression ({self.rank}/{self.size})------\n"
         s += "Kernel: {:s}".format(str(self.kernel))
         if hasattr(self, "train_x"):
-            s += " {:d} energy ({:.3f})".format(self.N_energy, self.noise_e)
-            s += " {:d} forces ({:.3f})\n".format(self.N_forces, self.noise_f)
+            s += " {:d} energy ({:.5f})".format(self.N_energy, self.noise_e)
+            s += " {:d} forces ({:.5f})\n".format(self.N_forces, self.noise_f)
         return s
 
     def todict(self):
@@ -230,7 +230,7 @@ class GaussianProcess():
         hyper_bounds = self.kernel.bounds + [self.noise_bounds]
 
         if opt:
-            if self.rank == 0: print("\nUpdate GP model => ", self.N_queue)
+            if self.rank == 0: print(f"\nUpdate GP model => {self.N_queue}")
             params, _ = self.optimize(obj_func, hyper_params, hyper_bounds)
             params = self.comm.bcast(params, root=0)
             
@@ -251,7 +251,6 @@ class GaussianProcess():
             # self.logging.info("Starting Cholesky Decomp on rank 0")
             try:
                 self.L_ = cholesky(K, lower=True)  # Line 2
-                # self.L_ changed, self._K_inv needs to be recomputed
                 self._K_inv = None
             except np.linalg.LinAlgError as exc:
                 exc.args = ("The kernel, %s, is not returning a "
@@ -335,13 +334,13 @@ class GaussianProcess():
                 self._K_inv = L_inv.dot(L_inv.T)
             y_var = self.kernel.diag(X)
             y_var -= np.einsum("ij,ij->i", np.dot(K_trans, self._K_inv), K_trans)
+
+            # If get negative variance, set to 0.
             y_var_negative = y_var < 0
-            # Check if any of the variances is negative because of
-            # numerical issues. If yes: set the variance to 0.
-            if np.any(y_var_negative):
-                warnings.warn("Predicted variances smaller than 0. "
-                                "Setting those variances to 0.")
+            if np.any(y_var_negative) and self.rank == 0:
+                print("Warning: Get negative variance")
             y_var[y_var_negative] = 0.0
+
             return y_mean, np.sqrt(y_var)*factors
         else:
             return y_mean
@@ -842,7 +841,17 @@ class GaussianProcess():
             return_std bool, return variance or not
             f_tol float, precision to compute force
         """
+        from ase.constraints import FixAtoms
+
         train_x = self.get_train_x()
+        fix_ids = []
+        if len(struc.constraints) > 0:
+            for c in struc.constraints:
+                if isinstance(c, FixAtoms):
+                    fix_ids = c.get_indices()
+                    break
+
+        #print(f"[Debug]-predict_struc in {self.rank}", struc.positions[0])
         d = self.descriptor.calculate(struc)
         ele = [Element(ele).z for ele in d['elements']]
         ele = np.array(ele)
@@ -869,10 +878,14 @@ class GaussianProcess():
             K_trans = self.kernel.k_total(data, train_x, f_tol)
 
         pred = K_trans.dot(self.alpha_)
+        #print('debug rank-alpha', self.rank, self.alpha_[:5, 0])
+        #print('debug rank-K_trans', self.rank, '\n', K_trans[:4, :4])
+        #print('debug rank-pred', self.rank, pred[:5, 0])
         y_mean = pred[:, 0]
         y_mean[0] *= len(struc) #total energy
         E = y_mean[0]
         F = y_mean[1:].reshape([len(struc), 3])
+        if len(fix_ids) > 0: F[fix_ids] = 0.0
 
         if stress:
             S = K_trans1.dot(self.alpha_)[:,0].reshape([len(struc), 6])
@@ -897,6 +910,9 @@ class GaussianProcess():
             y_var = np.sqrt(y_var)
             E_std = y_var[0]  # eV/atom
             F_std = y_var[1:].reshape([len(struc), 3])
+            if len(fix_ids) > 0: F_std[fix_ids] = 0.0
+            # print(f"[Debug]-predict_structure in {self.rank}", E_std, fix_ids)
+
             return E, F, S, E_std, F_std
         else:
             return E, F, S
@@ -981,7 +997,8 @@ class GaussianProcess():
             pts_to_add["db"].append((atoms, energy, force, energy_in, force_in))
             self.set_train_pts(pts_to_add, mode="a+")
             #print("{:d} energy and {:d} forces will be added".format(N_energy, N_forces))
-        errors = (E[0]+energy_off, E1[0]+energy_off, E_std, F+force_off.flatten(), F1+force_off.flatten(), F_std)
+        errors = (E[0]+energy_off, E1[0]+energy_off, E_std,
+                  F+force_off.flatten(), F1+force_off.flatten(), F_std)
         return pts_to_add, N_pts, errors
 
 

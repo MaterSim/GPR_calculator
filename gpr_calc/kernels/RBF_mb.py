@@ -23,7 +23,7 @@ class RBF_mb():
         self.ncpu = ncpu
 
     def __str__(self):
-        return "{:.3f}**2 *RBF(length={:.3f})".format(self.sigma, self.l)
+        return "{:.5f}**2 *RBF(length={:.5f})".format(self.sigma, self.l)
 
     def load_from_dict(self, dict0):
         self.sigma = dict0["sigma"]
@@ -121,6 +121,9 @@ class RBF_mb():
                 if isinstance(eng_data1, list):
                     eng_data1 = list_to_tuple(eng_data1, mode="energy")
                 C_ee = kee_C(eng_data1, data2['energy'], sigma, l, zeta)
+                #print(f"[Debug]-Cee-Rank-{rank}", C_ee[:5, :5])
+                #print(f"[Debug]-data1-Rank-{rank}", eng_data1[0][0])
+                #print(f"[Debug]-data2-Rank-{rank}", data2['energy'][0][0])
 
         # Compute energy-force terms
         if 'energy' in data1 and 'force' in data2:
@@ -129,13 +132,13 @@ class RBF_mb():
                 if isinstance(eng_data1, list):
                     eng_data1 = list_to_tuple(eng_data1, mode="energy")
                 C_ef = kef_C(eng_data1, data2['force'], sigma, l, zeta)
+                #print(f"[Debug]-Cef-Rank-{rank}", C_ef[:5, :5])
 
         # Compute force-energy terms
         if 'force' in data1 and 'energy' in data2:
             if len(data1['force']) > 0 and len(data2['energy']) > 0:
                 if not same:
-                    C_fe = kef_C(data2['energy'], 
-                                 data1['force'], 
+                    C_fe = kef_C(data2['energy'], data1['force'], 
                                  sigma, l, zeta, transpose=True)
                 else:
                     C_fe = C_ef.T if C_ef is not None else None
@@ -184,7 +187,7 @@ class RBF_mb():
 
             # Broadcast the result to all ranks
             C_ff = comm.bcast(C_ff, root=0)
-
+            #print(f"[Debug]-Cff-Rank-{rank}\n", C_ff[:3, :3])
         return build_covariance(C_ee, C_ef, C_fe, C_ff)        
         
     def k_total_with_grad(self, data1):
@@ -301,7 +304,7 @@ class RBF_mb():
 
 # ===================== Standalone functions to compute K_ee, K_ef, K_ff
 
-def K_ee(x1, x2, sigma2, l2, zeta=2, grad=False, mask=None, eps=1e-8):
+def K_ee(x1, x2, sigma2, l2, zeta=2, mask=None, eps=1e-8):
     """
     Compute the Kee between two structures
     Args:
@@ -319,9 +322,7 @@ def K_ee(x1, x2, sigma2, l2, zeta=2, grad=False, mask=None, eps=1e-8):
     D = d**zeta
 
     k = sigma2*np.exp(-(0.5/l2)*(1-D))
-    if mask is not None:
-        k[mask] = 0
-    dk_dD = (-0.5/l2)*k
+    if mask is not None: k[mask] = 0
 
     Kee = k.sum(axis=0)
     m = len(x1)
@@ -334,7 +335,6 @@ def K_ff(x1, x2, dx1dr, dx2dr, sigma2, l2, zeta=2, mask=None, eps=1e-8):
     x2, dx1dr, dx2dr will be called from the cuda device in the GPU mode
     """
     l = np.sqrt(l2)
-    l3 = l*l2
 
     x1_norm = np.linalg.norm(x1, axis=1) + eps
     x1_norm2 = x1_norm**2

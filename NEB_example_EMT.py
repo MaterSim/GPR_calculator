@@ -4,28 +4,32 @@ from ase.optimize import BFGS
 from ase.mep import NEB
 from ase.calculators.emt import EMT
 from time import time
+from mpi4py import MPI
 
+# Set MPI
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+
+# Set parameters
 t0 = time()
-initial_state = 'database/initial.traj'
-final_state = 'database/final.traj'
+initial = 'database/initial.traj'
+final = 'database/final.traj'
 num_images = 5
 fmax = 0.05
 
-print("\nInit the model")
-neb_gp = GP_NEB(initial_state,
-                final_state,
-                num_images=num_images)
-
-print("\nGet the initial images")
+# Set NEB_GPR
+neb_gp = GP_NEB(initial, final, num_images=num_images)
 images = neb_gp.generate_images(IDPP = False)
 
-# Set Base calculator and Run NEB
-for image in images:
-    image.calc = EMT()
-neb = NEB(images)
-opt = BFGS(neb)
-opt.run(fmax=fmax)
-neb_gp.plot_neb_path(images, figname='Ref.png')
+# Set NEB_base
+if rank == 0:
+    for image in images:
+        image.calc = EMT()
+    neb = NEB(images, parallel=False)
+    opt = BFGS(neb)
+    opt.run(fmax=fmax)
+    neb_gp.plot_neb_path(images, figname='Ref.png')
+
 
 # Test gpr calculator
 for kernel in ['RBF']: #, 'Dot']:
@@ -48,14 +52,13 @@ for kernel in ['RBF']: #, 'Dot']:
     print("\nRun actual NEB")
     neb = NEB(images, parallel=False)
     opt = BFGS(neb) # add callback function to update the F_std threshold
-    opt.run(fmax=fmax)
+    opt.run(fmax=fmax, steps=50)
+    neb_gp.plot_neb_path(images, figname=kernel+'.png')
 
-    # Plot results
-    #neb_gp.plot_neb_path(images, figname=kernel+'.png')
+    if rank == 0:
+        print("\nTotal number of base calls", neb_gp.model.count_use_base)
+        print("Total number of surrogate calls", neb_gp.model.count_use_surrogate)
+        print("Total number of gpr_fit calls", neb_gp.model.count_fits)
+        print(neb_gp.model)
 
-    print(neb_gp.model)
-    print("\nTotal number of base calls", neb_gp.model.count_use_base)
-    print("Total number of surrogate calls", neb_gp.model.count_use_surrogate)
-    print("Total number of gpr_fit calls", neb_gp.model.count_fits)
-
-print("\nTotal time", time()-t0)
+print(f"Total time in rank-{rank}: {time()-t0}")

@@ -8,7 +8,10 @@ from gpr_calc.SO3 import SO3
 from gpr_calc.utilities import metric_single
 from gpr_calc.gaussianprocess import GaussianProcess as gpr
 from gpr_calc.calculator import GPR
+from mpi4py import MPI
 
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
 """
 Perform a Gaussian Process Regression (GPR) aided NEB calculation.
 The module is designed to be used in the ASE package.
@@ -447,19 +450,20 @@ class GP_NEB:
         # Calculate the energies of the images
         imgEnergies = [image.get_potential_energy() for image in images]
 
-        # Spline interpolation for a smooth curve
-        imgDist_smooth = np.linspace(min(imgDist), max(imgDist), 300)
-        spline = make_interp_spline(imgDist, imgEnergies, k=3)
-        imgEnergies_smooth = spline(imgDist_smooth)
+        if rank == 0:
+            # Spline interpolation for a smooth curve
+            imgDist_smooth = np.linspace(min(imgDist), max(imgDist), 300)
+            spline = make_interp_spline(imgDist, imgEnergies, k=3)
+            imgEnergies_smooth = spline(imgDist_smooth)
 
-        # Plot the NEB path
-        plt.figure()
-        plt.plot(imgDist_smooth, imgEnergies_smooth, marker='', linestyle='-', color='b', label='Interpolated Path')
-        plt.plot(imgDist, imgEnergies, 'o', color='r', label='Images')
-        plt.xlabel('Reaction path')
-        plt.ylabel(f'Energy ({unit})')
-        plt.title('NEB Path')
-        plt.legend()
-        plt.grid(True)
-        plt.savefig(figname)
-        plt.close()
+            # Plot the NEB path
+            plt.figure()
+            plt.plot(imgDist_smooth, imgEnergies_smooth, marker='', linestyle='-', color='b', label='Interpolated Path')
+            plt.plot(imgDist, imgEnergies, 'o', color='r', label='Images')
+            plt.xlabel('Reaction path')
+            plt.ylabel(f'Energy ({unit})')
+            plt.title('NEB Path')
+            plt.legend()
+            plt.grid(True)
+            plt.savefig(figname)
+            plt.close()
