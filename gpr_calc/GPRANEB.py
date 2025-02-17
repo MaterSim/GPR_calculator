@@ -43,9 +43,10 @@ images = neb_gp.run_neb(IDPP=True,
                         velocity_vec=velocity_vec)
 neb_gp.plot_neb_path(images, filename='neb_path.png')  
 """
-print(".............GPRANEB module loaded.............\n")
-print("You're welcome to modify the code to suit your needs\n")
-print("..........Good luck with your calculations..........\n")
+if rank == 0:
+    print("...............GPRANEB module loaded................")
+    print("You're welcome to modify the code to suit your needs")
+    print("..........Good luck with your calculations..........")
 
 def set_pbc(atoms, vacuum=10):
     atoms.cell[2, 2] += vacuum
@@ -53,7 +54,6 @@ def set_pbc(atoms, vacuum=10):
     atoms.pbc = [True, True, True]
     return atoms
     
-
 class GP_NEB:
     def __init__(self, initial_state, final_state, 
                  num_images = 5, 
@@ -134,17 +134,32 @@ class GP_NEB:
         return images
 
     def train_GPR(self, images):
+        """
+        Function to train the GPR model
+        """
         for i, image in enumerate(images):
-            image.calc = self.useCalc
-            if hasattr(image.calc, 'set'):
-                image.calc.set(directory=f"neb_calc_{i}")
-
-            data = (image.copy(), image.get_potential_energy(), image.get_forces())
+            if rank == 0:
+                new_env = os.environ.copy()
+                for var in ["OMPI_COMM_WORLD_SIZE", "OMPI_COMM_WORLD_RANK", "PMI_RANK", "PMI_SIZE"]:
+                    new_env.pop(var, None)
+                image.calc = self.useCalc
+                if hasattr(image.calc, 'set'):
+                    image.calc.set(directory=f"neb_calc_{i}")
+                eng = image.get_potential_energy()
+                print(f"Calculate E/F for image {i}: {eng:.6f}")
+                forces = image.get_forces()
+                image.calc = None
+                data = (image.copy(), eng, forces)
+            else:
+                data = None
+            #print("Synchronize the data across all ranks")
+            comm.barrier()
+            data = comm.bcast(data, root=0)
+            #print(f"Rank {rank} received data", data)
             self.model.add_structure(data)
 
         self.model.fit()
-        self.model.validate_data(show=True)
-
+        self.model.validate_data()
     
     def train_gpr_model(self, pts):
         """

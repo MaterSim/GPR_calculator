@@ -49,7 +49,6 @@ for kernel in ['RBF']: #, 'Dot']:
                          return_std=True)
         image.calc.verbose = True
 
-    print("\nRun actual NEB")
     neb = NEB(images, parallel=False)
     opt = BFGS(neb) # add callback function to update the F_std threshold
     opt.run(fmax=fmax, steps=50)
