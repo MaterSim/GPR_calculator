@@ -14,7 +14,7 @@ size = comm.Get_size()
 tag = 'O-diff-RBF'
 
 # Set VASP parameters and Environment
-ncpu = 32
+ncpu = 48
 vasp_args = {"txt": 'vasp.out',
              "prec": 'Accurate',
              "encut": 400,
@@ -89,4 +89,4 @@ for i, image in enumerate(neb.images):
                      return_std = True)
 
 qn = BFGS(neb, trajectory='neb.traj')
-qn.run(fmax=0.05, steps=5) #trajectory='neb.traj')
+qn.run(fmax=0.05, steps=50) #trajectory='neb.traj')
