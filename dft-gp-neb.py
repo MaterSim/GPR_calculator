@@ -6,6 +6,7 @@ from gpr_calc.gaussianprocess import GaussianProcess as GP
 from ase.mep import NEB
 from ase.optimize import FIRE, BFGS
 from ase.calculators.vasp import Vasp
+import socket 
 
 # Set MPI
 comm = MPI.COMM_WORLD
@@ -46,10 +47,11 @@ os.environ["VASP_PP_PATH"] = "/projects/mmi/potcarFiles/VASP6.4"
 
 # Create rankfile for process binding
 if rank == 0:
+    hostname = socket.gethostname()
     with open('rankfile.txt', 'w') as f:
         for i in range(ncpu):
             cpu_id = i + size  # Start from core 4
-            f.write(f'rank {i}=str-c220.charlotte.edu slot={cpu_id}\n')
+            f.write(f'rank {i}={hostname} slot={cpu_id}\n')
 
 # Set NEB Parameters
 nimages = 5
@@ -78,6 +80,7 @@ if os.path.exists(tag+'-gpr.json'):
 else:
     neb_gp.set_GPR(kernel='RBF', noise_e=fmax/10)
     neb_gp.train_GPR(images)
+
 if rank == 0: print(neb_gp.model)
 
 for i, image in enumerate(neb.images):
