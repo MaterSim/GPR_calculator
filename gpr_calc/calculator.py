@@ -2,6 +2,7 @@ import numpy as np
 from ase.calculators.calculator import Calculator, all_changes
 from ase.neighborlist import NeighborList
 from ase.constraints import full_3x3_to_voigt_6_stress
+from ase.constraints import FixAtoms
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
@@ -22,7 +23,20 @@ class GPR(Calculator):
     def unfreeze(self):
         self.update = True
 
-    def calculate(self, atoms=None, properties=['energy'], system_changes=all_changes):
+    def calculate(self, atoms=None, properties=['energy', 'forces'], system_changes=all_changes):
+
+        tag = self.parameters.tag
+        fix_ids = []
+        if len(atoms.constraints) > 0:
+            for c in atoms.constraints:
+                if isinstance(c, FixAtoms):
+                    fix_ids = c.get_indices()
+                    break
+
+        # print("Ensure the atoms same across ranks", rank, atoms.arrays['positions'].shape)
+        atoms.positions = comm.bcast(atoms.positions, root=0)
+        atoms.cell.array = comm.bcast(atoms.cell.array, root=0)
+
         self._calculate(atoms, properties, system_changes)
         e_tol = max([0.005, 1.2 * self.parameters.ff.noise_e])
         f_tol = max([0.10, 1.2 * self.parameters.ff.noise_f])
@@ -30,43 +44,65 @@ class GPR(Calculator):
         E_std, F_std = self.results['var_e'], self.results['var_f'].max()
         E = self.results['energy']
         Fmax = np.abs(self.results['forces']).max()
+
+        # print(f"# Decide model choice in rank-{rank}, {E:.4f}/{E_std:.4f}, {Fmax:.4f}/{F_std:.4f}")
+        # print(f"Debug: dummy0 rank-{rank}", atoms.get_potential_energy(), atoms.get_forces()[-1])
+        #import sys; sys.exit()
         if E_std > e_tol or F_std > max([f_tol, Fmax/10]):
+            #print(f"# Enter loop in rank-{rank}, {E:.4f}, {Fmax:.4f}")
             self.parameters.ff.count_use_base += 1
-            atoms.calc = self.parameters.base_calculator
-            eng = atoms.get_potential_energy()
-            forces = atoms.get_forces()
-            data = (atoms, eng, forces)
-            f_max = np.abs(forces).max()
             if rank == 0:
-                print(f"From base model, E: {E_std:.3f}/{E:.3f}/{eng:.3f}, F: {F_std:.3f}/{Fmax:.3f}/{f_max:.3f}")
+                atoms.calc = self.parameters.base_calculator
+                eng = atoms.get_potential_energy()
+                forces = atoms.get_forces()
+                forces[fix_ids] = 0.0
+                atoms.calc = None
+                data = (atoms.copy(), eng, forces)
+                f_max = np.abs(forces).max()
+                print(f"From base model in rank-0, E: {E_std:.3f}/{E:.3f}/{eng:.3f}, F: {F_std:.3f}/{Fmax:.3f}/{f_max:.3f}")
+            else:
+                data, eng, forces = None, None, None
+
+            data, eng, forces = comm.bcast((data, eng, forces), root=0)
+            comm.barrier()
             self.parameters.ff.add_structure(data)
+            self.results["energy"] = eng
+            self.results["forces"] = forces
+            #print(f"Debug: dummy1 in rank-{rank}", atoms.get_potential_energy(), atoms.get_forces()[-1])
 
             # update model
             if self.update and self.parameters.ff.N_queue > self.parameters.freq:
                 print("=============== Update the model ===============", self.parameters.ff.N_queue)
                 self.parameters.ff.fit(opt=True, show=False)
-                self.parameters.ff.save(f'{label}-gpr.json', f'{label}-gpr.db')
-                if rank ==0:
-                    self.parameters.ff.validate_data(show=True)
+                if rank == 0:
+                    self.parameters.ff.save(f'{tag}-gpr.json', f'{tag}-gpr.db')
                     print(self.parameters.ff)
-                    if self.parameters.ff.error['energy_mae'] > 0.1 or \
-                        self.parameters.ff.error['forces_mae'] > 0.3:
-                        print("ERROR: The error is too large, check the data.")
-                        print(self.parameters.ff.error)
-                        print("The program stops here!\n")
-                        import sys; sys.exit()
 
-            self.results['energy'] = eng
-            self.results['forces'] = forces
+                #print("Validate the model")
+                self.parameters.ff.validate_data(show=True)
+                if self.parameters.ff.error['energy_mae'] > 0.1 or \
+                    self.parameters.ff.error['forces_mae'] > 0.3:
+                    print("ERROR: The error is too large, check the data.")
+                    print(self.parameters.ff.error)
+                    print("The program stops here!\n")
+                    import sys; sys.exit()
+
+                #print(f"Test-[Debug]-dummy-calc-ff-{rank}")
+                #dummy = comm.bcast([1, 2, 3, 4], root=0)
+                #print(f"[Debug]-dummy-calc-ff-{rank}", dummy)
+                #import sys; sys.exit()
             atoms.calc = self
         else:
             self.parameters.ff.count_use_surrogate += 1
-            #print(F_std > max([f_tol, Fmax/10]), F_std, f_tol, Fmax/10)
             if rank == 0:
-                print(f"From surrogate,  E: {E_std:.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}/{Fmax:.3f}")
+                print(f"From surrogate in rank-{rank},  E: {E_std:.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}/{Fmax:.3f}")
+        #print(f"rank-{rank} exits the calculator", atoms.positions.shape)
+        #comm.barrier()
 
     def _calculate(self, atoms, properties, system_changes):
-
+        """
+        Compute the E/F/S using the GPR model
+        """
         Calculator.calculate(self, atoms, properties, system_changes)
         if hasattr(self.parameters, 'stress'):
             stress = self.parameters.stress
@@ -82,22 +118,24 @@ class GPR(Calculator):
         else:
             return_std=False
 
+        res = self.parameters.ff.predict_structure(atoms, stress, return_std, f_tol=f_tol)
+
+        # Ensure the results are the same across ranks
+        # res = comm.bcast(res, root=0)
+
         if return_std:
-            #print(atoms)
-            res = self.parameters.ff.predict_structure(atoms, stress, True, f_tol=f_tol)
             self.results['var_e'] = res[3] #/20
             self.results['var_f'] = res[4]
-
-        else:
-            res = self.parameters.ff.predict_structure(atoms, stress, False, f_tol=f_tol)
 
         self.results['energy'] = res[0]
         self.results['free_energy'] = res[0]
         self.results['forces'] = res[1]
+
         if stress:
             self.results['stress'] = res[2].sum(axis=0) #*eV2GPa
         else:
             self.results['stress'] = None
+        self.forces = res[1]
 
     def get_var_e(self, total=False):
         if total:
@@ -113,7 +151,17 @@ class GPR(Calculator):
             return self.results["energy"] / len(self.results["forces"])
         else:
             return self.results["energy"]
+    """
+    def get_potential_energy(self):
+        if self.results['energy'] is None:
+            raise NotImplementedError('Energy not available')
+        return self.results["energy"]
 
+    def get_forces(self):
+        if self.results['forces'] is None:
+            raise NotImplementedError('Forces not available')
+        return self.results["forces"]
+    """
 
 class LJ():
     """

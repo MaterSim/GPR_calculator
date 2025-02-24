@@ -1,4 +1,5 @@
 import numpy as np
+from ..utilities import list_to_tuple
 from .base import build_covariance, get_mask
 from .rbf_kernel import kee_C, kff_C, kef_C
 from mpi4py import MPI
@@ -22,7 +23,7 @@ class RBF_mb():
         self.ncpu = ncpu
 
     def __str__(self):
-        return "{:.3f}**2 *RBF(length={:.3f})".format(self.sigma, self.l)
+        return "{:.5f}**2 *RBF(length={:.5f})".format(self.sigma, self.l)
 
     def load_from_dict(self, dict0):
         self.sigma = dict0["sigma"]
@@ -96,7 +97,16 @@ class RBF_mb():
         Compute the covairance for train data
         Used for energy/force prediction
         """
+        # Get MPI info
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+        size = comm.Get_size()
+        # Dummy test
+        #dummy = comm.bcast([1, 2, 3, 4], root=0)
+        #print(f"[Debug]-dummy-{rank}", dummy)
+
         sigma, l, zeta = self.sigma, self.l, self.zeta
+        C_ee, C_ef, C_fe, C_ff = None, None, None, None
 
         if data2 is None:
             data2 = data1
@@ -104,28 +114,82 @@ class RBF_mb():
         else:
             same = False
 
-        C_ee, C_ef, C_fe, C_ff = None, None, None, None
-        for key1 in data1.keys():
-            d1 = data1[key1]
-            for key2 in data2.keys():
-                d2 = data2[key2]
-                if len(d1)>0 and len(d2)>0:
-                    if key1 == 'energy' and key2 == 'energy':
-                        C_ee = kee_C(d1, d2, sigma, l, zeta)
-                    elif key1 == 'energy' and key2 == 'force':
-                        C_ef = kef_C(d1, d2, sigma, l, zeta)
-                    elif key1 == 'force' and key2 == 'energy':
-                        if not same:
-                            C_fe = kef_C(d2, d1, sigma, l, zeta, transpose=True)
-                        else:
-                            C_fe = C_ef.T
-                    elif key1 == 'force' and key2 == 'force':
-                        C_ff = kff_C(d1, d2, sigma, l, zeta, tol=tol)
-        # print("C_ee", C_ee)
-        # print("C_ef", C_ef)
-        # import sys; sys.exit()
-        return build_covariance(C_ee, C_ef, C_fe, C_ff)
+        # Compute energy-energy terms
+        if 'energy' in data1 and 'energy' in data2:
+            if len(data1['energy']) > 0 and len(data2['energy']) > 0:
+                eng_data1 = data1['energy']
+                if isinstance(eng_data1, list):
+                    eng_data1 = list_to_tuple(eng_data1, mode="energy")
+                C_ee = kee_C(eng_data1, data2['energy'], sigma, l, zeta)
+                #print(f"[Debug]-Cee-Rank-{rank}", C_ee[:5, :5])
+                #print(f"[Debug]-data1-Rank-{rank}", eng_data1[0][0])
+                #print(f"[Debug]-data2-Rank-{rank}", data2['energy'][0][0])
 
+        # Compute energy-force terms
+        if 'energy' in data1 and 'force' in data2:
+            if len(data1['energy']) > 0 and len(data2['force']) > 0:
+                eng_data1 = data1['energy']
+                if isinstance(eng_data1, list):
+                    eng_data1 = list_to_tuple(eng_data1, mode="energy")
+                C_ef = kef_C(eng_data1, data2['force'], sigma, l, zeta)
+                #print(f"[Debug]-Cef-Rank-{rank}", C_ef[:5, :5])
+
+        # Compute force-energy terms
+        if 'force' in data1 and 'energy' in data2:
+            if len(data1['force']) > 0 and len(data2['energy']) > 0:
+                if not same:
+                    C_fe = kef_C(data2['energy'], data1['force'], 
+                                 sigma, l, zeta, transpose=True)
+                else:
+                    C_fe = C_ef.T if C_ef is not None else None
+
+        # Compute force-force terms with MPI parallelization
+        if 'force' in data1 and 'force' in data2 \
+            and len(data1['force']) > 0 \
+            and len(data2['force']) > 0:
+
+            force_data1 = data1['force']
+            if isinstance(force_data1, list):
+                force_data1 = list_to_tuple(force_data1, stress=False)
+            x1, dx1dr, ele1, x1_indices = force_data1
+
+            # Calculate number of forces and divide work
+            n_forces = len(x1_indices)
+            chunk_size = (n_forces + size - 1) // size
+            start = rank * chunk_size
+            end = min(start + chunk_size, n_forces)
+
+            # Get local data slice
+            start1 = sum(x1_indices[:start])
+            end1 = sum(x1_indices[:end])
+            x1_local = x1[start1:end1]
+            dx1dr_local = dx1dr[start1:end1]
+            ele1_local = ele1[start1:end1]
+            x1_indices_local = x1_indices[start:end]
+
+            if start < n_forces:
+                local_data = (x1_local, dx1dr_local, ele1_local, x1_indices_local)
+                local_ff = kff_C(local_data,
+                           data2['force'] if not same else force_data1,
+                           sigma, l, zeta,
+                           tol=tol)
+            else:
+                local_ff = None
+
+            # Gather results to rank 0
+            all_ff = comm.gather(local_ff, root=0)
+
+            # Combine results on rank 0
+            if rank == 0:
+                C_ff = np.vstack([ff for ff in all_ff if ff is not None])
+            else:
+                C_ff = None
+
+            # Broadcast the result to all ranks
+            C_ff = comm.bcast(C_ff, root=0)
+            #print(f"[Debug]-Cff-Rank-{rank}\n", C_ff[:3, :3])
+        return build_covariance(C_ee, C_ef, C_fe, C_ff)        
+        
     def k_total_with_grad(self, data1):
         """
         Compute the covairance for train data
@@ -240,7 +304,7 @@ class RBF_mb():
 
 # ===================== Standalone functions to compute K_ee, K_ef, K_ff
 
-def K_ee(x1, x2, sigma2, l2, zeta=2, grad=False, mask=None, eps=1e-8):
+def K_ee(x1, x2, sigma2, l2, zeta=2, mask=None, eps=1e-8):
     """
     Compute the Kee between two structures
     Args:
@@ -258,9 +322,7 @@ def K_ee(x1, x2, sigma2, l2, zeta=2, grad=False, mask=None, eps=1e-8):
     D = d**zeta
 
     k = sigma2*np.exp(-(0.5/l2)*(1-D))
-    if mask is not None:
-        k[mask] = 0
-    dk_dD = (-0.5/l2)*k
+    if mask is not None: k[mask] = 0
 
     Kee = k.sum(axis=0)
     m = len(x1)
@@ -273,7 +335,6 @@ def K_ff(x1, x2, dx1dr, dx2dr, sigma2, l2, zeta=2, mask=None, eps=1e-8):
     x2, dx1dr, dx2dr will be called from the cuda device in the GPU mode
     """
     l = np.sqrt(l2)
-    l3 = l*l2
 
     x1_norm = np.linalg.norm(x1, axis=1) + eps
     x1_norm2 = x1_norm**2

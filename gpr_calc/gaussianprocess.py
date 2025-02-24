@@ -9,6 +9,8 @@ from ase.db import connect
 import os
 from copy import deepcopy
 from mpi4py import MPI
+import logging
+
 
 class GaussianProcess():
     """
@@ -30,20 +32,28 @@ class GaussianProcess():
         - K: the covariance matrix
         - _K_inv: the inverse of the covariance matrix
 
-    Arg:
+    Args:
         kernel (callable): compute the covariance matrix
         descriptor (callable): compute the structure to descriptor
         base_potential (callable): compute the base potential before GPR
         f_coef (float): the coefficient of force noise relative to energy
         noise_e (list): define the energy noise (init, lower, upper)
-        ncpu (int): number of cpu to run the model
     """
 
     def __init__(self, kernel, descriptor,
                  base_potential=None,
                  f_coef=5,
                  noise_e=[5e-3, 2e-3, 1e-1],
-                 ncpu=1):
+                 log_file="gpr.log"):
+
+        # Setup logging
+        self.log_file = log_file
+        logging.getLogger().handlers.clear()
+        logging.basicConfig(level=logging.INFO,
+                            format='%(asctime)s| %(message)s',
+                            filename=self.log_file)
+        self.logging = logging
+
         self.comm = MPI.COMM_WORLD
         self.rank = self.comm.Get_rank()
         self.size = self.comm.Get_size()
@@ -67,19 +77,21 @@ class GaussianProcess():
         self.N_energy_queue = 0
         self.N_forces_queue = 0
         self.N_queue = 0
-        self.ncpu = ncpu
 
-        # for the track of function calls
+        # For the track of function calls
         self.count_fits = 0
         self.count_use_base = 0
         self.count_use_surrogate = 0
 
+        # For the track of parameters
+        if self.rank == 0: self.logging.info(self)
+
     def __str__(self):
-        s = "------Gaussian Process Regression------\n"
+        s = f"------Gaussian Process Regression ({self.rank}/{self.size})------\n"
         s += "Kernel: {:s}".format(str(self.kernel))
         if hasattr(self, "train_x"):
-            s += " {:d} energy ({:.3f})".format(self.N_energy, self.noise_e)
-            s += " {:d} forces ({:.3f})\n".format(self.N_forces, self.noise_f)
+            s += " {:d} energy ({:.5f})".format(self.N_energy, self.noise_e)
+            s += " {:d} forces ({:.5f})\n".format(self.N_forces, self.noise_f)
         return s
 
     def todict(self):
@@ -96,7 +108,17 @@ class GaussianProcess():
         return str(self)
 
     def log_marginal_likelihood(self, params, eval_gradient=False, clone_kernel=False):
+        """
+        Compute the log marginal likelihood and its gradient
 
+        Args:
+            params: hyperparameters
+            eval_gradient: bool, evaluate the gradient or not
+            clone_kernel: bool, clone the kernel or not
+        
+        Returns:
+            log marginal likelihood and its gradient
+        """
         if clone_kernel:
             kernel = self.kernel.update(params[:-1])
         else:
@@ -147,6 +169,11 @@ class GaussianProcess():
     def optimize(self, fun, theta0, bounds):
         """
         Optimize the hyperparameters of the GPR model from scipy.minimize
+
+        Args:
+            fun: the function to minimize
+            theta0: initial guess of hyperparameters
+            bounds: bounds of hyperparameters
         """
         opt_res = minimize(fun, theta0,
                            method="L-BFGS-B",
@@ -157,7 +184,7 @@ class GaussianProcess():
 
     def fit(self, TrainData=None, show=True, opt=True):
         """
-        Fit the GPR model
+        Fit the GPR model with optional MPI support
 
         Args:
             TrainData: a dictionary of energy/force/db data
@@ -178,8 +205,8 @@ class GaussianProcess():
                     params, eval_gradient=True, clone_kernel=False)
 
                 # Reduce results across ranks
-                lml = self.comm.allreduce(lml, op=MPI.SUM)
-                grad = self.comm.allreduce(grad, op=MPI.SUM)
+                lml = self.comm.allreduce(lml, op=MPI.SUM) / self.size
+                grad = self.comm.allreduce(grad, op=MPI.SUM) / self.size
 
                 if show:
                     strs = "Loss: {:12.3f} ".format(-lml)
@@ -187,6 +214,7 @@ class GaussianProcess():
                         strs += "{:6.3f} ".format(para)
                     if self.rank == 0:
                         print(strs)
+                        self.logging.info(strs)
                     #from scipy.optimize import approx_fprime
                     #print("from ", grad, lml)
                     #print("scipy", approx_fprime(params, self.log_marginal_likelihood, 1e-3))
@@ -195,15 +223,15 @@ class GaussianProcess():
                 return (-lml, -grad)
             else:
                 lml = self.log_marginal_likelihood(params, clone_kernel=False)
-                lml = self.comm.allreduce(lml, op=MPI.SUM)
+                lml = self.comm.allreduce(lml, op=MPI.SUM) / self.size
                 return -lml
 
         hyper_params = self.kernel.parameters() + [self.noise_e]
         hyper_bounds = self.kernel.bounds + [self.noise_bounds]
 
         if opt:
+            if self.rank == 0: print(f"\nUpdate GP model => {self.N_queue}")
             params, _ = self.optimize(obj_func, hyper_params, hyper_bounds)
-
             params = self.comm.bcast(params, root=0)
             
             self.kernel.update(params[:-1])
@@ -212,26 +240,39 @@ class GaussianProcess():
 
         K = self.kernel.k_total(self.train_x)#; print(K)
 
-        # add noise matrix (assuming force/energy has a coupling)
-        noise = np.eye(len(K))
-        NE = len(self.train_x['energy'][-1])
-        noise[:NE, :NE] *= self.noise_e**2
-        noise[NE:, NE:] *= (self.f_coef * self.noise_e)**2
-        K += noise
+        if self.rank == 0:
+            # add noise matrix (assuming force/energy has a coupling)
+            noise = np.eye(len(K))
+            NE = len(self.train_x['energy'][-1])
+            noise[:NE, :NE] *= self.noise_e**2
+            noise[NE:, NE:] *= (self.f_coef * self.noise_e)**2
+            K += noise
 
-        try:
-            self.L_ = cholesky(K, lower=True)  # Line 2
-            # self.L_ changed, self._K_inv needs to be recomputed
+            # self.logging.info("Starting Cholesky Decomp on rank 0")
+            try:
+                self.L_ = cholesky(K, lower=True)  # Line 2
+                self._K_inv = None
+            except np.linalg.LinAlgError as exc:
+                exc.args = ("The kernel, %s, is not returning a "
+                            "positive definite matrix. Try gradually "
+                            "increasing the 'alpha' parameter of your "
+                            "GaussianProcessRegressor estimator."
+                            % self.kernel,) + exc.args
+                raise
+            self.alpha_ = cho_solve((self.L_, True), self.y_train)
+            self.logging.info("Cholesky Decomp is Complete on rank 0")
+        else:
+            self.L_ = None
+            self.alpha_ = None
             self._K_inv = None
-        except np.linalg.LinAlgError as exc:
-            exc.args = ("The kernel, %s, is not returning a "
-                        "positive definite matrix. Try gradually "
-                        "increasing the 'alpha' parameter of your "
-                        "GaussianProcessRegressor estimator."
-                        % self.kernel,) + exc.args
-            raise
+        
+        # Broadcast L_ and alpha_ to all ranks
+        self.L_ = self.comm.bcast(self.L_, root=0)
+        self.alpha_ = self.comm.bcast(self.alpha_, root=0)
+        self._K_inv = self.comm.bcast(self._K_inv, root=0)
 
-        self.alpha_ = cho_solve((self.L_, True), self.y_train)  # Line 3
+        # Synchronize the ranks
+        self.comm.barrier()
 
         # reset the queue to 0
         self.N_energy_queue = 0
@@ -293,13 +334,13 @@ class GaussianProcess():
                 self._K_inv = L_inv.dot(L_inv.T)
             y_var = self.kernel.diag(X)
             y_var -= np.einsum("ij,ij->i", np.dot(K_trans, self._K_inv), K_trans)
+
+            # If get negative variance, set to 0.
             y_var_negative = y_var < 0
-            # Check if any of the variances is negative because of
-            # numerical issues. If yes: set the variance to 0.
-            if np.any(y_var_negative):
-                warnings.warn("Predicted variances smaller than 0. "
-                                "Setting those variances to 0.")
+            if np.any(y_var_negative) and self.rank == 0:
+                print("Warning: Get negative variance")
             y_var[y_var_negative] = 0.0
+
             return y_mean, np.sqrt(y_var)*factors
         else:
             return y_mean
@@ -398,7 +439,7 @@ class GaussianProcess():
 
     def update_y_train(self):
         """
-        convert self.train_y to 1D numpy array
+        Convert self.train_y to 1D numpy array
         """
         Npt_E = len(self.train_y["energy"])
         Npt_F = 3*len(self.train_y["force"])
@@ -416,7 +457,7 @@ class GaussianProcess():
 
     def validate_data(self, test_data=None, total_E=False, return_std=False, show=False):
         """
-        validate the given dataset
+        Validate the given dataset
 
         Args:
             test_data: a dictionary of energy/force data
@@ -463,7 +504,7 @@ class GaussianProcess():
 
     def update_error(self, E, E_Pred, F, F_Pred):
         """
-        update the training error for the model
+        Update the training error for the model
         """
         e_r2, e_mae, e_rmse = metric_values(E, E_Pred)
         f_r2, f_mae, f_rmse = metric_values(F, F_Pred)
@@ -473,6 +514,9 @@ class GaussianProcess():
                       "forces_r2": f_r2,
                       "forces_mae": f_mae,
                       "forces_rmse": f_rmse}
+        if self.rank == 0:
+            for key in self.error.keys():
+                self.logging.info(f"{key:<12s}: {self.error[key]:.4f}")
 
     def get_train_x(self):
         """
@@ -571,7 +615,7 @@ class GaussianProcess():
     @classmethod
     def load(cls, filename, N_max=None, device='cpu'):
         """
-        Load the model from files
+        Load the model from files with MPI support
 
         Args:
             filename: the file to save json information
@@ -579,7 +623,9 @@ class GaussianProcess():
         """
         with open(filename, "r") as fp: dict0 = json.load(fp)
         instance = cls.load_from_dict(dict0, device=device)
-        print(f"load GP model from {filename} in rank-{instance.rank}")
+        if instance.rank == 0:
+            print(f"load GP model from {filename}")
+            instance.logging.info(f"load GP model from {filename}")
         instance.extract_db(dict0["db_filename"], N_max)
         return instance
 
@@ -653,16 +699,20 @@ class GaussianProcess():
     def export_ase_db(self, db_filename, permission="w"):
         """
         Export the structural information in ase db format, including
-            - atoms:
-            - energy:
-            _ forces:
-            - energy_in:
-            - forces_in:
+            - atoms: ase.Atoms object
+            - energy: energy value
+            _ forces: forces value
+            - energy_in: bool whether the energy is included in the training
+            - forces_in: bool whether the forces are included in the training
+
+        Args:
+            db_filename: the file to save structural information
+            permission: "w" or "a+", reset or append the training data
         """
         if permission=="w" and os.path.exists(db_filename):
             os.remove(db_filename)
 
-        with connect(db_filename) as db:
+        with connect(db_filename, serial=True) as db:
             for _data in self.train_db:
                 (struc, energy, force, energy_in, force_in, _, _) = _data
                 actual_energy = deepcopy(energy)
@@ -758,7 +808,7 @@ class GaussianProcess():
 
             local_pts["db"].append((atoms, energy, force, energy_in, force_in))
 
-        print(f"Rank {self.rank}: Processed {len(local_pts['db'])} structures")
+        # print(f"Rank {self.rank}: Processed {len(local_pts['db'])} structures")
         all_pts = self.comm.gather(local_pts, root=0)
 
         # Initialize pts_to_add for all ranks
@@ -791,12 +841,23 @@ class GaussianProcess():
             return_std bool, return variance or not
             f_tol float, precision to compute force
         """
+        from ase.constraints import FixAtoms
+
+        train_x = self.get_train_x()
+        fix_ids = []
+        if len(struc.constraints) > 0:
+            for c in struc.constraints:
+                if isinstance(c, FixAtoms):
+                    fix_ids = c.get_indices()
+                    break
+
+        #print(f"[Debug]-predict_struc in {self.rank}", struc.positions[0])
         d = self.descriptor.calculate(struc)
         ele = [Element(ele).z for ele in d['elements']]
         ele = np.array(ele)
-        data = {"energy": [(d['x'], ele)]}
-        data["force"] = []
-        l = d['x'].shape[1]
+        data = {"energy": list_to_tuple([(d['x'], ele)], mode='energy')}
+        #print(f"[Debug]-predict_structure in {self.rank}", d['x'].shape)
+        force_data = []
         for i in range(len(struc)):
             ids = np.argwhere(d['seq'][:,1]==i).flatten()
             _i = d['seq'][ids, 0]
@@ -804,22 +865,27 @@ class GaussianProcess():
 
             if stress:
                 _rdxdr = d['rdxdr'][ids]
-                _rdxdr = _rdxdr.reshape([len(ids), l, 9])[:, :, [0, 4, 8, 1, 2, 5]]
-                data["force"].append((_x, np.concatenate((_dxdr, _rdxdr), axis=2), ele0))
+                _rdxdr = _rdxdr.reshape([len(ids), d['x'].shape[1], 9])[:, :, [0, 4, 8, 1, 2, 5]]
+                force_data.append((_x, np.concatenate((_dxdr, _rdxdr), axis=2), ele0))
             else:
-                data["force"].append((_x, _dxdr, ele0))
+                force_data.append((_x, _dxdr, ele0))
+        data["force"] = force_data
+        #print(f"[Debug]-predict_structure in {self.rank}", list_to_tuple(force_data)[0].shape)
 
-        train_x = self.get_train_x()
         if stress:
             K_trans, K_trans1 = self.kernel.k_total_with_stress(data, train_x, f_tol)
         else:
             K_trans = self.kernel.k_total(data, train_x, f_tol)
 
         pred = K_trans.dot(self.alpha_)
+        #print('debug rank-alpha', self.rank, self.alpha_[:5, 0])
+        #print('debug rank-K_trans', self.rank, '\n', K_trans[:4, :4])
+        #print('debug rank-pred', self.rank, pred[:5, 0])
         y_mean = pred[:, 0]
         y_mean[0] *= len(struc) #total energy
         E = y_mean[0]
         F = y_mean[1:].reshape([len(struc), 3])
+        if len(fix_ids) > 0: F[fix_ids] = 0.0
 
         if stress:
             S = K_trans1.dot(self.alpha_)[:,0].reshape([len(struc), 6])
@@ -844,6 +910,9 @@ class GaussianProcess():
             y_var = np.sqrt(y_var)
             E_std = y_var[0]  # eV/atom
             F_std = y_var[1:].reshape([len(struc), 3])
+            if len(fix_ids) > 0: F_std[fix_ids] = 0.0
+            # print(f"[Debug]-predict_structure in {self.rank}", E_std, fix_ids)
+
             return E, F, S, E_std, F_std
         else:
             return E, F, S
@@ -923,7 +992,8 @@ class GaussianProcess():
             pts_to_add["db"].append((atoms, energy, force, energy_in, force_in))
             self.set_train_pts(pts_to_add, mode="a+")
             #print("{:d} energy and {:d} forces will be added".format(N_energy, N_forces))
-        errors = (E[0]+energy_off, E1[0]+energy_off, E_std, F+force_off.flatten(), F1+force_off.flatten(), F_std)
+        errors = (E[0]+energy_off, E1[0]+energy_off, E_std,
+                  F+force_off.flatten(), F1+force_off.flatten(), F_std)
         return pts_to_add, N_pts, errors
 
 

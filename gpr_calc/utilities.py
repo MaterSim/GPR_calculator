@@ -168,23 +168,23 @@ def get_train_data(db_file, include_stress=False):
     energies = []
     forces = []
     stresses = []
-    with connect(db_file) as db:
+    with connect(db_file, serial=True) as db:
         for row in db.select():
             s = db.get_atoms(id=row.id)
             strucs.append(s)
             energies.append(row.data.energy)
             forces.append(np.array(row.data.force))
             if include_stress:
-                stress.append(np.array(row.data.stress))
+                stresses.append(np.array(row.data.stress))
     if include_stress:
-        return (strucs, energies, forces, stress)
+        return (strucs, energies, forces, stresses)
     else:
         return (strucs, energies, forces)
 
 
 def convert_struc(db_file, des, ids=None, N=None, ncpu=1, stress=False):
     structures, train_Y = [], {"energy":[], "forces": [], "stress": []}
-    with connect(db_file) as db:
+    with connect(db_file, serial=True) as db:
         for row in db.select():
             include = True
             if (ids is not None) and (row.id-1 not in ids):
@@ -225,7 +225,7 @@ def convert_struc(db_file, des, ids=None, N=None, ncpu=1, stress=False):
 def get_strucs(db_file, N_max=None):
     structures = []
     values = []
-    with connect(db_file) as db:
+    with connect(db_file, serial=True) as db:
         for row in db.select():
             s = db.get_atoms(id=row.id)
             structures.append(s)
@@ -250,7 +250,7 @@ def write_db_from_dict(data, db_filename='viz.db', permission='w'):
         os.remove(db_filename)
 
     N = len(data["atoms"])
-    with connect(db_filename) as db:
+    with connect(db_filename, serial=True) as db:
         for i in range(N):
             kvp = {}
             for key in data.keys():
@@ -262,13 +262,11 @@ def write_db_from_dict(data, db_filename='viz.db', permission='w'):
     print("Saved all structure to", db_filename)
 
 def write_db(data, db_filename='viz.db', permission='w'):
-    from ase.db import connect
-    import os
     if permission=='w' and os.path.exists(db_filename):
         os.remove(db_filename)
 
     (structures, y_qm, y_ml) = data
-    with connect(db_filename) as db:
+    with connect(db_filename, serial=True) as db:
         print("writing data to db: ", len(structures))
         for i, x in enumerate(structures):
             kvp = {"QM_energy": y_qm[i], 
@@ -305,12 +303,11 @@ def plot(Xs, Ys, labels, figname='results.png', draw_line=True, type='Energy'):
 
 
 def write_db(data, db_filename='viz.db', permission='w'):
-    import os
     if permission=='w' and os.path.exists(db_filename):
         os.remove(db_filename)
 
     (structures, y_qm, y_ml) = data
-    with connect(db_filename) as db:
+    with connect(db_filename, serial=True) as db:
         print("writing data to db: ", len(structures))
         for i, x in enumerate(structures):
             kvp = {"QM_energy": y_qm[i], 
