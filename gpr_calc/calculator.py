@@ -1,6 +1,5 @@
 import numpy as np
-from ase import units
-from ase.calculators.calculator import Calculator, all_changes#, PropertyNotImplementedError
+from ase.calculators.calculator import Calculator, all_changes
 from ase.neighborlist import NeighborList
 from ase.constraints import full_3x3_to_voigt_6_stress
 from mpi4py import MPI
@@ -25,8 +24,8 @@ class GPR(Calculator):
 
     def calculate(self, atoms=None, properties=['energy'], system_changes=all_changes):
         self._calculate(atoms, properties, system_changes)
-        e_tol = 1.2 * self.parameters.ff.noise_e
-        f_tol = 1.2 * self.parameters.ff.noise_f
+        e_tol = max([0.005, 1.2 * self.parameters.ff.noise_e])
+        f_tol = max([0.10, 1.2 * self.parameters.ff.noise_f])
         label = self.parameters.tag
         E_std, F_std = self.results['var_e'], self.results['var_f'].max()
         E = self.results['energy']
@@ -44,7 +43,7 @@ class GPR(Calculator):
 
             # update model
             if self.update and self.parameters.ff.N_queue > self.parameters.freq:
-                print("====================== Update the model ===============", self.parameters.ff.N_queue)
+                print("=============== Update the model ===============", self.parameters.ff.N_queue)
                 self.parameters.ff.fit(opt=True, show=False)
                 self.parameters.ff.save(f'{label}-gpr.json', f'{label}-gpr.db')
                 if rank ==0:

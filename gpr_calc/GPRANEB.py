@@ -148,8 +148,8 @@ class GP_NEB:
         self.model.set_train_pts(pts, mode='a+')
         self.model.fit(opt=True)
         train_E, train_E1, train_F, train_F1 = self.model.validate_data()
-        l1 = metric_single(train_E, train_E1, "Train Energy")
-        l2 = metric_single(train_F, train_F1, "Train Forces")
+        metric_single(train_E, train_E1, "Train Energy")
+        metric_single(train_F, train_F1, "Train Forces")
         print(self.model)
 
    
@@ -175,7 +175,6 @@ class GP_NEB:
         neb = NEB(images)
         opt = BFGS(neb, trajectory='neb.traj') ###
         opt.run(fmax=0.05)
-        #pass
 
 
     def calculate_neb_forces(self, images, ase_nebLib = False):
@@ -248,7 +247,7 @@ class GP_NEB:
         """
         return fin_neb_forces
 
-    def path_update(self, images, neb_forces, velocity_vec, n_reset = 0, alpha = 0.1, SD=True, step_size=0.1):
+    def path_update(self, images, velocity_vec, n_reset = 0, alpha = 0.1, SD=True, step_size=0.1):
         """
         Path update function. Either steepest descent or Quick-min
         The path update method is either steepest descent or Quick-min
@@ -276,7 +275,7 @@ class GP_NEB:
             positions = np.array(positions).flatten()
             forces = np.array(forces).flatten()
             """
-            new_positions = positions - step_size*forces
+            new_positions = positions - step_size * forces
             new_positions = new_positions.reshape((self.num_images-2, self.num_atoms, 3))
             for i in range(1, self.num_images-1):
                 images[i].set_positions(new_positions[i-1])
@@ -357,8 +356,6 @@ class GP_NEB:
     # call it run_neb
     def run_neb(self, IDPP = False, SD=True, 
                 step_size=0.1, 
-                Emax_std = 0.05, 
-                fmax_std = 0.05, 
                 velocity_vec = None, 
                 n_reset = 0, 
                 alpha = 0.1,

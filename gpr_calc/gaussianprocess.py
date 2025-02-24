@@ -492,7 +492,7 @@ class GaussianProcess():
             (_X, _dXdR, _ELE, _indices) = self.train_x['force']
             if NF > 0:
                 ids = sum(_indices[:NF])
-                #print("debug", NF, _X.shape, _dXdR.shape, _ELE.shape, _indices, sum(_indices), ids)
+                #print("debug", NF, _X.shape, _dXdR.shape, _ELE.shape, _indices, ids)
                 train_x['force'] = (_X[:ids], _dXdR[:ids], _ELE[:ids], _indices[:NF])
             else:
                 train_x['force'] = (_X, _dXdR, _ELE, _indices)
@@ -896,13 +896,8 @@ class GaussianProcess():
         else:
             N_energy = 0
             energy_in = False
-        #print(E_std, tol_e_var, energy_in)
-        #import sys; sys.exit()
-        #N_energy = 0
-        #energy_in = False
 
         force_in = []
-
         if add_force:
             xs_added = []
             for f_id in range(len(atoms)):
@@ -949,7 +944,7 @@ class GaussianProcess():
             for i in range(N_f):
                 if len(pts[pts==i*3])==1 and len(pts[pts==(i*3+1)])==1 and len(pts[pts==(i*3+2)])==1:
                     pts_f.append(i)
-        print("{:d} energy and {:d} force points will be removed".format(len(pts_e), len(pts_f)))
+        print("{:d} energy and {:d} forces will be removed".format(len(pts_e), len(pts_f)))
         if len(pts_e) + len(pts_f) > 0:
             self.remove_train_pts(pts_e, pts_f)
 
