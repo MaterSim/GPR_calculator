@@ -103,7 +103,7 @@ class GP_NEB:
 
             self.model = gpr(kernel=gp_kernel, 
                              descriptor=des, 
-                             noise_e=[noise_e, noise_e/2, noise_e*5], 
+                             noise_e=noise_e, #noise_e/2, noise_e*5], 
                              f_coef=10)
 
     def generate_images(self, IDPP = False):

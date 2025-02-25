@@ -42,8 +42,8 @@ class GaussianProcess():
 
     def __init__(self, kernel, descriptor,
                  base_potential=None,
-                 f_coef=5,
-                 noise_e=[5e-3, 2e-3, 1e-1],
+                 f_coef=10,
+                 noise_e=0.01, #[5e-3, 2e-3, 1e-1],
                  log_file="gpr.log"):
 
         # Setup logging
@@ -57,10 +57,15 @@ class GaussianProcess():
         self.comm = MPI.COMM_WORLD
         self.rank = self.comm.Get_rank()
         self.size = self.comm.Get_size()
-        self.noise_e = noise_e[0]
+        if type(noise_e) is not list:
+            self.noise_e = noise_e
+            self.noise_bounds = None
+        else:
+            self.noise_e = noise_e[0]
+            self.noise_bounds = noise_e[1:]
+        # print("Debug", self.noise_e, self.noise_bounds)
         self.f_coef = f_coef
         self.noise_f = self.f_coef * self.noise_e
-        self.noise_bounds = noise_e[1:]
         self.error = None
 
         self.descriptor = descriptor
@@ -119,11 +124,18 @@ class GaussianProcess():
         Returns:
             log marginal likelihood and its gradient
         """
+        if self.noise_bounds is None:
+            noise_e = self.noise_e
+            kernel_params = params
+        else:
+            noise_e = params[-1]
+            kernel_params = params[:-1] 
+
         if clone_kernel:
-            kernel = self.kernel.update(params[:-1])
+            kernel = self.kernel.update(kernel_params)
         else:
             kernel = self.kernel
-            kernel.update(params[:-1])
+            kernel.update(kernel_params)
 
         if eval_gradient:
             K, K_gradient = kernel.k_total_with_grad(self.train_x)
@@ -135,8 +147,9 @@ class GaussianProcess():
             NE = len(self.train_x['energy'][-1])
         else:
             NE = 0
-        noise[:NE, :NE] *= params[-1]**2
-        noise[NE:, NE:] *= (self.f_coef * params[-1])**2
+
+        noise[:NE, :NE] *= noise_e**2
+        noise[NE:, NE:] *= (self.f_coef * noise_e)**2
         K += noise
         try:
             L = cholesky(K, lower=True)
@@ -154,14 +167,15 @@ class GaussianProcess():
 
         if eval_gradient:  # compare Equation 5.9 from GPML
             base = np.zeros([len(K), len(K), 1]) #for energy and force noise
-            base[:NE,:NE, 0] += 2 * params[-1] * np.eye(NE)
-            base[NE:,NE:, 0] += 2 * self.f_coef**2 * params[-1] * np.eye(len(K)-NE)
+            base[:NE,:NE, 0] += 2 * noise_e * np.eye(NE)
+            base[NE:,NE:, 0] += 2 * self.f_coef**2 * noise_e * np.eye(len(K)-NE)
             K_gradient = np.concatenate((K_gradient, base), axis=2)
             tmp = np.einsum("ik,jk->ijk", alpha, alpha)  # k: output-dimension
             tmp -= cho_solve((L, True), np.eye(K.shape[0]))[:, :, np.newaxis]
             llg_dims = 0.5 * np.einsum("ijl,jik->kl", tmp, K_gradient)
             llg = llg_dims.sum(-1)
-            #print("Loss: {:12.4f} {:s}".format(-MLL, str(kernel)))
+            if self.noise_bounds is None: llg = llg[:-1]
+            # print(f"eval_grad_Loss: {-MLL}, {llg}, {str(kernel)}")
             return MLL, llg
         else:
             return MLL
@@ -175,6 +189,7 @@ class GaussianProcess():
             theta0: initial guess of hyperparameters
             bounds: bounds of hyperparameters
         """
+        # print(f"Optimizing function rank-{self.rank}", theta0, bounds)
         opt_res = minimize(fun, theta0,
                            method="L-BFGS-B",
                            bounds=bounds,
@@ -226,17 +241,24 @@ class GaussianProcess():
                 lml = self.comm.allreduce(lml, op=MPI.SUM) / self.size
                 return -lml
 
-        hyper_params = self.kernel.parameters() + [self.noise_e]
-        hyper_bounds = self.kernel.bounds + [self.noise_bounds]
+        hyper_params = self.kernel.parameters()
+        hyper_bounds = self.kernel.bounds
+        if self.noise_bounds is not None:
+            hyper_params += [self.noise_e]
+            hyper_bounds += [self.noise_bounds]
 
         if opt:
             if self.rank == 0: print(f"\nUpdate GP model => {self.N_queue}")
             params, _ = self.optimize(obj_func, hyper_params, hyper_bounds)
+            # print(f"Optimized hyperparameters rank-{self.rank}", params, fun)
             params = self.comm.bcast(params, root=0)
             
-            self.kernel.update(params[:-1])
-            self.noise_e = params[-1]
-            self.noise_f = self.f_coef*params[-1]
+            if self.noise_bounds is not None:
+                self.kernel.update(params[:-1])
+                self.noise_e = params[-1]
+                self.noise_f = self.f_coef * params[-1]
+            else:
+                self.kernel.update(params)
 
         K = self.kernel.k_total(self.train_x)#; print(K)
 
@@ -1037,5 +1059,3 @@ def CUR(K, l_tol=1e-10):
                 omega[j] += U[j,eta]*U[j,eta]
     ids = np.argsort(-1*omega)
     return ids[:N_low]
-
-
