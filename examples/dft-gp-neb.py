@@ -55,7 +55,7 @@ if rank == 0:
 
 # Set NEB Parameters
 nimages = 5
-fmax = 0.05
+fmax = 0.1
 
 # Set the GP model
 neb_gp = GP_NEB("POSCAR_initial",
@@ -75,10 +75,10 @@ neb.interpolate(method='idpp', mic=True)
 
 # Initialize the calculator
 if os.path.exists(tag+'-gpr.json'):
-    neb_gp.model = GP.load(tag+'-gpr.json')
+    neb_gp.model = GP.load(tag + '-gpr.json')
     neb_gp.model.fit()
 else:
-    neb_gp.set_GPR(kernel='RBF', noise_e=fmax/10)
+    neb_gp.set_GPR(kernel='RBF', noise_e=0.0015, noise_f=0.1)
     neb_gp.train_GPR(images)
 
 if rank == 0: print(neb_gp.model)

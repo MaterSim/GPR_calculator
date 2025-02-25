@@ -38,9 +38,8 @@ class GPR(Calculator):
         atoms.cell.array = comm.bcast(atoms.cell.array, root=0)
 
         self._calculate(atoms, properties, system_changes)
-        e_tol = max([0.005, 1.2 * self.parameters.ff.noise_e])
+        e_tol = max([0.005, len(atoms) * self.parameters.ff.noise_e])
         f_tol = max([0.10, 1.2 * self.parameters.ff.noise_f])
-        label = self.parameters.tag
         E_std, F_std = self.results['var_e'], self.results['var_f'].max()
         E = self.results['energy']
         Fmax = np.abs(self.results['forces']).max()
@@ -59,7 +58,7 @@ class GPR(Calculator):
                 atoms.calc = None
                 data = (atoms.copy(), eng, forces)
                 f_max = np.abs(forces).max()
-                print(f"From base model in rank-0, E: {E_std:.3f}/{E:.3f}/{eng:.3f}, F: {F_std:.3f}/{Fmax:.3f}/{f_max:.3f}")
+                print(f"From base model in rank-0, E: {E_std*len(atoms):.3f}/{E:.3f}/{eng:.3f}, F: {F_std:.3f}/{Fmax:.3f}/{f_max:.3f}")
             else:
                 data, eng, forces = None, None, None
 
@@ -95,7 +94,7 @@ class GPR(Calculator):
         else:
             self.parameters.ff.count_use_surrogate += 1
             if rank == 0:
-                print(f"From surrogate in rank-{rank},  E: {E_std:.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}/{Fmax:.3f}")
+                print(f"From surrogate in rank-{rank},  E: {E_std*len(atoms):.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}/{Fmax:.3f}")
         #print(f"rank-{rank} exits the calculator", atoms.positions.shape)
         #comm.barrier()
 

@@ -77,7 +77,7 @@ class GP_NEB:
             self.initial_state = set_pbc(self.initial_state)
             self.final_state = set_pbc(self.final_state)
 
-    def set_GPR(self, kernel='Dot', zeta=2.0, noise_e=0.002, 
+    def set_GPR(self, kernel='Dot', zeta=2.0, noise_e=0.002, noise_f=0.1,
                 lm=4, nm=3, rcut=5.0, device='cpu',
                 json=None):
         """
@@ -103,8 +103,8 @@ class GP_NEB:
 
             self.model = gpr(kernel=gp_kernel, 
                              descriptor=des, 
-                             noise_e=noise_e, #noise_e/2, noise_e*5], 
-                             f_coef=10)
+                             noise_e=noise_e,
+                             noise_f=noise_f)
 
     def generate_images(self, IDPP = False):
         """

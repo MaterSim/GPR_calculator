@@ -3,7 +3,6 @@ from pyxtal.database.element import Element
 from .utilities import new_pt, convert_train_data, list_to_tuple, tuple_to_list, metric_values
 from scipy.linalg import cholesky, cho_solve, solve_triangular
 from scipy.optimize import minimize
-import warnings
 import json
 from ase.db import connect
 import os
@@ -42,8 +41,9 @@ class GaussianProcess():
 
     def __init__(self, kernel, descriptor,
                  base_potential=None,
+                 noise_e=0.005, #[5e-3, 2e-3, 1e-1],
+                 noise_f=0.1, #[1e-1, 1e-2, 2e-1],
                  f_coef=10,
-                 noise_e=0.01, #[5e-3, 2e-3, 1e-1],
                  log_file="gpr.log"):
 
         # Setup logging
@@ -59,13 +59,14 @@ class GaussianProcess():
         self.size = self.comm.Get_size()
         if type(noise_e) is not list:
             self.noise_e = noise_e
+            self.noise_f = noise_f
             self.noise_bounds = None
         else:
             self.noise_e = noise_e[0]
+            self.noise_f = noise_f[0]
             self.noise_bounds = noise_e[1:]
-        # print("Debug", self.noise_e, self.noise_bounds)
         self.f_coef = f_coef
-        self.noise_f = self.f_coef * self.noise_e
+        # print("Debug", self.noise_e, self.noise_bounds)
         self.error = None
 
         self.descriptor = descriptor
@@ -126,9 +127,11 @@ class GaussianProcess():
         """
         if self.noise_bounds is None:
             noise_e = self.noise_e
+            noise_f = self.noise_f
             kernel_params = params
         else:
             noise_e = params[-1]
+            noise_f = self.f_coef * noise_e
             kernel_params = params[:-1] 
 
         if clone_kernel:
@@ -149,7 +152,7 @@ class GaussianProcess():
             NE = 0
 
         noise[:NE, :NE] *= noise_e**2
-        noise[NE:, NE:] *= (self.f_coef * noise_e)**2
+        noise[NE:, NE:] *= noise_f**2
         K += noise
         try:
             L = cholesky(K, lower=True)
@@ -168,7 +171,8 @@ class GaussianProcess():
         if eval_gradient:  # compare Equation 5.9 from GPML
             base = np.zeros([len(K), len(K), 1]) #for energy and force noise
             base[:NE,:NE, 0] += 2 * noise_e * np.eye(NE)
-            base[NE:,NE:, 0] += 2 * self.f_coef**2 * noise_e * np.eye(len(K)-NE)
+            #base[NE:,NE:, 0] += 2 * self.f_coef**2 * noise_e * np.eye(len(K)-NE)
+            base[NE:,NE:, 0] += 2 * noise_f * np.eye(len(K)-NE)
             K_gradient = np.concatenate((K_gradient, base), axis=2)
             tmp = np.einsum("ik,jk->ijk", alpha, alpha)  # k: output-dimension
             tmp -= cho_solve((L, True), np.eye(K.shape[0]))[:, :, np.newaxis]
@@ -267,7 +271,7 @@ class GaussianProcess():
             noise = np.eye(len(K))
             NE = len(self.train_x['energy'][-1])
             noise[:NE, :NE] *= self.noise_e**2
-            noise[NE:, NE:] *= (self.f_coef * self.noise_e)**2
+            noise[NE:, NE:] *= self.noise_f**2
             K += noise
 
             # self.logging.info("Starting Cholesky Decomp on rank 0")
@@ -315,7 +319,7 @@ class GaussianProcess():
         """
         train_x = self.get_train_x()
         if stress:
-            K_trans, K_trans1 = self.kernel.k_total_with_stress(X, train_x, same=False)
+            K_trans, _ = self.kernel.k_total_with_stress(X, train_x, same=False)
             #pred1 = K_trans1.dot(self.alpha_)
         else:
             K_trans = self.kernel.k_total(X, train_x)
@@ -656,6 +660,7 @@ class GaussianProcess():
         Save the model as a dictionary in json
         """
         noise = {"energy": self.noise_e,
+                 "force": self.noise_f,
                  "f_coef": self.f_coef,
                  "bounds": self.noise_bounds}
 
@@ -712,9 +717,10 @@ class GaussianProcess():
                 raise NotImplementedError(msg)
         instance.kernel.device = device
         instance.noise_e = dict0["noise"]["energy"]
+        instance.noise_f = dict0["noise"]["force"]
         instance.f_coef = dict0["noise"]["f_coef"]
         instance.noise_bounds = dict0["noise"]["bounds"]
-        instance.noise_f = instance.f_coef * instance.noise_e
+        # instance.noise_f = instance.f_coef * instance.noise_e
 
         return instance
 
@@ -975,12 +981,16 @@ class GaussianProcess():
             E_std = E_std[0]
             F_std = F_std.reshape((len(atoms), 3))
         else:
-            E = E1 = [energy]
+            # If the model is not trained, set the variance to be large
+            E = E1 = [energy / len(atoms)] # eV/atom 
             F = F1 = force.flatten()
             E_std = 2 * tol_e_var
             F_std = 2 * tol_f_var * np.ones((len(atoms), 3))
 
-        if E_std > tol_e_var:
+        # QZ: to debug
+        #if self.rank == 0:
+        #    print(f"Debug: E_std: {E_std}, dE: {E[0]-E1[0]}, E: {E[0]}, E1: {E1[0]}")
+        if E_std > tol_e_var or abs(E[0] - E1[0]) > 1.2 * tol_e_var:
             pts_to_add["energy"] = my_data["energy"]
             N_energy = 1
             energy_in = True
@@ -1017,7 +1027,6 @@ class GaussianProcess():
         errors = (E[0]+energy_off, E1[0]+energy_off, E_std,
                   F+force_off.flatten(), F1+force_off.flatten(), F_std)
         return pts_to_add, N_pts, errors
-
 
     def sparsify(self, e_tol=1e-10, f_tol=1e-10):
         """
