@@ -1,0 +1,2117 @@
+...............GPRANEB module loaded................
+You're welcome to modify the code to suit your needs
+..........Good luck with your calculations..........
+Calculate E/F for image 0: -186.792099
+Calculate E/F for image 1: -185.685422
+Calculate E/F for image 2: -185.145902
+Calculate E/F for image 3: -185.692535
+Calculate E/F for image 4: -186.547558
+Calculate E/F for image 5: -187.317694
+Calculate E/F for image 6: -187.720363
+------Gaussian Process Regression (0/8)------
+Kernel: 1.00000**2 *RBF(length=0.10000) 7 energy (0.00500) 26 forces (0.05000)
+
+
+Update GP model => 33
+Loss:       87.763  1.000  0.100  0.005 
+Loss:   154833.444  0.010 10.000  0.003 
+Loss:      954.712  0.655  3.545  0.004 
+Loss:       42.561  0.903  1.072  0.005 
+Loss:       25.712  0.893  1.182  0.025 
+Loss:       21.708  0.898  1.132  0.023 
+Loss:        2.425  0.918  0.933  0.014 
+Loss:      -34.875  0.944  0.668  0.003 
+Loss:      -56.975  0.960  0.514  0.003 
+Loss:      -60.131  0.969  0.427  0.003 
+Loss:      -60.276  0.967  0.444  0.003 
+------Gaussian Process Regression (0/8)------
+Kernel: 0.96680**2 *RBF(length=0.44447) 7 energy (0.00250) 26 forces (0.02500)
+
+From base model in rank-0, E: 0.001/-185.674/-185.685, F: 0.759/2.372/2.367
+From base model in rank-0, E: 0.001/-185.210/-185.146, F: 0.646/1.390/1.393
+From base model in rank-0, E: 0.001/-185.738/-185.693, F: 0.555/2.049/2.053
+From base model in rank-0, E: 0.001/-186.580/-186.548, F: 0.550/1.866/1.869
+From base model in rank-0, E: 0.001/-187.387/-187.318, F: 0.654/1.106/1.106
+      Step     Time          Energy          fmax
+BFGS:    0 11:19:03     -185.145902        2.075864
+From base model in rank-0, E: 0.001/-185.774/-185.788, F: 0.769/2.386/2.412
+From base model in rank-0, E: 0.001/-185.290/-185.222, F: 0.658/1.481/1.433
+From base model in rank-0, E: 0.001/-185.882/-185.820, F: 0.577/2.158/2.075
+From base model in rank-0, E: 0.001/-186.697/-186.655, F: 0.556/1.744/1.780
+From base model in rank-0, E: 0.001/-187.432/-187.359, F: 0.659/1.004/1.005
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 13.30908**2 *RBF(length=3.08054) 7 energy (0.00250) 49 forces (0.02500)
+
+BFGS:    1 11:21:34     -185.221913        2.018917
+From base model in rank-0, E: 0.001/-186.251/-186.306, F: 0.779/1.500/1.799
+Warning: Get negative variance
+From base model in rank-0, E: 0.002/-185.709/-185.620, F: 0.753/1.970/1.626
+From base model in rank-0, E: 0.002/-186.517/-186.397, F: 0.773/1.783/1.629
+From base model in rank-0, E: 0.002/-187.064/-186.958, F: 0.934/1.065/1.000
+From base model in rank-0, E: 0.001/-187.553/-187.464, F: 1.001/0.781/0.623
+BFGS:    2 11:23:58     -185.619824        1.501811
+From base model in rank-0, E: 0.002/-186.344/-186.402, F: 0.804/0.953/0.973
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 15.15093**2 *RBF(length=2.27121) 7 energy (0.00250) 71 forces (0.02500)
+
+From base model in rank-0, E: 0.003/-185.785/-185.810, F: 0.738/1.840/1.639
+From base model in rank-0, E: 0.004/-186.561/-186.510, F: 0.974/0.968/1.062
+From base model in rank-0, E: 0.003/-186.989/-186.895, F: 1.134/1.106/1.584
+From base model in rank-0, E: 0.003/-187.493/-187.454, F: 1.192/1.114/0.877
+BFGS:    3 11:26:30     -185.809685        2.089045
+From base model in rank-0, E: 0.002/-186.375/-186.451, F: 0.576/0.918/0.922
+From base model in rank-0, E: 0.003/-185.961/-185.964, F: 0.830/2.023/1.582
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 15.21554**2 *RBF(length=2.11285) 10 energy (0.00250) 90 forces (0.02500)
+
+From base model in rank-0, E: 0.005/-186.544/-186.537, F: 0.897/1.010/0.974
+From base model in rank-0, E: 0.005/-187.034/-186.987, F: 1.101/1.137/1.104
+From base model in rank-0, E: 0.005/-187.512/-187.475, F: 1.174/1.039/0.716
+BFGS:    4 11:29:10     -185.964184        1.380720
+From base model in rank-0, E: 0.005/-186.501/-186.535, F: 0.540/0.792/1.018
+From base model in rank-0, E: 0.005/-186.249/-186.277, F: 0.861/1.155/0.916
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 15.26925**2 *RBF(length=1.98208) 15 energy (0.00250) 106 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-186.524/-186.557, F: 0.806/1.791/1.884
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.109/-187.120, F: 0.969/1.144/0.724
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.487/-187.503, F: 1.004/0.917/0.521
+Warning: Get negative variance
+BFGS:    5 11:31:57     -186.276537        2.256611
+From base model in rank-0, E: 0.000/-186.611/-186.579, F: 0.469/1.078/0.843
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.248/-186.300, F: 0.722/1.099/0.749
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.601/-186.658, F: 0.787/1.084/0.884
+Warning: Get negative variance
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 15.28603**2 *RBF(length=1.91022) 15 energy (0.00250) 128 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-187.047/-187.113, F: 0.675/1.439/0.968
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.487/-187.503, F: 0.693/1.237/0.646
+Warning: Get negative variance
+BFGS:    6 11:34:50     -186.300270        1.012396
+From base model in rank-0, E: 0.000/-186.660/-186.610, F: 0.450/1.174/0.328
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.295/-186.325, F: 0.656/1.339/0.545
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.597/-186.700, F: 0.643/1.224/0.834
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.074/-187.143, F: 0.693/1.478/0.855
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.494/-187.505, F: 0.695/1.225/0.634
+Warning: Get negative variance
+BFGS:    7 11:37:26     -186.325408        0.876951
+From base model in rank-0, E: 0.000/-186.678/-186.614, F: 0.453/1.157/0.517
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.322/-186.341, F: 0.644/1.447/0.741
+Warning: Get negative variance
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 15.85945**2 *RBF(length=1.64257) 15 energy (0.00250) 149 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-186.639/-186.733, F: 0.657/1.533/0.812
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.170/-187.187, F: 0.735/1.617/0.396
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.537/-187.517, F: 0.715/1.596/0.488
+Warning: Get negative variance
+BFGS:    8 11:40:36     -186.340993        0.887526
+From base model in rank-0, E: 0.000/-186.673/-186.618, F: 0.431/1.603/0.462
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.290/-186.358, F: 0.567/1.439/0.787
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.678/-186.760, F: 0.666/1.525/0.775
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.202/-187.196, F: 0.746/1.526/0.426
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.552/-187.522, F: 0.718/1.547/0.467
+Warning: Get negative variance
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 15.88654**2 *RBF(length=1.57065) 15 energy (0.00250) 170 forces (0.02500)
+
+BFGS:    9 11:43:52     -186.357502        0.913858
+From base model in rank-0, E: 0.001/-186.680/-186.624, F: 0.401/0.981/0.428
+From base model in rank-0, E: 0.002/-186.367/-186.389, F: 0.522/0.847/0.727
+From base model in rank-0, E: 0.002/-186.784/-186.810, F: 0.613/0.735/0.752
+From base model in rank-0, E: 0.002/-187.232/-187.199, F: 0.661/0.844/0.726
+From base model in rank-0, E: 0.002/-187.536/-187.524, F: 0.628/0.569/0.564
+BFGS:   10 11:46:29     -186.389362        0.926381
+From base model in rank-0, E: 0.002/-186.675/-186.609, F: 0.414/0.899/0.595
+Warning: Get negative variance
+From base model in rank-0, E: 0.002/-186.411/-186.432, F: 0.521/0.804/0.531
+From base model in rank-0, E: 0.002/-186.881/-186.898, F: 0.651/0.676/0.715
+
+Update GP model => 24
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 16.13184**2 *RBF(length=1.42757) 15 energy (0.00250) 194 forces (0.02500)
+
+From base model in rank-0, E: 0.004/-187.231/-187.213, F: 0.643/0.885/0.730
+From base model in rank-0, E: 0.004/-187.551/-187.523, F: 0.619/0.649/0.643
+BFGS:   11 11:49:59     -186.431861        0.945587
+From base model in rank-0, E: 0.004/-186.669/-186.581, F: 0.423/1.008/0.985
+From base model in rank-0, E: 0.004/-186.474/-186.468, F: 0.526/0.966/0.465
+From base model in rank-0, E: 0.003/-186.971/-187.008, F: 0.630/0.592/0.586
+From base model in rank-0, E: 0.004/-187.267/-187.240, F: 0.675/0.545/0.409
+
+Update GP model => 25
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 16.46672**2 *RBF(length=1.29250) 19 energy (0.00250) 215 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-187.581/-187.524, F: 0.582/0.646/0.642
+Warning: Get negative variance
+BFGS:   12 11:53:44     -186.467833        1.118516
+From base model in rank-0, E: 0.000/-186.629/-186.574, F: 0.424/0.783/0.787
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.503/-186.491, F: 0.540/0.938/0.582
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.038/-187.118, F: 0.573/0.781/0.538
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.316/-187.266, F: 0.670/0.554/0.396
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.593/-187.530, F: 0.601/0.554/0.554
+Warning: Get negative variance
+BFGS:   13 11:56:29     -186.490811        0.929815
+From base model in rank-0, E: 0.000/-186.643/-186.590, F: 0.431/0.527/0.380
+Warning: Get negative variance
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.09037**2 *RBF(length=1.14944) 19 energy (0.00250) 237 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-186.524/-186.517, F: 0.626/1.304/0.710
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.097/-187.198, F: 0.650/1.381/0.669
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.417/-187.289, F: 0.788/0.671/0.589
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.647/-187.537, F: 0.652/0.563/0.428
+Warning: Get negative variance
+BFGS:   14 12:00:30     -186.517334        0.850346
+From base model in rank-0, E: 0.000/-186.664/-186.612, F: 0.461/1.188/0.559
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.575/-186.558, F: 0.611/1.407/0.705
+Warning: Get negative variance
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.18293**2 *RBF(length=1.10206) 19 energy (0.00250) 258 forces (0.02500)
+
+From base model in rank-0, E: 0.006/-187.175/-187.246, F: 0.668/1.440/0.600
+From base model in rank-0, E: 0.006/-187.461/-187.316, F: 0.777/0.682/0.710
+From base model in rank-0, E: 0.006/-187.640/-187.540, F: 0.625/0.784/0.343
+BFGS:   15 12:04:49     -186.558163        0.859667
+From base model in rank-0, E: 0.006/-186.682/-186.628, F: 0.450/1.542/0.673
+From base model in rank-0, E: 0.006/-186.636/-186.597, F: 0.534/1.700/0.640
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.23857**2 *RBF(length=1.06665) 24 energy (0.00250) 275 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-187.245/-187.280, F: 0.613/0.980/0.538
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.421/-187.353, F: 0.629/0.646/0.623
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.603/-187.541, F: 0.494/0.525/0.408
+BFGS:   16 12:09:18     -186.596881        0.730268
+From base model in rank-0, E: 0.000/-186.681/-186.645, F: 0.422/1.571/0.561
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.665/-186.620, F: 0.450/1.679/0.494
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.297/-187.305, F: 0.607/0.830/0.486
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.458/-187.396, F: 0.598/0.501/0.411
+Warning: Get negative variance
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.26343**2 *RBF(length=1.04350) 24 energy (0.00250) 298 forces (0.02500)
+
+From base model in rank-0, E: 0.004/-187.611/-187.548, F: 0.472/0.541/0.394
+BFGS:   17 12:14:08     -186.619597        0.582142
+From base model in rank-0, E: 0.003/-186.688/-186.657, F: 0.402/1.477/0.247
+From base model in rank-0, E: 0.004/-186.688/-186.630, F: 0.407/1.619/0.414
+From base model in rank-0, E: 0.004/-187.316/-187.317, F: 0.549/0.772/0.421
+From base model in rank-0, E: 0.004/-187.471/-187.424, F: 0.579/0.825/0.431
+From base model in rank-0, E: 0.003/-187.615/-187.558, F: 0.475/0.530/0.327
+BFGS:   18 12:17:05     -186.630207        0.450453
+From base model in rank-0, E: 0.003/-186.695/-186.661, F: 0.398/1.432/0.301
+
+Update GP model => 24
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.30886**2 *RBF(length=1.01486) 30 energy (0.00250) 316 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-186.687/-186.639, F: 0.404/1.733/0.399
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.347/-187.327, F: 0.516/0.790/0.440
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.465/-187.443, F: 0.559/1.062/0.505
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.595/-187.564, F: 0.461/0.710/0.383
+Warning: Get negative variance
+BFGS:   19 12:22:11     -186.638752        0.516997
+From base model in rank-0, E: 0.000/-186.672/-186.659, F: 0.372/1.438/0.513
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.707/-186.652, F: 0.400/1.737/0.388
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.358/-187.338, F: 0.509/0.751/0.438
+Warning: Get negative variance
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.33667**2 *RBF(length=0.99216) 30 energy (0.00250) 338 forces (0.02500)
+
+From base model in rank-0, E: 0.005/-187.483/-187.475, F: 0.546/1.311/0.489
+From base model in rank-0, E: 0.005/-187.589/-187.568, F: 0.465/1.066/0.438
+BFGS:   20 12:27:37     -186.651589        0.555670
+From base model in rank-0, E: 0.004/-186.665/-186.658, F: 0.358/0.576/0.636
+From base model in rank-0, E: 0.005/-186.735/-186.658, F: 0.382/0.957/0.371
+From base model in rank-0, E: 0.004/-187.383/-187.361, F: 0.486/0.557/0.462
+From base model in rank-0, E: 0.005/-187.524/-187.513, F: 0.506/1.211/0.354
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.37987**2 *RBF(length=0.96609) 36 energy (0.00250) 353 forces (0.02500)
+
+From base model in rank-0, E: 0.008/-187.573/-187.571, F: 0.436/1.324/0.503
+BFGS:   21 12:33:29     -186.658347        0.667226
+From base model in rank-0, E: 0.007/-186.646/-186.667, F: 0.352/0.640/0.394
+From base model in rank-0, E: 0.007/-186.736/-186.669, F: 0.377/0.914/0.363
+From base model in rank-0, E: 0.006/-187.365/-187.376, F: 0.472/0.529/0.433
+From base model in rank-0, E: 0.006/-187.555/-187.532, F: 0.451/1.010/0.325
+From base model in rank-0, E: 0.006/-187.584/-187.580, F: 0.444/1.269/0.451
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.38305**2 *RBF(length=0.96013) 42 energy (0.00250) 370 forces (0.02500)
+
+BFGS:   22 12:39:32     -186.666903        0.477180
+From base model in rank-0, E: 0.000/-186.651/-186.671, F: 0.341/0.627/0.298
+From base model in rank-0, E: 0.002/-186.742/-186.671, F: 0.358/0.886/0.369
+From base model in rank-0, E: 0.002/-187.357/-187.381, F: 0.445/0.693/0.456
+From base model in rank-0, E: 0.000/-187.573/-187.541, F: 0.404/0.805/0.289
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.594/-187.592, F: 0.409/1.190/0.389
+Warning: Get negative variance
+BFGS:   23 12:42:39     -186.670952        0.406010
+From base model in rank-0, E: 0.000/-186.652/-186.674, F: 0.344/0.632/0.263
+From base model in rank-0, E: 0.003/-186.747/-186.675, F: 0.360/0.834/0.386
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.363/-187.387, F: 0.452/0.621/0.438
+From base model in rank-0, E: 0.000/-187.578/-187.545, F: 0.408/0.807/0.277
+Warning: Get negative variance
+From base model in rank-0, E: 0.002/-187.604/-187.594, F: 0.405/1.067/0.342
+BFGS:   24 12:45:46     -186.674298        0.377861
+From base model in rank-0, E: 0.002/-186.654/-186.680, F: 0.348/0.618/0.248
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.756/-186.680, F: 0.363/0.795/0.414
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.38723**2 *RBF(length=0.95348) 42 energy (0.00250) 391 forces (0.02500)
+
+From base model in rank-0, E: 0.006/-187.383/-187.390, F: 0.444/0.575/0.483
+From base model in rank-0, E: 0.006/-187.571/-187.554, F: 0.391/0.894/0.175
+From base model in rank-0, E: 0.006/-187.611/-187.598, F: 0.379/0.969/0.285
+BFGS:   25 12:52:12     -186.679532        0.294361
+From base model in rank-0, E: 0.006/-186.649/-186.683, F: 0.071/0.237/0.235
+From base model in rank-0, E: 0.005/-186.781/-186.684, F: 0.347/0.680/0.428
+From base model in rank-0, E: 0.006/-187.380/-187.390, F: 0.440/0.561/0.516
+From base model in rank-0, E: 0.005/-187.574/-187.565, F: 0.391/1.000/0.128
+From base model in rank-0, E: 0.006/-187.619/-187.603, F: 0.382/0.929/0.263
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.40524**2 *RBF(length=0.93844) 50 energy (0.00250) 404 forces (0.02500)
+
+BFGS:   26 12:59:03     -186.682771        0.249040
+From base model in rank-0, E: 0.007/-186.658/-186.685, F: 0.070/0.269/0.218
+From base model in rank-0, E: 0.006/-186.764/-186.688, F: 0.285/0.597/0.433
+From base model in rank-0, E: 0.008/-187.400/-187.391, F: 0.389/0.605/0.539
+From base model in rank-0, E: 0.007/-187.580/-187.570, F: 0.360/1.213/0.221
+From base model in rank-0, E: 0.008/-187.619/-187.611, F: 0.341/1.022/0.259
+BFGS:   27 13:02:17     -186.684712        0.276010
+From base model in rank-0, E: 0.007/-186.659/-186.686, F: 0.071/0.281/0.207
+From base model in rank-0, E: 0.007/-186.763/-186.690, F: 0.283/0.618/0.445
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.47993**2 *RBF(length=0.90969) 57 energy (0.00250) 420 forces (0.02500)
+
+From base model in rank-0, E: 0.006/-187.381/-187.391, F: 0.321/0.558/0.547
+From base model in rank-0, E: 0.006/-187.576/-187.575, F: 0.317/0.474/0.242
+From base model in rank-0, E: 0.005/-187.607/-187.619, F: 0.332/0.386/0.270
+BFGS:   28 13:09:26     -186.685581        0.291156
+From base model in rank-0, E: 0.007/-186.670/-186.688, F: 0.070/0.255/0.203
+From base model in rank-0, E: 0.004/-186.737/-186.693, F: 0.071/0.437/0.468
+From base model in rank-0, E: 0.004/-187.376/-187.391, F: 0.316/0.549/0.540
+From base model in rank-0, E: 0.006/-187.583/-187.583, F: 0.307/0.480/0.190
+From base model in rank-0, E: 0.005/-187.613/-187.627, F: 0.345/0.413/0.289
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.50980**2 *RBF(length=0.89334) 65 energy (0.00250) 435 forces (0.02500)
+
+BFGS:   29 13:16:58     -186.687678        0.233974
+From base model in rank-0, E: 0.000/-186.671/-186.691, F: 0.068/0.260/0.191
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.734/-186.697, F: 0.093/0.444/0.491
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.367/-187.389, F: 0.187/0.514/0.515
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.597/-187.591, F: 0.174/0.201/0.138
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.624/-187.634, F: 0.262/0.289/0.297
+Warning: Get negative variance
+BFGS:   30 13:20:17     -186.690815        0.243670
+From base model in rank-0, E: 0.000/-186.676/-186.694, F: 0.067/0.253/0.194
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.737/-186.699, F: 0.130/0.463/0.516
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.368/-187.390, F: 0.194/0.472/0.465
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.600/-187.597, F: 0.173/0.187/0.160
+Warning: Get negative variance
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.54341**2 *RBF(length=0.87639) 65 energy (0.00250) 457 forces (0.02500)
+
+From base model in rank-0, E: 0.004/-187.631/-187.640, F: 0.223/0.318/0.282
+Warning: Get negative variance
+BFGS:   31 13:28:23     -186.694098        0.313288
+From base model in rank-0, E: 0.000/-186.679/-186.697, F: 0.050/0.181/0.199
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.730/-186.700, F: 0.151/0.514/0.544
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.379/-187.393, F: 0.176/0.431/0.417
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.599/-187.600, F: 0.160/0.216/0.231
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.636/-187.645, F: 0.229/0.301/0.253
+Warning: Get negative variance
+BFGS:   32 13:31:44     -186.696693        0.264215
+From base model in rank-0, E: 0.000/-186.682/-186.699, F: 0.067/0.200/0.203
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.729/-186.699, F: 0.166/0.535/0.578
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.381/-187.395, F: 0.164/0.405/0.380
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.599/-187.603, F: 0.162/0.219/0.239
+From base model in rank-0, E: 0.000/-187.641/-187.649, F: 0.233/0.279/0.219
+Warning: Get negative variance
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.56776**2 *RBF(length=0.86253) 66 energy (0.00250) 478 forces (0.02500)
+
+BFGS:   33 13:40:10     -186.699402        0.257090
+From base model in rank-0, E: 0.005/-186.688/-186.701, F: 0.047/0.228/0.216
+From base model in rank-0, E: 0.006/-186.735/-186.707, F: 0.128/0.499/0.495
+From base model in rank-0, E: 0.004/-187.391/-187.400, F: 0.084/0.409/0.426
+From base model in rank-0, E: 0.002/-187.609/-187.607, F: 0.155/0.237/0.192
+From base model in rank-0, E: 0.003/-187.647/-187.650, F: 0.227/0.187/0.187
+BFGS:   34 13:43:31     -186.701366        0.231544
+From base model in rank-0, E: 0.003/-186.689/-186.703, F: 0.050/0.223/0.213
+From base model in rank-0, E: 0.007/-186.736/-186.708, F: 0.120/0.495/0.534
+From base model in rank-0, E: 0.003/-187.390/-187.399, F: 0.087/0.399/0.415
+From base model in rank-0, E: 0.006/-187.612/-187.611, F: 0.155/0.191/0.101
+From base model in rank-0, E: 0.003/-187.650/-187.652, F: 0.231/0.210/0.179
+BFGS:   35 13:46:51     -186.703026        0.193979
+From base model in rank-0, E: 0.005/-186.692/-186.706, F: 0.066/0.233/0.201
+Warning: Get negative variance
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.56793**2 *RBF(length=0.86298) 72 energy (0.00250) 495 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-186.735/-186.708, F: 0.108/0.573/0.601
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.389/-187.397, F: 0.080/0.372/0.373
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.615/-187.613, F: 0.120/0.215/0.136
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.655/-187.658, F: 0.183/0.272/0.175
+Warning: Get negative variance
+BFGS:   36 13:55:00     -186.705500        0.184211
+From base model in rank-0, E: 0.000/-186.693/-186.707, F: 0.068/0.217/0.196
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.735/-186.708, F: 0.108/0.588/0.614
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.389/-187.396, F: 0.078/0.368/0.365
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.616/-187.614, F: 0.120/0.217/0.138
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.657/-187.660, F: 0.195/0.306/0.173
+Warning: Get negative variance
+BFGS:   37 13:58:27     -186.707086        0.187440
+From base model in rank-0, E: 0.000/-186.697/-186.711, F: 0.102/0.276/0.188
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.735/-186.709, F: 0.110/0.592/0.610
+Warning: Get negative variance
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.56881**2 *RBF(length=0.86175) 72 energy (0.00250) 516 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-187.388/-187.394, F: 0.067/0.344/0.346
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.621/-187.618, F: 0.068/0.108/0.105
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.661/-187.665, F: 0.216/0.336/0.170
+Warning: Get negative variance
+BFGS:   38 14:07:55     -186.709236        0.275671
+From base model in rank-0, E: 0.000/-186.697/-186.713, F: 0.103/0.276/0.192
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.743/-186.715, F: 0.092/0.541/0.540
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.390/-187.397, F: 0.067/0.337/0.343
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.622/-187.620, F: 0.068/0.143/0.084
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.660/-187.666, F: 0.230/0.356/0.173
+Warning: Get negative variance
+BFGS:   39 14:11:22     -186.712637        0.184463
+From base model in rank-0, E: 0.000/-186.700/-186.715, F: 0.132/0.364/0.195
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.747/-186.718, F: 0.087/0.485/0.493
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.391/-187.396, F: 0.067/0.365/0.371
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.623/-187.622, F: 0.068/0.184/0.158
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.661/-187.668, F: 0.261/0.405/0.171
+Warning: Get negative variance
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.57748**2 *RBF(length=0.85489) 72 energy (0.00250) 538 forces (0.02500)
+
+BFGS:   40 14:21:35     -186.715492        0.189266
+From base model in rank-0, E: 0.011/-186.703/-186.717, F: 0.132/0.205/0.209
+From base model in rank-0, E: 0.011/-186.738/-186.720, F: 0.054/0.478/0.485
+From base model in rank-0, E: 0.011/-187.392/-187.398, F: 0.051/0.391/0.394
+From base model in rank-0, E: 0.011/-187.623/-187.623, F: 0.060/0.133/0.140
+From base model in rank-0, E: 0.011/-187.669/-187.668, F: 0.232/0.264/0.168
+BFGS:   41 14:25:14     -186.716834        0.186812
+From base model in rank-0, E: 0.013/-186.705/-186.720, F: 0.148/0.226/0.229
+From base model in rank-0, E: 0.012/-186.739/-186.720, F: 0.054/0.471/0.479
+From base model in rank-0, E: 0.012/-187.395/-187.398, F: 0.052/0.423/0.426
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.57755**2 *RBF(length=0.85635) 80 energy (0.00250) 551 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-187.624/-187.624, F: 0.032/0.118/0.136
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.669/-187.668, F: 0.233/0.233/0.165
+Warning: Get negative variance
+BFGS:   42 14:35:44     -186.719841        0.152603
+From base model in rank-0, E: 0.000/-186.712/-186.723, F: 0.152/0.213/0.206
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.736/-186.721, F: 0.047/0.465/0.475
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.395, F: 0.041/0.030/0.426
+From base model in rank-0, E: 0.000/-187.626/-187.626, F: 0.033/0.092/0.094
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.670/-187.668, F: 0.247/0.232/0.158
+Warning: Get negative variance
+BFGS:   43 14:38:43     -186.720888        0.177005
+From base model in rank-0, E: 0.000/-186.712/-186.723, F: 0.160/0.199/0.161
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.733, F: 0.045/0.030/0.461
+From base model in rank-0, E: 0.000/-187.398/-187.399, F: 0.043/0.401/0.410
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.626/-187.627, F: 0.038/0.151/0.156
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.668/-187.665, F: 0.243/0.226/0.165
+Warning: Get negative variance
+BFGS:   44 14:41:39     -186.722716        0.220987
+From base model in rank-0, E: 0.000/-186.715/-186.725, F: 0.164/0.204/0.159
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.738, F: 0.045/0.030/0.470
+From base model in rank-0, E: 0.000/-187.401/-187.402, F: 0.041/0.380/0.386
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.627/-187.629, F: 0.034/0.106/0.102
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.670/-187.667, F: 0.259/0.229/0.158
+Warning: Get negative variance
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.57756**2 *RBF(length=0.85921) 80 energy (0.00250) 573 forces (0.02500)
+
+BFGS:   45 14:52:16     -186.725067        0.215593
+From base model in rank-0, E: 0.003/-186.719/-186.733, F: 0.184/0.181/0.142
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.750, F: 0.037/0.030/0.488
+From surrogate in rank-0,  E: 0.000/0.003/-187.403, F: 0.027/0.030/0.353
+From surrogate in rank-0,  E: 0.000/0.003/-187.623, F: 0.029/0.030/0.095
+From base model in rank-0, E: 0.002/-187.671/-187.670, F: 0.292/0.199/0.139
+Warning: Get negative variance
+BFGS:   46 14:54:19     -186.733398        0.147255
+From base model in rank-0, E: 0.003/-186.729/-186.738, F: 0.219/0.255/0.147
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.754, F: 0.046/0.030/0.500
+From surrogate in rank-0,  E: 0.000/0.003/-187.403, F: 0.031/0.030/0.343
+From base model in rank-0, E: 0.000/-187.625/-187.632, F: 0.032/0.082/0.074
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.673/-187.669, F: 0.354/0.217/0.123
+BFGS:   47 14:56:47     -186.737870        0.176275
+From base model in rank-0, E: 0.000/-186.746/-186.745, F: 0.255/0.303/0.140
+Warning: Get negative variance
+From base model in rank-0, E: 0.002/-186.757/-186.728, F: 0.059/0.496/0.456
+Warning: Get negative variance
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.58337**2 *RBF(length=0.86020) 81 energy (0.00250) 593 forces (0.02500)
+
+From base model in rank-0, E: 0.012/-187.403/-187.403, F: 0.033/0.359/0.318
+From base model in rank-0, E: 0.013/-187.625/-187.633, F: 0.029/0.075/0.068
+From base model in rank-0, E: 0.012/-187.668/-187.668, F: 0.361/0.142/0.106
+BFGS:   48 15:07:18     -186.727728        0.162579
+From base model in rank-0, E: 0.012/-186.733/-186.742, F: 0.217/0.174/0.166
+From base model in rank-0, E: 0.010/-186.748/-186.727, F: 0.029/0.472/0.466
+From base model in rank-0, E: 0.012/-187.403/-187.404, F: 0.030/0.381/0.348
+From base model in rank-0, E: 0.012/-187.627/-187.637, F: 0.028/0.060/0.068
+From base model in rank-0, E: 0.013/-187.668/-187.668, F: 0.323/0.125/0.114
+BFGS:   49 15:11:03     -186.726667        0.158571
+From base model in rank-0, E: 0.012/-186.727/-186.735, F: 0.182/0.199/0.206
+From base model in rank-0, E: 0.012/-186.742/-186.724, F: 0.026/0.475/0.481
+From base model in rank-0, E: 0.012/-187.401/-187.404, F: 0.026/0.402/0.382
+From base model in rank-0, E: 0.011/-187.627/-187.635, F: 0.025/0.089/0.086
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.58506**2 *RBF(length=0.85812) 93 energy (0.00250) 602 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-187.662/-187.666, F: 0.238/0.142/0.143
+Warning: Get negative variance
+BFGS:   50 15:23:18     -186.723963        0.164586
+From base model in rank-0, E: 0.000/-186.724/-186.733, F: 0.052/0.211/0.199
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.741, F: 0.026/0.030/0.475
+From surrogate in rank-0,  E: 0.000/0.003/-187.400, F: 0.024/0.030/0.381
+From surrogate in rank-0,  E: 0.000/0.003/-187.628, F: 0.025/0.030/0.060
+From base model in rank-0, E: 0.000/-187.661/-187.665, F: 0.230/0.150/0.151
+Warning: Get negative variance
+BFGS:   51 15:25:17     -186.732781        0.145919
+From base model in rank-0, E: 0.000/-186.726/-186.736, F: 0.059/0.220/0.170
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.743, F: 0.027/0.030/0.478
+From surrogate in rank-0,  E: 0.000/0.003/-187.401, F: 0.024/0.030/0.362
+From surrogate in rank-0,  E: 0.000/0.003/-187.629, F: 0.027/0.030/0.071
+From base model in rank-0, E: 0.000/-187.660/-187.664, F: 0.249/0.150/0.152
+Warning: Get negative variance
+BFGS:   52 15:27:12     -186.736097        0.116912
+From base model in rank-0, E: 0.000/-186.731/-186.741, F: 0.071/0.211/0.150
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.743, F: 0.033/0.030/0.453
+From surrogate in rank-0,  E: 0.000/0.003/-187.401, F: 0.028/0.030/0.343
+From base model in rank-0, E: 0.000/-187.631/-187.637, F: 0.032/0.088/0.097
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.659/-187.663, F: 0.276/0.142/0.141
+Warning: Get negative variance
+BFGS:   53 15:29:45     -186.740887        0.135696
+From base model in rank-0, E: 0.000/-186.739/-186.749, F: 0.095/0.172/0.158
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.741, F: 0.041/0.030/0.415
+From base model in rank-0, E: 0.000/-187.402/-187.403, F: 0.034/0.332/0.330
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.632/-187.639, F: 0.042/0.107/0.090
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.658/-187.661, F: 0.311/0.131/0.122
+Warning: Get negative variance
+BFGS:   54 15:32:50     -186.740617        0.129390
+From base model in rank-0, E: 0.000/-186.737/-186.747, F: 0.088/0.184/0.178
+Warning: Get negative variance
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.58684**2 *RBF(length=0.85608) 93 energy (0.00250) 623 forces (0.02500)
+
+From base model in rank-0, E: 0.008/-186.740/-186.720, F: 0.037/0.426/0.418
+From base model in rank-0, E: 0.006/-187.402/-187.402, F: 0.029/0.341/0.344
+From base model in rank-0, E: 0.007/-187.633/-187.639, F: 0.031/0.064/0.060
+From base model in rank-0, E: 0.006/-187.656/-187.661, F: 0.260/0.128/0.127
+BFGS:   55 15:45:59     -186.719955        0.125918
+From base model in rank-0, E: 0.007/-186.731/-186.739, F: 0.042/0.236/0.244
+From base model in rank-0, E: 0.007/-186.739/-186.721, F: 0.029/0.473/0.474
+From base model in rank-0, E: 0.005/-187.396/-187.398, F: 0.026/0.374/0.378
+From base model in rank-0, E: 0.005/-187.630/-187.636, F: 0.027/0.088/0.104
+From base model in rank-0, E: 0.008/-187.654/-187.659, F: 0.221/0.146/0.148
+BFGS:   56 15:49:39     -186.720939        0.181689
+From base model in rank-0, E: 0.006/-186.733/-186.740, F: 0.044/0.229/0.232
+From base model in rank-0, E: 0.006/-186.740/-186.721, F: 0.031/0.451/0.449
+From base model in rank-0, E: 0.005/-187.397/-187.399, F: 0.026/0.366/0.369
+From base model in rank-0, E: 0.005/-187.631/-187.637, F: 0.029/0.058/0.074
+From base model in rank-0, E: 0.006/-187.653/-187.659, F: 0.227/0.143/0.143
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.58816**2 *RBF(length=0.85658) 107 energy (0.00250) 631 forces (0.02500)
+
+BFGS:   57 16:01:35     -186.721274        0.150622
+From base model in rank-0, E: 0.000/-186.735/-186.741, F: 0.044/0.237/0.216
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.737, F: 0.033/0.030/0.401
+From surrogate in rank-0,  E: 0.000/0.003/-187.394, F: 0.027/0.030/0.351
+From base model in rank-0, E: 0.000/-187.633/-187.637, F: 0.031/0.072/0.055
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.647/-187.655, F: 0.178/0.161/0.136
+Warning: Get negative variance
+BFGS:   58 16:04:10     -186.736846        0.106798
+From base model in rank-0, E: 0.000/-186.737/-186.741, F: 0.055/0.265/0.215
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.734/-186.716, F: 0.038/0.364/0.352
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.390, F: 0.029/0.030/0.360
+From base model in rank-0, E: 0.000/-187.631/-187.636, F: 0.037/0.110/0.095
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.644/-187.652, F: 0.184/0.174/0.126
+Warning: Get negative variance
+BFGS:   59 16:07:14     -186.716446        0.149003
+From base model in rank-0, E: 0.000/-186.735/-186.738, F: 0.064/0.302/0.236
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.733/-186.717, F: 0.042/0.366/0.355
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.387, F: 0.030/0.030/0.364
+From base model in rank-0, E: 0.000/-187.629/-187.634, F: 0.041/0.156/0.139
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.642/-187.649, F: 0.182/0.167/0.122
+Warning: Get negative variance
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.58830**2 *RBF(length=0.85752) 107 energy (0.00250) 653 forces (0.02500)
+
+BFGS:   60 16:20:54     -186.716584        0.129850
+From base model in rank-0, E: 0.008/-186.727/-186.730, F: 0.059/0.334/0.286
+From base model in rank-0, E: 0.009/-186.732/-186.716, F: 0.035/0.379/0.386
+From base model in rank-0, E: 0.008/-187.380/-187.378, F: 0.028/0.364/0.365
+From base model in rank-0, E: 0.009/-187.626/-187.630, F: 0.040/0.178/0.180
+From base model in rank-0, E: 0.009/-187.635/-187.644, F: 0.082/0.105/0.107
+BFGS:   61 16:24:36     -186.716398        0.178712
+From base model in rank-0, E: 0.009/-186.723/-186.726, F: 0.066/0.367/0.307
+From base model in rank-0, E: 0.007/-186.732/-186.717, F: 0.036/0.399/0.412
+From base model in rank-0, E: 0.008/-187.377/-187.375, F: 0.027/0.357/0.385
+From base model in rank-0, E: 0.006/-187.626/-187.631, F: 0.039/0.150/0.150
+From base model in rank-0, E: 0.008/-187.634/-187.644, F: 0.082/0.096/0.098
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.59212**2 *RBF(length=0.85415) 117 energy (0.00250) 665 forces (0.02500)
+
+BFGS:   62 16:39:23     -186.717237        0.149519
+From base model in rank-0, E: 0.012/-186.717/-186.720, F: 0.078/0.355/0.321
+From base model in rank-0, E: 0.012/-186.731/-186.718, F: 0.037/0.403/0.413
+From base model in rank-0, E: 0.011/-187.373/-187.369, F: 0.027/0.374/0.408
+From base model in rank-0, E: 0.013/-187.628/-187.632, F: 0.027/0.073/0.069
+From base model in rank-0, E: 0.012/-187.632/-187.642, F: 0.081/0.079/0.084
+BFGS:   63 16:43:11     -186.718237        0.152622
+From base model in rank-0, E: 0.009/-186.713/-186.715, F: 0.094/0.351/0.314
+From base model in rank-0, E: 0.011/-186.729/-186.718, F: 0.042/0.387/0.396
+From base model in rank-0, E: 0.010/-187.369/-187.365, F: 0.027/0.380/0.415
+From base model in rank-0, E: 0.010/-187.627/-187.632, F: 0.029/0.097/0.091
+From base model in rank-0, E: 0.009/-187.631/-187.641, F: 0.083/0.085/0.081
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.60178**2 *RBF(length=0.84807) 127 energy (0.00250) 677 forces (0.02500)
+
+BFGS:   64 16:58:15     -186.715442        0.253332
+From base model in rank-0, E: 0.006/-186.707/-186.716, F: 0.141/0.355/0.278
+From base model in rank-0, E: 0.001/-186.721/-186.715, F: 0.042/0.313/0.293
+From base model in rank-0, E: 0.007/-187.366/-187.361, F: 0.027/0.379/0.400
+From base model in rank-0, E: 0.005/-187.624/-187.629, F: 0.041/0.328/0.294
+From base model in rank-0, E: 0.007/-187.626/-187.635, F: 0.107/0.279/0.260
+BFGS:   65 17:02:07     -186.714809        0.324908
+From base model in rank-0, E: 0.006/-186.716/-186.721, F: 0.092/0.279/0.260
+From surrogate in rank-0,  E: 0.000/0.003/-186.730, F: 0.031/0.030/0.389
+From base model in rank-0, E: 0.008/-187.373/-187.370, F: 0.024/0.370/0.394
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.60289**2 *RBF(length=0.84703) 134 energy (0.00250) 691 forces (0.02500)
+
+From surrogate in rank-0,  E: 0.000/0.003/-187.630, F: 0.026/0.030/0.121
+From base model in rank-0, E: 0.000/-187.633/-187.643, F: 0.075/0.090/0.091
+Warning: Get negative variance
+BFGS:   66 17:17:32     -186.720714        0.197103
+From base model in rank-0, E: 0.000/-186.719/-186.722, F: 0.082/0.280/0.262
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.731, F: 0.029/0.030/0.360
+From surrogate in rank-0,  E: 0.000/0.003/-187.372, F: 0.025/0.030/0.373
+From surrogate in rank-0,  E: 0.000/0.003/-187.631, F: 0.027/0.030/0.070
+From base model in rank-0, E: 0.000/-187.633/-187.643, F: 0.075/0.084/0.093
+Warning: Get negative variance
+BFGS:   67 17:19:39     -186.722452        0.193401
+From base model in rank-0, E: 0.000/-186.723/-186.726, F: 0.081/0.257/0.243
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.732, F: 0.030/0.030/0.330
+From surrogate in rank-0,  E: 0.000/0.003/-187.373, F: 0.026/0.030/0.373
+From surrogate in rank-0,  E: 0.000/0.003/-187.632, F: 0.027/0.030/0.052
+From base model in rank-0, E: 0.000/-187.633/-187.643, F: 0.076/0.083/0.095
+Warning: Get negative variance
+BFGS:   68 17:21:46     -186.725563        0.173089
+From base model in rank-0, E: 0.000/-186.728/-186.731, F: 0.085/0.219/0.243
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.731, F: 0.031/0.030/0.338
+From surrogate in rank-0,  E: 0.000/0.003/-187.372, F: 0.027/0.030/0.369
+From surrogate in rank-0,  E: 0.000/0.003/-187.633, F: 0.028/0.030/0.074
+From base model in rank-0, E: 0.000/-187.633/-187.643, F: 0.079/0.085/0.099
+Warning: Get negative variance
+BFGS:   69 17:23:52     -186.730808        0.133155
+From base model in rank-0, E: 0.000/-186.731/-186.733, F: 0.092/0.218/0.255
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.731, F: 0.031/0.030/0.345
+From surrogate in rank-0,  E: 0.000/0.003/-187.370, F: 0.028/0.030/0.371
+From surrogate in rank-0,  E: 0.000/0.003/-187.634, F: 0.029/0.030/0.078
+From base model in rank-0, E: 0.000/-187.632/-187.642, F: 0.083/0.087/0.102
+Warning: Get negative variance
+BFGS:   70 17:25:59     -186.731269        0.178490
+From base model in rank-0, E: 0.000/-186.729/-186.731, F: 0.093/0.226/0.256
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.733, F: 0.030/0.030/0.362
+From surrogate in rank-0,  E: 0.000/0.003/-187.368, F: 0.028/0.030/0.375
+From surrogate in rank-0,  E: 0.000/0.003/-187.634, F: 0.028/0.030/0.055
+From base model in rank-0, E: 0.000/-187.632/-187.642, F: 0.083/0.080/0.096
+Warning: Get negative variance
+BFGS:   71 17:28:06     -186.731283        0.115814
+From base model in rank-0, E: 0.000/-186.726/-186.729, F: 0.101/0.237/0.268
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.733, F: 0.029/0.030/0.416
+From surrogate in rank-0,  E: 0.000/0.003/-187.359, F: 0.030/0.030/0.384
+From surrogate in rank-0,  E: 0.000/0.003/-187.632, F: 0.027/0.030/0.071
+From base model in rank-0, E: 0.000/-187.630/-187.640, F: 0.088/0.075/0.086
+Warning: Get negative variance
+BFGS:   72 17:30:13     -186.729020        0.121241
+From base model in rank-0, E: 0.000/-186.724/-186.727, F: 0.111/0.242/0.281
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.729, F: 0.034/0.030/0.443
+From surrogate in rank-0,  E: 0.000/0.003/-187.346, F: 0.034/0.030/0.391
+From surrogate in rank-0,  E: 0.000/0.003/-187.628, F: 0.028/0.030/0.087
+From base model in rank-0, E: 0.000/-187.629/-187.636, F: 0.095/0.089/0.075
+Warning: Get negative variance
+BFGS:   73 17:32:20     -186.726757        0.130308
+From base model in rank-0, E: 0.000/-186.722/-186.724, F: 0.127/0.242/0.302
+Warning: Get negative variance
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.60304**2 *RBF(length=0.85249) 134 energy (0.00250) 712 forces (0.02500)
+
+From surrogate in rank-0,  E: 0.000/0.003/-186.722, F: 0.044/0.030/0.442
+From surrogate in rank-0,  E: 0.000/0.003/-187.324, F: 0.039/0.030/0.401
+From surrogate in rank-0,  E: 0.000/0.003/-187.619, F: 0.028/0.030/0.115
+From base model in rank-0, E: 0.000/-187.625/-187.631, F: 0.072/0.105/0.062
+Warning: Get negative variance
+BFGS:   74 17:47:20     -186.722044        0.193955
+From base model in rank-0, E: 0.000/-186.720/-186.725, F: 0.063/0.279/0.292
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.722/-186.701, F: 0.045/0.411/0.404
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.322/-187.312, F: 0.040/0.397/0.450
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.618, F: 0.028/0.030/0.103
+From base model in rank-0, E: 0.000/-187.624/-187.629, F: 0.072/0.109/0.056
+Warning: Get negative variance
+BFGS:   75 17:50:39     -186.701019        0.197232
+From base model in rank-0, E: 0.000/-186.720/-186.728, F: 0.064/0.188/0.205
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.720/-186.702, F: 0.059/0.250/0.296
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.323, F: 0.038/0.030/0.380
+From base model in rank-0, E: 0.000/-187.588/-187.583, F: 0.079/0.380/0.348
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.609/-187.611, F: 0.069/0.244/0.240
+Warning: Get negative variance
+BFGS:   76 17:54:00     -186.702262        0.454924
+From base model in rank-0, E: 0.000/-186.720/-186.726, F: 0.059/0.251/0.270
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.725/-186.707, F: 0.050/0.301/0.281
+Warning: Get negative variance
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.60322**2 *RBF(length=0.85589) 134 energy (0.00250) 735 forces (0.02500)
+
+From surrogate in rank-0,  E: 0.000/0.003/-187.323, F: 0.030/0.030/0.412
+From surrogate in rank-0,  E: 0.000/0.003/-187.613, F: 0.029/0.030/0.113
+From base model in rank-0, E: 0.000/-187.623/-187.626, F: 0.064/0.095/0.069
+Warning: Get negative variance
+BFGS:   77 18:10:35     -186.707175        0.223791
+From base model in rank-0, E: 0.000/-186.715/-186.723, F: 0.054/0.275/0.279
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.723, F: 0.031/0.030/0.320
+From surrogate in rank-0,  E: 0.000/0.003/-187.316, F: 0.031/0.030/0.420
+From surrogate in rank-0,  E: 0.000/0.003/-187.610, F: 0.028/0.030/0.112
+From base model in rank-0, E: 0.000/-187.622/-187.625, F: 0.063/0.099/0.058
+Warning: Get negative variance
+BFGS:   78 18:12:46     -186.722792        0.166998
+From base model in rank-0, E: 0.000/-186.706/-186.716, F: 0.057/0.289/0.291
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.719, F: 0.034/0.030/0.362
+From surrogate in rank-0,  E: 0.000/0.003/-187.297, F: 0.035/0.030/0.433
+From surrogate in rank-0,  E: 0.000/0.003/-187.600, F: 0.028/0.030/0.131
+From base model in rank-0, E: 0.000/-187.619/-187.622, F: 0.057/0.101/0.056
+Warning: Get negative variance
+BFGS:   79 18:14:55     -186.716178        0.173165
+From base model in rank-0, E: 0.000/-186.702/-186.714, F: 0.060/0.295/0.300
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.718/-186.701, F: 0.037/0.330/0.337
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.287, F: 0.038/0.030/0.435
+From surrogate in rank-0,  E: 0.000/0.003/-187.594, F: 0.028/0.030/0.142
+From base model in rank-0, E: 0.000/-187.618/-187.621, F: 0.052/0.097/0.055
+Warning: Get negative variance
+BFGS:   80 18:17:39     -186.701381        0.159087
+From base model in rank-0, E: 0.000/-186.682/-186.705, F: 0.069/0.396/0.352
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.710/-186.692, F: 0.066/0.236/0.221
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.246/-187.229, F: 0.052/0.454/0.501
+Warning: Get negative variance
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.60978**2 *RBF(length=0.85205) 134 energy (0.00250) 758 forces (0.02500)
+
+From base model in rank-0, E: 0.004/-187.561/-187.555, F: 0.032/0.225/0.223
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.617, F: 0.027/0.030/0.172
+BFGS:   81 18:35:22     -186.692183        0.249909
+From base model in rank-0, E: 0.000/-186.709/-186.717, F: 0.038/0.325/0.304
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.714/-186.701, F: 0.035/0.342/0.324
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.272, F: 0.038/0.030/0.444
+From surrogate in rank-0,  E: 0.000/0.003/-187.586, F: 0.030/0.030/0.174
+From surrogate in rank-0,  E: 0.000/0.003/-187.622, F: 0.030/0.030/0.065
+BFGS:   82 18:37:31     -186.701142        0.150485
+From base model in rank-0, E: 0.000/-186.709/-186.717, F: 0.038/0.338/0.318
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.714, F: 0.035/0.030/0.385
+From base model in rank-0, E: 0.003/-187.268/-187.258, F: 0.038/0.447/0.463
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.584, F: 0.029/0.030/0.163
+From base model in rank-0, E: 0.003/-187.622/-187.622, F: 0.030/0.054/0.073
+Warning: Get negative variance
+BFGS:   83 18:40:19     -186.713874        0.171668
+From base model in rank-0, E: 0.004/-186.699/-186.711, F: 0.043/0.507/0.503
+From surrogate in rank-0,  E: 0.000/0.003/-186.699, F: 0.054/0.030/0.546
+From surrogate in rank-0,  E: 0.000/0.003/-187.202, F: 0.046/0.030/0.513
+From base model in rank-0, E: 0.000/-187.545/-187.543, F: 0.036/0.236/0.274
+Warning: Get negative variance
+From base model in rank-0, E: 0.005/-187.620/-187.616, F: 0.047/0.139/0.187
+Warning: Get negative variance
+BFGS:   84 18:43:18     -186.699333        0.370419
+From surrogate in rank-0,  E: 0.000/0.003/-186.708, F: 0.040/0.030/0.403
+From base model in rank-0, E: 0.005/-186.714/-186.697, F: 0.040/0.363/0.347
+From surrogate in rank-0,  E: 0.000/0.003/-187.242, F: 0.042/0.030/0.455
+From surrogate in rank-0,  E: 0.000/0.003/-187.571, F: 0.029/0.030/0.185
+From base model in rank-0, E: 0.000/-187.624/-187.621, F: 0.036/0.081/0.118
+Warning: Get negative variance
+BFGS:   85 18:45:29     -186.696740        0.160756
+From base model in rank-0, E: 0.000/-186.709/-186.717, F: 0.040/0.367/0.342
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.716/-186.701, F: 0.039/0.370/0.350
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.249, F: 0.041/0.030/0.451
+From surrogate in rank-0,  E: 0.000/0.003/-187.573, F: 0.029/0.030/0.186
+From base model in rank-0, E: 0.005/-187.624/-187.622, F: 0.034/0.068/0.081
+Warning: Get negative variance
+BFGS:   86 18:48:16     -186.700510        0.136016
+From base model in rank-0, E: 0.000/-186.709/-186.717, F: 0.042/0.352/0.320
+Warning: Get negative variance
+From base model in rank-0, E: 0.003/-186.718/-186.702, F: 0.040/0.367/0.349
+Warning: Get negative variance
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.61227**2 *RBF(length=0.85026) 135 energy (0.00250) 778 forces (0.02500)
+
+From surrogate in rank-0,  E: 0.000/0.003/-187.243, F: 0.030/0.030/0.444
+From surrogate in rank-0,  E: 0.000/0.003/-187.566, F: 0.024/0.030/0.204
+From surrogate in rank-0,  E: 0.000/0.003/-187.623, F: 0.022/0.030/0.049
+BFGS:   87 19:05:44     -186.702117        0.127999
+From surrogate in rank-0,  E: 0.000/0.003/-186.709, F: 0.032/0.030/0.331
+From base model in rank-0, E: 0.000/-186.719/-186.702, F: 0.045/0.307/0.304
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.221, F: 0.037/0.030/0.426
+From surrogate in rank-0,  E: 0.000/0.003/-187.543, F: 0.025/0.030/0.234
+From surrogate in rank-0,  E: 0.000/0.003/-187.622, F: 0.024/0.030/0.100
+BFGS:   88 19:07:19     -186.701967        0.192569
+From base model in rank-0, E: 0.000/-186.710/-186.717, F: 0.032/0.308/0.252
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.720/-186.703, F: 0.045/0.337/0.332
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.223, F: 0.037/0.030/0.427
+From surrogate in rank-0,  E: 0.000/0.003/-187.546, F: 0.025/0.030/0.226
+From surrogate in rank-0,  E: 0.002/0.003/-187.624, F: 0.023/0.030/0.115
+BFGS:   89 19:09:31     -186.702821        0.163480
+From base model in rank-0, E: 0.000/-186.711/-186.717, F: 0.034/0.302/0.246
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.723/-186.703, F: 0.050/0.405/0.403
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.215, F: 0.038/0.030/0.446
+From surrogate in rank-0,  E: 0.000/0.003/-187.543, F: 0.025/0.030/0.224
+From surrogate in rank-0,  E: 0.000/0.003/-187.625, F: 0.024/0.030/0.088
+BFGS:   90 19:11:42     -186.702956        0.201132
+From base model in rank-0, E: 0.000/-186.708/-186.714, F: 0.039/0.304/0.250
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.725/-186.704, F: 0.055/0.338/0.357
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.207, F: 0.040/0.030/0.462
+From surrogate in rank-0,  E: 0.000/0.003/-187.537, F: 0.026/0.030/0.223
+From surrogate in rank-0,  E: 0.000/0.003/-187.627, F: 0.025/0.030/0.090
+BFGS:   91 19:13:52     -186.704264        0.167310
+From base model in rank-0, E: 0.000/-186.704/-186.711, F: 0.042/0.323/0.256
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.727/-186.705, F: 0.062/0.282/0.325
+Warning: Get negative variance
+
+Update GP model => 24
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.62047**2 *RBF(length=0.84560) 135 energy (0.00250) 802 forces (0.02500)
+
+From base model in rank-0, E: 0.017/-187.197/-187.182, F: 0.042/0.455/0.487
+From base model in rank-0, E: 0.017/-187.525/-187.521, F: 0.027/0.231/0.236
+From base model in rank-0, E: 0.017/-187.625/-187.625, F: 0.026/0.069/0.100
+BFGS:   92 19:33:57     -186.705129        0.165406
+From base model in rank-0, E: 0.018/-186.704/-186.711, F: 0.023/0.307/0.292
+From base model in rank-0, E: 0.017/-186.720/-186.708, F: 0.043/0.237/0.258
+From base model in rank-0, E: 0.017/-187.202/-187.187, F: 0.041/0.447/0.480
+From base model in rank-0, E: 0.019/-187.528/-187.525, F: 0.028/0.233/0.241
+From base model in rank-0, E: 0.017/-187.626/-187.627, F: 0.026/0.074/0.098
+BFGS:   93 19:38:06     -186.707809        0.172480
+From base model in rank-0, E: 0.017/-186.702/-186.709, F: 0.024/0.339/0.332
+From base model in rank-0, E: 0.017/-186.723/-186.710, F: 0.043/0.205/0.236
+From base model in rank-0, E: 0.017/-187.201/-187.186, F: 0.043/0.434/0.464
+From base model in rank-0, E: 0.015/-187.526/-187.525, F: 0.028/0.250/0.257
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.63792**2 *RBF(length=0.84798) 147 energy (0.00250) 811 forces (0.02500)
+
+From base model in rank-0, E: 0.007/-187.626/-187.628, F: 0.025/0.079/0.081
+BFGS:   94 19:55:54     -186.709182        0.264981
+From base model in rank-0, E: 0.007/-186.703/-186.712, F: 0.025/0.381/0.386
+From base model in rank-0, E: 0.008/-186.722/-186.710, F: 0.028/0.266/0.294
+From base model in rank-0, E: 0.008/-187.210/-187.201, F: 0.028/0.435/0.441
+From base model in rank-0, E: 0.010/-187.537/-187.538, F: 0.024/0.248/0.255
+From base model in rank-0, E: 0.012/-187.623/-187.627, F: 0.023/0.103/0.096
+BFGS:   95 19:59:59     -186.709614        0.160974
+From base model in rank-0, E: 0.010/-186.704/-186.712, F: 0.022/0.353/0.350
+From base model in rank-0, E: 0.011/-186.723/-186.712, F: 0.027/0.252/0.285
+From base model in rank-0, E: 0.010/-187.206/-187.198, F: 0.027/0.453/0.461
+From base model in rank-0, E: 0.008/-187.535/-187.536, F: 0.025/0.241/0.248
+From base model in rank-0, E: 0.007/-187.625/-187.629, F: 0.023/0.049/0.067
+BFGS:   96 20:04:05     -186.711689        0.147541
+From base model in rank-0, E: 0.009/-186.702/-186.711, F: 0.026/0.322/0.308
+From base model in rank-0, E: 0.006/-186.724/-186.713, F: 0.030/0.255/0.294
+From base model in rank-0, E: 0.010/-187.195/-187.187, F: 0.029/0.483/0.492
+From base model in rank-0, E: 0.009/-187.526/-187.527, F: 0.026/0.243/0.249
+From base model in rank-0, E: 0.009/-187.628/-187.631, F: 0.025/0.048/0.062
+BFGS:   97 20:08:16     -186.710950        0.251779
+From base model in rank-0, E: 0.010/-186.703/-186.712, F: 0.025/0.323/0.311
+From base model in rank-0, E: 0.008/-186.724/-186.713, F: 0.029/0.272/0.309
+From base model in rank-0, E: 0.009/-187.198/-187.190, F: 0.028/0.485/0.489
+From base model in rank-0, E: 0.008/-187.529/-187.530, F: 0.025/0.242/0.248
+From base model in rank-0, E: 0.010/-187.627/-187.632, F: 0.025/0.043/0.061
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.64066**2 *RBF(length=0.84600) 168 energy (0.00250) 811 forces (0.02500)
+
+BFGS:   98 20:29:08     -186.712351        0.253049
+From base model in rank-0, E: 0.009/-186.706/-186.716, F: 0.027/0.306/0.297
+From base model in rank-0, E: 0.007/-186.724/-186.713, F: 0.029/0.300/0.330
+From base model in rank-0, E: 0.007/-187.202/-187.197, F: 0.029/0.489/0.484
+From base model in rank-0, E: 0.005/-187.535/-187.536, F: 0.024/0.243/0.249
+From base model in rank-0, E: 0.006/-187.626/-187.632, F: 0.023/0.058/0.059
+BFGS:   99 20:33:14     -186.713215        0.139810
+From base model in rank-0, E: 0.007/-186.705/-186.716, F: 0.030/0.290/0.278
+From base model in rank-0, E: 0.008/-186.725/-186.715, F: 0.032/0.260/0.299
+From base model in rank-0, E: 0.007/-187.196/-187.191, F: 0.030/0.501/0.492
+From base model in rank-0, E: 0.004/-187.531/-187.533, F: 0.025/0.248/0.254
+From base model in rank-0, E: 0.008/-187.627/-187.633, F: 0.024/0.067/0.056
+BFGS:  100 20:37:20     -186.714792        0.117194
+From base model in rank-0, E: 0.006/-186.700/-186.714, F: 0.045/0.230/0.223
+From base model in rank-0, E: 0.010/-186.731/-186.722, F: 0.060/0.304/0.227
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.64373**2 *RBF(length=0.84384) 180 energy (0.00250) 820 forces (0.02500)
+
+From surrogate in rank-0,  E: 0.000/0.003/-187.155, F: 0.043/0.030/0.541
+From surrogate in rank-0,  E: 0.000/0.003/-187.503, F: 0.026/0.030/0.295
+From surrogate in rank-0,  E: 0.000/0.003/-187.627, F: 0.029/0.030/0.102
+BFGS:  101 20:57:03     -186.714317        0.273909
+From surrogate in rank-0,  E: 0.000/0.003/-186.706, F: 0.029/0.030/0.256
+From base model in rank-0, E: 0.000/-186.734/-186.721, F: 0.033/0.212/0.226
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.172, F: 0.035/0.030/0.501
+From surrogate in rank-0,  E: 0.000/0.003/-187.515, F: 0.025/0.030/0.271
+From surrogate in rank-0,  E: 0.000/0.003/-187.628, F: 0.027/0.030/0.083
+BFGS:  102 20:58:44     -186.705547        0.206735
+From surrogate in rank-0,  E: 0.000/0.003/-186.709, F: 0.023/0.030/0.294
+From surrogate in rank-0,  E: 0.000/0.003/-186.731, F: 0.028/0.030/0.286
+From surrogate in rank-0,  E: 0.000/0.003/-187.188, F: 0.029/0.030/0.453
+From surrogate in rank-0,  E: 0.000/0.003/-187.526, F: 0.024/0.030/0.256
+From surrogate in rank-0,  E: 0.000/0.003/-187.628, F: 0.024/0.030/0.046
+BFGS:  103 20:59:48     -186.709171        0.241615
+From surrogate in rank-0,  E: 0.000/0.003/-186.710, F: 0.023/0.030/0.302
+From surrogate in rank-0,  E: 0.000/0.003/-186.732, F: 0.028/0.030/0.304
+From surrogate in rank-0,  E: 0.000/0.003/-187.186, F: 0.028/0.030/0.444
+From surrogate in rank-0,  E: 0.000/0.003/-187.527, F: 0.024/0.030/0.258
+From surrogate in rank-0,  E: 0.000/0.003/-187.628, F: 0.024/0.030/0.043
+BFGS:  104 21:00:53     -186.710036        0.246352
+From surrogate in rank-0,  E: 0.000/0.003/-186.716, F: 0.026/0.030/0.297
+From base model in rank-0, E: 0.000/-186.734/-186.714, F: 0.039/0.322/0.322
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.170, F: 0.032/0.030/0.426
+From surrogate in rank-0,  E: 0.000/0.003/-187.524, F: 0.023/0.030/0.278
+From surrogate in rank-0,  E: 0.000/0.003/-187.630, F: 0.024/0.030/0.047
+BFGS:  105 21:02:36     -186.714065        0.178591
+From base model in rank-0, E: 0.000/-186.718/-186.724, F: 0.033/0.251/0.240
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.745/-186.722, F: 0.068/0.222/0.227
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.146, F: 0.042/0.030/0.438
+From surrogate in rank-0,  E: 0.000/0.003/-187.509, F: 0.024/0.030/0.305
+From surrogate in rank-0,  E: 0.000/0.003/-187.632, F: 0.026/0.030/0.092
+BFGS:  106 21:04:53     -186.722408        0.244375
+From base model in rank-0, E: 0.000/-186.719/-186.728, F: 0.036/0.191/0.200
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.759/-186.736, F: 0.082/0.244/0.289
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.131/-187.121, F: 0.053/0.453/0.436
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.497, F: 0.023/0.030/0.319
+From surrogate in rank-0,  E: 0.000/0.003/-187.633, F: 0.029/0.030/0.106
+BFGS:  107 21:07:47     -186.727791        0.317510
+From base model in rank-0, E: 0.000/-186.722/-186.730, F: 0.034/0.169/0.193
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.756/-186.736, F: 0.064/0.227/0.244
+Warning: Get negative variance
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.64644**2 *RBF(length=0.84203) 180 energy (0.00250) 843 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-187.146/-187.137, F: 0.046/0.436/0.441
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.506, F: 0.024/0.030/0.300
+From surrogate in rank-0,  E: 0.000/0.003/-187.634, F: 0.027/0.030/0.045
+BFGS:  108 21:29:12     -186.730408        0.177281
+From surrogate in rank-0,  E: 0.000/0.003/-186.725, F: 0.023/0.030/0.204
+From base model in rank-0, E: 0.000/-186.748/-186.731, F: 0.041/0.306/0.328
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.157, F: 0.039/0.030/0.467
+From surrogate in rank-0,  E: 0.000/0.003/-187.516, F: 0.024/0.030/0.293
+From surrogate in rank-0,  E: 0.000/0.003/-187.634, F: 0.025/0.030/0.057
+BFGS:  109 21:30:56     -186.724567        0.177517
+From surrogate in rank-0,  E: 0.000/0.003/-186.731, F: 0.022/0.030/0.267
+From base model in rank-0, E: 0.000/-186.738/-186.720, F: 0.048/0.393/0.419
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.161, F: 0.039/0.030/0.461
+From surrogate in rank-0,  E: 0.000/0.003/-187.523, F: 0.023/0.030/0.285
+From surrogate in rank-0,  E: 0.000/0.003/-187.633, F: 0.025/0.030/0.093
+BFGS:  110 21:32:39     -186.720467        0.249909
+From base model in rank-0, E: 0.006/-186.732/-186.739, F: 0.023/0.240/0.225
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.749/-186.731, F: 0.051/0.303/0.333
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.149, F: 0.045/0.030/0.460
+From surrogate in rank-0,  E: 0.000/0.003/-187.515, F: 0.022/0.030/0.297
+From surrogate in rank-0,  E: 0.000/0.003/-187.635, F: 0.025/0.030/0.049
+BFGS:  111 21:34:59     -186.731028        0.221050
+From base model in rank-0, E: 0.000/-186.735/-186.745, F: 0.030/0.168/0.183
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.798/-186.775, F: 0.086/0.549/0.545
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.099/-187.088, F: 0.080/0.496/0.498
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.481, F: 0.023/0.030/0.348
+From base model in rank-0, E: 0.000/-187.631/-187.639, F: 0.030/0.199/0.203
+Warning: Get negative variance
+BFGS:  112 21:38:41     -186.745115        0.564099
+From surrogate in rank-0,  E: 0.000/0.003/-186.738, F: 0.029/0.030/0.186
+From base model in rank-0, E: 0.000/-186.784/-186.764, F: 0.072/0.383/0.401
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.119/-187.109, F: 0.067/0.470/0.476
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.498, F: 0.023/0.030/0.317
+From surrogate in rank-0,  E: 0.000/0.003/-187.636, F: 0.028/0.030/0.052
+BFGS:  113 21:40:59     -186.737749        0.295323
+From base model in rank-0, E: 0.000/-186.747/-186.748, F: 0.043/0.259/0.243
+Warning: Get negative variance
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.65618**2 *RBF(length=0.83721) 180 energy (0.00250) 865 forces (0.02500)
+
+From base model in rank-0, E: 0.013/-186.756/-186.734, F: 0.045/0.563/0.533
+From base model in rank-0, E: 0.011/-187.137/-187.127, F: 0.044/0.437/0.449
+From base model in rank-0, E: 0.009/-187.518/-187.512, F: 0.024/0.283/0.292
+From base model in rank-0, E: 0.010/-187.632/-187.636, F: 0.026/0.103/0.124
+BFGS:  114 22:04:23     -186.733507        0.403373
+From base model in rank-0, E: 0.013/-186.745/-186.752, F: 0.026/0.201/0.195
+From base model in rank-0, E: 0.010/-186.788/-186.764, F: 0.052/0.337/0.372
+From base model in rank-0, E: 0.012/-187.122/-187.114, F: 0.052/0.456/0.458
+From base model in rank-0, E: 0.010/-187.509/-187.505, F: 0.024/0.298/0.303
+From base model in rank-0, E: 0.013/-187.636/-187.640, F: 0.025/0.044/0.082
+BFGS:  115 22:08:33     -186.751920        0.165255
+From base model in rank-0, E: 0.007/-186.747/-186.755, F: 0.028/0.207/0.199
+From base model in rank-0, E: 0.009/-186.792/-186.769, F: 0.055/0.356/0.363
+From base model in rank-0, E: 0.011/-187.119/-187.112, F: 0.054/0.469/0.463
+From base model in rank-0, E: 0.009/-187.509/-187.507, F: 0.024/0.301/0.306
+From base model in rank-0, E: 0.013/-187.636/-187.642, F: 0.024/0.048/0.066
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.65956**2 *RBF(length=0.83497) 194 energy (0.00250) 872 forces (0.02500)
+
+BFGS:  116 22:32:35     -186.754562        0.158338
+From base model in rank-0, E: 0.015/-186.756/-186.763, F: 0.045/0.254/0.241
+From base model in rank-0, E: 0.012/-186.805/-186.786, F: 0.066/0.441/0.461
+From base model in rank-0, E: 0.014/-187.106/-187.103, F: 0.062/0.503/0.473
+From base model in rank-0, E: 0.016/-187.510/-187.521, F: 0.028/0.292/0.298
+From base model in rank-0, E: 0.014/-187.633/-187.641, F: 0.026/0.085/0.097
+BFGS:  117 22:36:53     -186.762722        0.272112
+From base model in rank-0, E: 0.013/-186.771/-186.772, F: 0.081/0.241/0.230
+From base model in rank-0, E: 0.018/-186.836/-186.814, F: 0.083/0.503/0.539
+
+Update GP model => 24
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.66501**2 *RBF(length=0.83178) 201 energy (0.00250) 889 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-187.088/-187.088, F: 0.064/0.475/0.459
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.506/-187.510, F: 0.033/0.290/0.303
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.626, F: 0.026/0.030/0.124
+BFGS:  118 23:00:53     -186.772095        0.341544
+From base model in rank-0, E: 0.000/-186.779/-186.785, F: 0.157/0.195/0.210
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.924/-186.893, F: 0.099/0.852/0.871
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.055/-187.059, F: 0.111/0.451/0.415
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.509/-187.513, F: 0.039/0.246/0.269
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.614, F: 0.026/0.030/0.153
+BFGS:  119 23:04:37     -186.784803        0.788617
+From base model in rank-0, E: 0.000/-186.817/-186.782, F: 0.353/0.593/0.214
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.093/-187.039, F: 0.133/0.950/1.001
+Warning: Get negative variance
+
+Update GP model => 24
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.67606**2 *RBF(length=0.82674) 201 energy (0.00250) 913 forces (0.02500)
+
+From base model in rank-0, E: 0.005/-187.025/-187.026, F: 0.131/0.358/0.356
+From base model in rank-0, E: 0.003/-187.502/-187.511, F: 0.042/0.201/0.242
+From base model in rank-0, E: 0.007/-187.591/-187.603, F: 0.027/0.179/0.236
+BFGS:  120 23:30:14     -186.782115        1.086717
+From base model in rank-0, E: 0.005/-186.771/-186.777, F: 0.260/0.463/0.221
+From base model in rank-0, E: 0.000/-187.181/-187.111, F: 0.100/0.900/0.914
+From base model in rank-0, E: 0.000/-187.025/-187.024, F: 0.159/0.338/0.347
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.67652**2 *RBF(length=0.82637) 206 energy (0.00250) 929 forces (0.02500)
+
+From base model in rank-0, E: 0.007/-187.512/-187.519, F: 0.043/0.232/0.243
+From surrogate in rank-0,  E: 0.000/0.003/-187.591, F: 0.025/0.030/0.192
+BFGS:  121 23:56:00     -186.777333        0.643749
+From base model in rank-0, E: 0.000/-186.774/-186.782, F: 0.220/0.479/0.209
+Warning: Get negative variance
+From base model in rank-0, E: 0.007/-187.176/-187.111, F: 0.092/1.021/1.005
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.045/-187.040, F: 0.125/0.349/0.347
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.535/-187.543, F: 0.039/0.159/0.203
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.608, F: 0.024/0.030/0.124
+BFGS:  122 23:59:45     -186.782288        0.577973
+From base model in rank-0, E: 0.000/-186.769/-186.786, F: 0.240/0.549/0.179
+Warning: Get negative variance
+From base model in rank-0, E: 0.005/-187.289/-187.212, F: 0.090/0.984/0.976
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.048/-187.039, F: 0.149/0.349/0.331
+Warning: Get negative variance
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.67773**2 *RBF(length=0.82543) 206 energy (0.00250) 952 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-187.545/-187.554, F: 0.031/0.148/0.178
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.611, F: 0.022/0.030/0.146
+BFGS:  123 00:26:27     -186.785672        0.665572
+From base model in rank-0, E: 0.000/-186.786/-186.803, F: 0.165/0.329/0.111
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.217, F: 0.090/0.030/1.327
+From base model in rank-0, E: 0.000/-187.056/-187.047, F: 0.119/0.335/0.316
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.545, F: 0.030/0.030/0.234
+From surrogate in rank-0,  E: 0.000/0.003/-187.615, F: 0.022/0.030/0.143
+BFGS:  124 00:28:56     -186.803222        0.883996
+From base model in rank-0, E: 0.000/-186.783/-186.804, F: 0.175/0.369/0.121
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.291, F: 0.091/0.030/1.052
+From base model in rank-0, E: 0.000/-187.051/-187.041, F: 0.139/0.335/0.308
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.545, F: 0.026/0.030/0.172
+From surrogate in rank-0,  E: 0.000/0.003/-187.615, F: 0.022/0.030/0.095
+BFGS:  125 00:31:26     -186.804204        0.614689
+From base model in rank-0, E: 0.000/-186.784/-186.806, F: 0.176/0.347/0.166
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.316/-187.223, F: 0.098/0.865/0.866
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.055/-187.043, F: 0.147/0.356/0.354
+Warning: Get negative variance
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.68215**2 *RBF(length=0.82292) 206 energy (0.00250) 974 forces (0.02500)
+
+From base model in rank-0, E: 0.009/-187.543/-187.554, F: 0.025/0.159/0.186
+From base model in rank-0, E: 0.012/-187.615/-187.630, F: 0.021/0.084/0.093
+BFGS:  126 00:59:59     -186.806142        0.395438
+From base model in rank-0, E: 0.011/-186.798/-186.806, F: 0.151/0.206/0.160
+From base model in rank-0, E: 0.012/-187.290/-187.201, F: 0.094/0.890/0.880
+From base model in rank-0, E: 0.008/-187.052/-187.046, F: 0.130/0.368/0.387
+From base model in rank-0, E: 0.013/-187.539/-187.548, F: 0.024/0.182/0.202
+From base model in rank-0, E: 0.011/-187.615/-187.632, F: 0.021/0.073/0.087
+BFGS:  127 01:04:29     -186.806364        0.279250
+From base model in rank-0, E: 0.009/-186.800/-186.808, F: 0.151/0.211/0.141
+From base model in rank-0, E: 0.011/-187.291/-187.200, F: 0.100/0.844/0.849
+From base model in rank-0, E: 0.012/-187.055/-187.046, F: 0.140/0.310/0.324
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.68858**2 *RBF(length=0.81993) 216 energy (0.00250) 987 forces (0.02500)
+
+From surrogate in rank-0,  E: 0.000/0.003/-187.541, F: 0.024/0.030/0.183
+From surrogate in rank-0,  E: 0.000/0.003/-187.615, F: 0.021/0.030/0.089
+BFGS:  128 01:32:34     -186.808320        0.237058
+From base model in rank-0, E: 0.002/-186.812/-186.811, F: 0.072/0.261/0.233
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.273/-187.189, F: 0.112/0.744/0.786
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.046/-187.040, F: 0.141/0.376/0.382
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.545, F: 0.025/0.030/0.176
+From base model in rank-0, E: 0.005/-187.614/-187.628, F: 0.021/0.135/0.117
+Warning: Get negative variance
+BFGS:  129 01:36:26     -186.811423        0.242490
+From base model in rank-0, E: 0.000/-186.815/-186.814, F: 0.072/0.250/0.155
+From base model in rank-0, E: 0.003/-187.266/-187.184, F: 0.117/0.730/0.782
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.047/-187.040, F: 0.149/0.361/0.370
+Warning: Get negative variance
+From base model in rank-0, E: 0.004/-187.547/-187.552, F: 0.026/0.170/0.207
+Warning: Get negative variance
+From base model in rank-0, E: 0.004/-187.615/-187.629, F: 0.021/0.108/0.094
+Warning: Get negative variance
+BFGS:  130 01:40:59     -186.813614        0.230279
+From base model in rank-0, E: 0.006/-186.819/-186.816, F: 0.072/0.192/0.122
+Warning: Get negative variance
+
+Update GP model => 24
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.69755**2 *RBF(length=0.81637) 216 energy (0.00250) 1011 forces (0.02500)
+
+From base model in rank-0, E: 0.015/-187.246/-187.167, F: 0.120/0.784/0.810
+From base model in rank-0, E: 0.014/-187.042/-187.045, F: 0.164/0.321/0.331
+From base model in rank-0, E: 0.014/-187.549/-187.555, F: 0.035/0.205/0.191
+From base model in rank-0, E: 0.013/-187.613/-187.630, F: 0.027/0.224/0.228
+BFGS:  131 02:11:43     -186.816372        0.288920
+From base model in rank-0, E: 0.013/-186.820/-186.815, F: 0.072/0.254/0.261
+From base model in rank-0, E: 0.015/-187.216/-187.143, F: 0.126/0.887/0.904
+From base model in rank-0, E: 0.015/-187.042/-187.048, F: 0.177/0.229/0.254
+From base model in rank-0, E: 0.014/-187.546/-187.550, F: 0.043/0.263/0.227
+
+Update GP model => 24
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.70553**2 *RBF(length=0.81317) 224 energy (0.00250) 1027 forces (0.02500)
+
+From surrogate in rank-0,  E: 0.000/0.003/-187.610, F: 0.028/0.030/0.235
+BFGS:  132 02:42:39     -186.815450        0.290220
+From base model in rank-0, E: 0.000/-186.813/-186.813, F: 0.039/0.300/0.316
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.175/-187.107, F: 0.127/0.983/0.982
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.038/-187.056, F: 0.189/0.257/0.220
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.544, F: 0.029/0.030/0.246
+From surrogate in rank-0,  E: 0.000/0.003/-187.606, F: 0.026/0.030/0.172
+BFGS:  133 02:45:58     -186.813111        0.323410
+From base model in rank-0, E: 0.000/-186.810/-186.813, F: 0.052/0.233/0.243
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.142/-187.075, F: 0.138/0.981/1.026
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.042/-187.073, F: 0.226/0.298/0.269
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.547/-187.550, F: 0.034/0.186/0.245
+Warning: Get negative variance
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.72026**2 *RBF(length=0.80820) 224 energy (0.00250) 1049 forces (0.02500)
+
+From base model in rank-0, E: 0.006/-187.599/-187.613, F: 0.026/0.178/0.235
+Warning: Get negative variance
+BFGS:  134 03:18:49     -186.813217        0.364739
+From base model in rank-0, E: 0.000/-186.813/-186.811, F: 0.049/0.141/0.105
+From base model in rank-0, E: 0.000/-187.152/-187.086, F: 0.137/0.931/0.971
+From base model in rank-0, E: 0.000/-187.063/-187.095, F: 0.220/0.365/0.294
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.550/-187.558, F: 0.036/0.202/0.248
+From surrogate in rank-0,  E: 0.000/0.003/-187.600, F: 0.028/0.030/0.157
+BFGS:  135 03:22:49     -186.811411        0.451845
+From base model in rank-0, E: 0.004/-186.810/-186.808, F: 0.076/0.269/0.287
+Warning: Get negative variance
+From base model in rank-0, E: 0.005/-187.193/-187.121, F: 0.149/0.641/0.710
+From base model in rank-0, E: 0.002/-187.108/-187.142, F: 0.287/0.539/0.449
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.72691**2 *RBF(length=0.80550) 228 energy (0.00250) 1068 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-187.551/-187.561, F: 0.050/0.196/0.236
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.600/-187.614, F: 0.031/0.236/0.293
+Warning: Get negative variance
+BFGS:  136 03:56:59     -186.807845        0.603723
+From base model in rank-0, E: 0.000/-186.801/-186.797, F: 0.124/0.427/0.425
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.198/-187.124, F: 0.158/0.459/0.424
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.198/-187.228, F: 0.328/0.597/0.535
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.547/-187.558, F: 0.088/0.183/0.218
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.601/-187.614, F: 0.032/0.290/0.347
+Warning: Get negative variance
+BFGS:  137 04:01:42     -186.797082        0.696789
+From base model in rank-0, E: 0.000/-186.794/-186.790, F: 0.169/0.338/0.346
+Warning: Get negative variance
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.72883**2 *RBF(length=0.80460) 228 energy (0.00250) 1089 forces (0.02500)
+
+From base model in rank-0, E: 0.006/-187.193/-187.115, F: 0.166/0.570/0.640
+Warning: Get negative variance
+From base model in rank-0, E: 0.005/-187.258/-187.299, F: 0.399/0.659/0.432
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.535/-187.545, F: 0.074/0.231/0.221
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.599, F: 0.019/0.030/0.313
+BFGS:  138 04:35:26     -186.790413        0.706173
+From base model in rank-0, E: 0.000/-186.804/-186.796, F: 0.107/0.133/0.138
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.227/-187.143, F: 0.168/0.325/0.354
+Warning: Get negative variance
+From base model in rank-0, E: 0.007/-187.299/-187.329, F: 0.426/0.761/0.395
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.518/-187.524, F: 0.075/0.222/0.230
+Warning: Get negative variance
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.73747**2 *RBF(length=0.80136) 228 energy (0.00250) 1110 forces (0.02500)
+
+From surrogate in rank-0,  E: 0.000/0.003/-187.599, F: 0.020/0.030/0.163
+BFGS:  139 05:10:17     -186.795675        0.501144
+From base model in rank-0, E: 0.000/-186.803/-186.798, F: 0.082/0.305/0.269
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.211/-187.131, F: 0.160/0.595/0.602
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.310/-187.337, F: 0.381/0.553/0.427
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.520/-187.524, F: 0.063/0.221/0.257
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.600, F: 0.024/0.030/0.139
+BFGS:  140 05:14:33     -186.797829        0.470544
+From base model in rank-0, E: 0.000/-186.799/-186.795, F: 0.089/0.500/0.477
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.056/-186.972, F: 0.158/1.235/1.238
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.357/-187.368, F: 0.423/0.666/0.444
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.528/-187.531, F: 0.068/0.254/0.304
+Warning: Get negative variance
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.73785**2 *RBF(length=0.80404) 228 energy (0.00250) 1131 forces (0.02500)
+
+From surrogate in rank-0,  E: 0.002/0.003/-187.596, F: 0.028/0.030/0.184
+BFGS:  141 05:50:30     -186.795019        0.522607
+From base model in rank-0, E: 0.000/-186.802/-186.801, F: 0.063/0.403/0.411
+From base model in rank-0, E: 0.000/-186.980/-186.907, F: 0.108/1.071/1.104
+Warning: Get negative variance
+From base model in rank-0, E: 0.010/-187.387/-187.388, F: 0.394/0.650/0.430
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.538/-187.540, F: 0.044/0.257/0.299
+From base model in rank-0, E: 0.006/-187.599/-187.608, F: 0.026/0.207/0.183
+Warning: Get negative variance
+BFGS:  142 05:55:32     -186.801192        0.578626
+From base model in rank-0, E: 0.008/-186.804/-186.804, F: 0.073/0.140/0.166
+Warning: Get negative variance
+From base model in rank-0, E: 0.009/-187.005/-186.931, F: 0.113/1.038/1.072
+From base model in rank-0, E: 0.004/-187.471/-187.451, F: 0.445/0.830/0.464
+From base model in rank-0, E: 0.008/-187.539/-187.545, F: 0.052/0.243/0.267
+Warning: Get negative variance
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.73847**2 *RBF(length=0.80458) 232 energy (0.00250) 1148 forces (0.02500)
+
+From base model in rank-0, E: 0.009/-187.599/-187.608, F: 0.023/0.177/0.215
+BFGS:  143 06:32:49     -186.803763        0.725975
+From base model in rank-0, E: 0.000/-186.806/-186.809, F: 0.057/0.322/0.317
+From base model in rank-0, E: 0.000/-187.081/-187.016, F: 0.109/0.926/0.938
+From base model in rank-0, E: 0.000/-187.474/-187.461, F: 0.367/0.489/0.366
+Warning: Get negative variance
+From base model in rank-0, E: 0.007/-187.547/-187.557, F: 0.042/0.204/0.211
+From base model in rank-0, E: 0.000/-187.598/-187.608, F: 0.030/0.300/0.293
+BFGS:  144 06:37:43     -186.808505        0.424393
+From base model in rank-0, E: 0.008/-186.807/-186.809, F: 0.061/0.247/0.252
+From base model in rank-0, E: 0.003/-187.154/-187.087, F: 0.108/0.720/0.731
+From base model in rank-0, E: 0.006/-187.500/-187.480, F: 0.393/0.517/0.252
+From base model in rank-0, E: 0.000/-187.550/-187.561, F: 0.046/0.194/0.189
+From surrogate in rank-0,  E: 0.000/0.003/-187.604, F: 0.025/0.030/0.208
+BFGS:  145 06:41:55     -186.808604        0.352862
+From base model in rank-0, E: 0.000/-186.810/-186.811, F: 0.058/0.080/0.097
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.73876**2 *RBF(length=0.80655) 238 energy (0.00250) 1163 forces (0.02500)
+
+From surrogate in rank-0,  E: 0.000/0.003/-187.110, F: 0.106/0.030/1.120
+From base model in rank-0, E: 0.000/-187.512/-187.498, F: 0.347/0.473/0.279
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.548/-187.559, F: 0.047/0.219/0.221
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.609, F: 0.018/0.030/0.136
+BFGS:  146 07:18:48     -186.811324        0.479128
+From surrogate in rank-0,  E: 0.000/0.003/-186.807, F: 0.028/0.030/0.353
+From surrogate in rank-0,  E: 0.000/0.003/-186.994, F: 0.110/0.030/1.361
+From base model in rank-0, E: 0.000/-187.569/-187.531, F: 0.380/0.455/0.350
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.540/-187.549, F: 0.051/0.223/0.227
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.605, F: 0.020/0.030/0.128
+BFGS:  147 07:21:38     -186.807354        0.654954
+From base model in rank-0, E: 0.005/-186.808/-186.810, F: 0.028/0.344/0.338
+Warning: Get negative variance
+From base model in rank-0, E: 0.002/-186.916/-186.849, F: 0.118/1.101/1.073
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.622/-187.557, F: 0.403/0.416/0.289
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.534/-187.542, F: 0.055/0.252/0.266
+Warning: Get negative variance
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.73903**2 *RBF(length=0.80819) 238 energy (0.00250) 1184 forces (0.02500)
+
+From surrogate in rank-0,  E: 0.000/0.003/-187.603, F: 0.023/0.030/0.151
+BFGS:  148 07:59:55     -186.810349        0.408359
+From base model in rank-0, E: 0.000/-186.812/-186.815, F: 0.032/0.111/0.095
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.905/-186.846, F: 0.118/1.065/1.046
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.643/-187.575, F: 0.352/0.372/0.282
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.534, F: 0.029/0.030/0.223
+From surrogate in rank-0,  E: 0.000/0.003/-187.608, F: 0.028/0.030/0.132
+BFGS:  149 08:03:30     -186.815101        0.247463
+From surrogate in rank-0,  E: 0.000/0.003/-186.812, F: 0.030/0.030/0.136
+From base model in rank-0, E: 0.000/-186.969/-186.906, F: 0.117/1.017/1.004
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.643/-187.579, F: 0.344/0.360/0.213
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.538, F: 0.023/0.030/0.228
+From surrogate in rank-0,  E: 0.000/0.003/-187.613, F: 0.027/0.030/0.136
+BFGS:  150 08:06:23     -186.811978        0.267078
+From surrogate in rank-0,  E: 0.000/0.003/-186.811, F: 0.028/0.030/0.256
+From base model in rank-0, E: 0.000/-187.061/-186.994, F: 0.116/0.892/0.888
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.630/-187.571, F: 0.334/0.367/0.149
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.543, F: 0.023/0.030/0.226
+From surrogate in rank-0,  E: 0.000/0.003/-187.615, F: 0.023/0.030/0.130
+BFGS:  151 08:09:15     -186.810625        0.267951
+From surrogate in rank-0,  E: 0.000/0.003/-186.812, F: 0.029/0.030/0.148
+From base model in rank-0, E: 0.000/-187.049/-186.982, F: 0.119/0.921/0.916
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.633/-187.572, F: 0.337/0.433/0.287
+Warning: Get negative variance
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.74262**2 *RBF(length=0.80687) 238 energy (0.00250) 1205 forces (0.02500)
+
+From base model in rank-0, E: 0.009/-187.543/-187.549, F: 0.023/0.227/0.233
+From base model in rank-0, E: 0.013/-187.617/-187.624, F: 0.022/0.103/0.108
+BFGS:  152 08:49:23     -186.812228        0.295702
+From base model in rank-0, E: 0.012/-186.813/-186.817, F: 0.026/0.178/0.163
+From base model in rank-0, E: 0.008/-186.991/-186.921, F: 0.118/1.055/1.038
+From base model in rank-0, E: 0.004/-187.605/-187.574, F: 0.311/0.426/0.214
+From base model in rank-0, E: 0.012/-187.535/-187.540, F: 0.025/0.223/0.242
+From base model in rank-0, E: 0.013/-187.616/-187.623, F: 0.022/0.083/0.104
+BFGS:  153 08:54:29     -186.817273        0.231932
+From base model in rank-0, E: 0.008/-186.813/-186.817, F: 0.027/0.207/0.199
+From base model in rank-0, E: 0.003/-186.961/-186.892, F: 0.120/1.095/1.071
+From base model in rank-0, E: 0.000/-187.609/-187.578, F: 0.313/0.441/0.224
+From base model in rank-0, E: 0.012/-187.531/-187.535, F: 0.026/0.222/0.245
+From surrogate in rank-0,  E: 0.001/0.003/-187.616, F: 0.024/0.030/0.064
+BFGS:  154 08:58:56     -186.816731        0.242314
+From base model in rank-0, E: 0.011/-186.813/-186.819, F: 0.028/0.115/0.103
+From base model in rank-0, E: 0.010/-186.947/-186.877, F: 0.122/1.091/1.061
+
+Update GP model => 24
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.74895**2 *RBF(length=0.80465) 251 energy (0.00250) 1216 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-187.532/-187.582, F: 0.231/0.478/0.197
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.526/-187.530, F: 0.030/0.250/0.255
+Warning: Get negative variance
+From base model in rank-0, E: 0.008/-187.619/-187.626, F: 0.027/0.079/0.083
+BFGS:  155 09:41:09     -186.819180        0.200841
+From base model in rank-0, E: 0.007/-186.815/-186.820, F: 0.029/0.114/0.097
+Warning: Get negative variance
+From base model in rank-0, E: 0.008/-186.963/-186.894, F: 0.104/1.059/1.036
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.537/-187.584, F: 0.227/0.470/0.166
+From base model in rank-0, E: 0.000/-187.522/-187.526, F: 0.034/0.268/0.276
+Warning: Get negative variance
+From base model in rank-0, E: 0.009/-187.620/-187.628, F: 0.028/0.092/0.098
+Warning: Get negative variance
+BFGS:  156 09:46:22     -186.819668        0.204991
+From base model in rank-0, E: 0.005/-186.815/-186.820, F: 0.029/0.090/0.103
+From base model in rank-0, E: 0.002/-186.995/-186.926, F: 0.104/0.998/0.974
+From base model in rank-0, E: 0.006/-187.544/-187.582, F: 0.218/0.412/0.151
+From base model in rank-0, E: 0.000/-187.511/-187.515, F: 0.041/0.286/0.293
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.75605**2 *RBF(length=0.80214) 255 energy (0.00250) 1234 forces (0.02500)
+
+From base model in rank-0, E: 0.004/-187.621/-187.630, F: 0.026/0.083/0.083
+Warning: Get negative variance
+BFGS:  157 10:29:39     -186.819893        0.183750
+From surrogate in rank-0,  E: 0.000/0.003/-186.815, F: 0.028/0.030/0.073
+From surrogate in rank-0,  E: 0.000/0.003/-186.988, F: 0.097/0.030/0.991
+From base model in rank-0, E: 0.000/-187.551/-187.580, F: 0.077/0.291/0.168
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.499, F: 0.029/0.030/0.292
+From surrogate in rank-0,  E: 0.000/0.003/-187.621, F: 0.027/0.030/0.067
+BFGS:  158 10:31:53     -186.815018        0.182468
+From base model in rank-0, E: 0.003/-186.812/-186.813, F: 0.030/0.114/0.138
+Warning: Get negative variance
+From base model in rank-0, E: 0.005/-186.918/-186.851, F: 0.098/1.252/1.185
+Warning: Get negative variance
+From base model in rank-0, E: 0.003/-187.550/-187.574, F: 0.073/0.314/0.174
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.474/-187.475, F: 0.033/0.242/0.291
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.002/0.003/-187.618, F: 0.028/0.030/0.089
+BFGS:  159 10:36:15     -186.812803        0.421228
+From surrogate in rank-0,  E: 0.000/0.003/-186.810, F: 0.029/0.030/0.132
+From surrogate in rank-0,  E: 0.000/0.003/-186.855, F: 0.099/0.030/1.312
+From base model in rank-0, E: 0.002/-187.549/-187.573, F: 0.081/0.320/0.169
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.467/-187.468, F: 0.034/0.254/0.315
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.617/-187.627, F: 0.031/0.104/0.115
+Warning: Get negative variance
+BFGS:  160 10:39:55     -186.810055        0.503072
+From base model in rank-0, E: 0.000/-186.805/-186.805, F: 0.030/0.122/0.135
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.729/-186.669, F: 0.106/0.972/0.916
+Warning: Get negative variance
+From base model in rank-0, E: 0.007/-187.542/-187.569, F: 0.186/0.401/0.176
+Warning: Get negative variance
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.75855**2 *RBF(length=0.80109) 255 energy (0.00250) 1257 forces (0.02500)
+
+From base model in rank-0, E: 0.004/-187.456/-187.456, F: 0.038/0.274/0.352
+From base model in rank-0, E: 0.012/-187.613/-187.624, F: 0.029/0.094/0.108
+BFGS:  161 11:25:09     -186.668906        0.639930
+From base model in rank-0, E: 0.013/-186.812/-186.814, F: 0.025/0.047/0.055
+From base model in rank-0, E: 0.007/-186.834/-186.771, F: 0.082/1.035/1.023
+From base model in rank-0, E: 0.002/-187.554/-187.580, F: 0.068/0.276/0.208
+From base model in rank-0, E: 0.010/-187.478/-187.481, F: 0.035/0.246/0.302
+From base model in rank-0, E: 0.010/-187.617/-187.628, F: 0.027/0.089/0.099
+BFGS:  162 11:30:18     -186.771276        0.501587
+From base model in rank-0, E: 0.009/-186.815/-186.818, F: 0.025/0.135/0.140
+From base model in rank-0, E: 0.010/-187.026/-186.961, F: 0.089/0.876/0.887
+From base model in rank-0, E: 0.008/-187.545/-187.571, F: 0.070/0.241/0.191
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.75879**2 *RBF(length=0.80188) 265 energy (0.00250) 1268 forces (0.02500)
+
+From base model in rank-0, E: 0.015/-187.497/-187.500, F: 0.025/0.260/0.252
+From base model in rank-0, E: 0.016/-187.619/-187.629, F: 0.022/0.098/0.095
+BFGS:  163 12:16:08     -186.818389        0.543594
+From base model in rank-0, E: 0.014/-186.816/-186.821, F: 0.025/0.075/0.084
+From base model in rank-0, E: 0.014/-187.025/-186.963, F: 0.075/0.897/0.897
+From base model in rank-0, E: 0.015/-187.543/-187.576, F: 0.060/0.188/0.131
+From base model in rank-0, E: 0.017/-187.489/-187.492, F: 0.025/0.259/0.262
+From base model in rank-0, E: 0.015/-187.620/-187.631, F: 0.022/0.077/0.089
+BFGS:  164 12:21:23     -186.820809        0.284028
+From base model in rank-0, E: 0.010/-186.812/-186.814, F: 0.025/0.081/0.096
+From base model in rank-0, E: 0.017/-186.909/-186.847, F: 0.070/1.166/1.165
+From base model in rank-0, E: 0.016/-187.552/-187.576, F: 0.052/0.236/0.140
+From base model in rank-0, E: 0.015/-187.453/-187.454, F: 0.028/0.309/0.326
+From base model in rank-0, E: 0.017/-187.617/-187.629, F: 0.025/0.104/0.117
+BFGS:  165 12:26:32     -186.814492        0.417392
+From base model in rank-0, E: 0.018/-186.810/-186.812, F: 0.026/0.114/0.120
+From base model in rank-0, E: 0.017/-186.840/-186.779, F: 0.077/1.127/1.115
+From base model in rank-0, E: 0.017/-187.552/-187.574, F: 0.050/0.293/0.166
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.76387**2 *RBF(length=0.79989) 280 energy (0.00250) 1275 forces (0.02500)
+
+From base model in rank-0, E: 0.011/-187.444/-187.445, F: 0.032/0.314/0.333
+From base model in rank-0, E: 0.004/-187.614/-187.627, F: 0.026/0.111/0.118
+BFGS:  166 13:12:59     -186.778953        1.028056
+From base model in rank-0, E: 0.010/-186.811/-186.815, F: 0.027/0.087/0.091
+From base model in rank-0, E: 0.014/-186.838/-186.781, F: 0.044/1.109/1.090
+From base model in rank-0, E: 0.005/-187.550/-187.574, F: 0.042/0.204/0.202
+From base model in rank-0, E: 0.013/-187.452/-187.456, F: 0.042/0.270/0.279
+From base model in rank-0, E: 0.013/-187.612/-187.624, F: 0.026/0.104/0.122
+BFGS:  167 13:18:10     -186.780732        0.524820
+From base model in rank-0, E: 0.014/-186.813/-186.819, F: 0.024/0.103/0.101
+From base model in rank-0, E: 0.011/-186.911/-186.851, F: 0.051/1.058/1.043
+From base model in rank-0, E: 0.008/-187.550/-187.575, F: 0.043/0.145/0.132
+From base model in rank-0, E: 0.009/-187.460/-187.465, F: 0.043/0.289/0.287
+From base model in rank-0, E: 0.015/-187.615/-187.627, F: 0.024/0.101/0.118
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.76920**2 *RBF(length=0.79782) 292 energy (0.00250) 1284 forces (0.02500)
+
+BFGS:  168 14:05:21     -186.818888        0.405574
+From surrogate in rank-0,  E: 0.000/0.003/-186.815, F: 0.025/0.030/0.087
+From surrogate in rank-0,  E: 0.000/0.003/-186.948, F: 0.030/0.030/1.003
+From surrogate in rank-0,  E: 0.000/0.003/-187.558, F: 0.027/0.030/0.105
+From surrogate in rank-0,  E: 0.000/0.003/-187.453, F: 0.024/0.030/0.279
+From surrogate in rank-0,  E: 0.000/0.003/-187.617, F: 0.025/0.030/0.088
+BFGS:  169 14:06:59     -186.814632        0.221546
+From surrogate in rank-0,  E: 0.000/0.003/-186.814, F: 0.025/0.030/0.040
+From surrogate in rank-0,  E: 0.000/0.003/-186.948, F: 0.030/0.030/0.987
+From surrogate in rank-0,  E: 0.000/0.003/-187.562, F: 0.030/0.030/0.106
+From surrogate in rank-0,  E: 0.000/0.003/-187.439, F: 0.025/0.030/0.294
+From surrogate in rank-0,  E: 0.000/0.003/-187.617, F: 0.025/0.030/0.085
+BFGS:  170 14:08:33     -186.814411        0.126500
+From surrogate in rank-0,  E: 0.000/0.003/-186.813, F: 0.025/0.030/0.059
+From surrogate in rank-0,  E: 0.000/0.003/-186.917, F: 0.031/0.030/0.998
+From base model in rank-0, E: 0.000/-187.565/-187.576, F: 0.034/0.087/0.108
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.422, F: 0.029/0.030/0.304
+From surrogate in rank-0,  E: 0.000/0.003/-187.615, F: 0.026/0.030/0.090
+BFGS:  171 14:11:02     -186.813134        0.217944
+From surrogate in rank-0,  E: 0.000/0.003/-186.812, F: 0.028/0.030/0.100
+From surrogate in rank-0,  E: 0.000/0.003/-186.866, F: 0.036/0.030/1.019
+From base model in rank-0, E: 0.000/-187.566/-187.573, F: 0.040/0.096/0.088
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.411/-187.410, F: 0.041/0.291/0.298
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.613, F: 0.027/0.030/0.100
+BFGS:  172 14:14:06     -186.811667        0.259641
+From base model in rank-0, E: 0.000/-186.805/-186.806, F: 0.036/0.162/0.142
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.752, F: 0.070/0.030/0.959
+From base model in rank-0, E: 0.000/-187.564/-187.561, F: 0.057/0.178/0.243
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.377/-187.376, F: 0.081/0.303/0.309
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.609/-187.619, F: 0.034/0.153/0.151
+Warning: Get negative variance
+BFGS:  173 14:18:36     -186.752270        0.749371
+From base model in rank-0, E: 0.000/-186.810/-186.812, F: 0.031/0.122/0.096
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.812, F: 0.065/0.030/1.016
+From base model in rank-0, E: 0.000/-187.567/-187.572, F: 0.046/0.106/0.118
+Warning: Get negative variance
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.77948**2 *RBF(length=0.79439) 292 energy (0.00250) 1307 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-187.397/-187.399, F: 0.046/0.270/0.280
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.614, F: 0.026/0.030/0.118
+BFGS:  174 15:05:39     -186.811547        0.637740
+From surrogate in rank-0,  E: 0.000/0.003/-186.813, F: 0.025/0.030/0.150
+From surrogate in rank-0,  E: 0.000/0.003/-186.997, F: 0.057/0.030/0.838
+From base model in rank-0, E: 0.000/-187.559/-187.570, F: 0.031/0.183/0.198
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.437, F: 0.028/0.030/0.277
+From surrogate in rank-0,  E: 0.000/0.003/-187.616, F: 0.022/0.030/0.097
+BFGS:  175 15:08:00     -186.813189        0.469479
+From surrogate in rank-0,  E: 0.000/0.003/-186.815, F: 0.024/0.030/0.062
+From surrogate in rank-0,  E: 0.000/0.003/-186.959, F: 0.056/0.030/0.948
+From surrogate in rank-0,  E: 0.000/0.003/-187.569, F: 0.029/0.030/0.143
+From base model in rank-0, E: 0.000/-187.424/-187.427, F: 0.035/0.296/0.281
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.617, F: 0.023/0.030/0.102
+BFGS:  176 15:10:20     -186.815055        0.256630
+From surrogate in rank-0,  E: 0.000/0.003/-186.803, F: 0.029/0.030/0.235
+From base model in rank-0, E: 0.000/-186.742/-186.687, F: 0.097/0.955/1.008
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.569/-187.556, F: 0.038/0.158/0.156
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.354/-187.353, F: 0.077/0.268/0.293
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.609, F: 0.030/0.030/0.194
+BFGS:  177 15:14:08     -186.686644        0.816545
+From surrogate in rank-0,  E: 0.000/0.003/-186.813, F: 0.024/0.030/0.082
+From surrogate in rank-0,  E: 0.000/0.003/-186.881, F: 0.081/0.030/1.015
+From base model in rank-0, E: 0.000/-187.575/-187.574, F: 0.030/0.093/0.092
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.394/-187.396, F: 0.055/0.285/0.265
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.615, F: 0.026/0.030/0.110
+BFGS:  178 15:17:11     -186.813238        0.134268
+From surrogate in rank-0,  E: 0.000/0.003/-186.812, F: 0.025/0.030/0.096
+From surrogate in rank-0,  E: 0.000/0.003/-186.863, F: 0.085/0.030/1.003
+From base model in rank-0, E: 0.000/-187.575/-187.573, F: 0.031/0.108/0.083
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.382/-187.384, F: 0.063/0.262/0.274
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.615, F: 0.027/0.030/0.114
+BFGS:  179 15:20:15     -186.812190        0.138646
+From base model in rank-0, E: 0.000/-186.806/-186.804, F: 0.035/0.156/0.100
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.769/-186.713, F: 0.104/0.934/0.928
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.573/-187.563, F: 0.041/0.150/0.167
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.334/-187.336, F: 0.109/0.281/0.295
+Warning: Get negative variance
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.78407**2 *RBF(length=0.79262) 292 energy (0.00250) 1330 forces (0.02500)
+
+From base model in rank-0, E: 0.010/-187.611/-187.616, F: 0.033/0.140/0.144
+BFGS:  180 16:10:18     -186.713296        0.690640
+From surrogate in rank-0,  E: 0.000/0.003/-186.810, F: 0.025/0.030/0.064
+From surrogate in rank-0,  E: 0.000/0.003/-186.832, F: 0.065/0.030/0.974
+From base model in rank-0, E: 0.010/-187.576/-187.571, F: 0.028/0.097/0.081
+Warning: Get negative variance
+From base model in rank-0, E: 0.005/-187.358/-187.361, F: 0.052/0.259/0.267
+From surrogate in rank-0,  E: 0.000/0.003/-187.613, F: 0.029/0.030/0.119
+BFGS:  181 16:13:24     -186.810041        0.142026
+From base model in rank-0, E: 0.009/-186.809/-186.809, F: 0.025/0.057/0.071
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-186.805, F: 0.077/0.030/0.960
+From surrogate in rank-0,  E: 0.000/0.003/-187.575, F: 0.028/0.030/0.108
+From base model in rank-0, E: 0.013/-187.348/-187.352, F: 0.063/0.259/0.267
+Warning: Get negative variance
+From base model in rank-0, E: 0.009/-187.613/-187.619, F: 0.031/0.120/0.128
+BFGS:  182 16:17:14     -186.804793        0.680085
+From base model in rank-0, E: 0.000/-186.807/-186.804, F: 0.043/0.067/0.081
+From base model in rank-0, E: 0.000/-186.697/-186.632, F: 0.206/0.914/0.894
+From base model in rank-0, E: 0.000/-187.568/-187.544, F: 0.044/0.131/0.120
+Warning: Get negative variance
+From base model in rank-0, E: 0.007/-187.310/-187.320, F: 0.144/0.322/0.277
+From base model in rank-0, E: 0.000/-187.609/-187.607, F: 0.055/0.128/0.131
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.79751**2 *RBF(length=0.78844) 295 energy (0.00250) 1348 forces (0.02500)
+
+BFGS:  183 17:08:15     -186.632223        0.484108
+From base model in rank-0, E: 0.011/-186.805/-186.797, F: 0.049/0.122/0.178
+From base model in rank-0, E: 0.015/-186.599/-186.536, F: 0.252/0.854/0.802
+From base model in rank-0, E: 0.014/-187.545/-187.514, F: 0.036/0.214/0.239
+From base model in rank-0, E: 0.012/-187.338/-187.354, F: 0.187/0.511/0.462
+From base model in rank-0, E: 0.012/-187.593/-187.591, F: 0.050/0.135/0.142
+BFGS:  184 17:13:40     -186.536422        0.532644
+From base model in rank-0, E: 0.014/-186.799/-186.783, F: 0.099/0.196/0.326
+
+Update GP model => 25
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.81004**2 *RBF(length=0.78459) 301 energy (0.00250) 1367 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-186.472/-186.414, F: 0.394/0.814/0.764
+From base model in rank-0, E: 0.008/-187.487/-187.448, F: 0.045/0.319/0.340
+From base model in rank-0, E: 0.011/-187.407/-187.435, F: 0.357/0.645/0.731
+From base model in rank-0, E: 0.009/-187.569/-187.568, F: 0.071/0.223/0.214
+BFGS:  185 18:06:11     -186.414380        0.723704
+From base model in rank-0, E: 0.010/-186.792/-186.785, F: 0.054/0.275/0.269
+From base model in rank-0, E: 0.006/-186.494/-186.436, F: 0.360/0.697/0.652
+
+Update GP model => 24
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.83833**2 *RBF(length=0.77744) 307 energy (0.00250) 1385 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-187.507/-187.473, F: 0.041/0.218/0.217
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.440/-187.453, F: 0.218/0.690/0.628
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.565/-187.571, F: 0.064/0.227/0.221
+Warning: Get negative variance
+BFGS:  186 19:00:14     -186.435786        0.631421
+From base model in rank-0, E: 0.000/-186.788/-186.780, F: 0.049/0.362/0.368
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.482/-186.430, F: 0.329/0.640/0.635
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.518/-187.490, F: 0.040/0.219/0.281
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.498/-187.513, F: 0.255/0.520/0.457
+Warning: Get negative variance
+From base model in rank-0, E: 0.003/-187.561/-187.573, F: 0.068/0.220/0.221
+Warning: Get negative variance
+BFGS:  187 19:05:38     -186.430412        0.500046
+From base model in rank-0, E: 0.000/-186.792/-186.791, F: 0.048/0.302/0.322
+Warning: Get negative variance
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.84463**2 *RBF(length=0.77503) 307 energy (0.00250) 1407 forces (0.02500)
+
+From base model in rank-0, E: 0.000/-186.512/-186.462, F: 0.281/0.569/0.579
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.541, F: 0.029/0.030/0.252
+From base model in rank-0, E: 0.000/-187.509/-187.530, F: 0.222/0.504/0.498
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.567/-187.583, F: 0.057/0.170/0.148
+Warning: Get negative variance
+BFGS:  188 20:00:10     -186.462440        0.519563
+From base model in rank-0, E: 0.004/-186.784/-186.777, F: 0.031/0.186/0.209
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-186.463/-186.414, F: 0.359/0.543/0.547
+Warning: Get negative variance
+From surrogate in rank-0,  E: 0.000/0.003/-187.521, F: 0.035/0.030/0.356
+From base model in rank-0, E: 0.000/-187.511/-187.581, F: 0.389/0.758/0.882
+Warning: Get negative variance
+From base model in rank-0, E: 0.005/-187.559/-187.578, F: 0.076/0.229/0.217
+Warning: Get negative variance
+BFGS:  189 20:04:53     -186.414390        0.715756
+From surrogate in rank-0,  E: 0.000/0.003/-186.792, F: 0.029/0.030/0.154
+From base model in rank-0, E: 0.000/-186.482/-186.436, F: 0.358/0.565/0.564
+Warning: Get negative variance
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.84642**2 *RBF(length=0.77419) 307 energy (0.00250) 1429 forces (0.02500)
+
+From surrogate in rank-0,  E: 0.000/0.003/-187.535, F: 0.037/0.030/0.418
+From base model in rank-0, E: 0.000/-187.570/-187.603, F: 0.242/0.550/0.452
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.565/-187.587, F: 0.045/0.184/0.166
+Warning: Get negative variance
+BFGS:  190 21:00:20     -186.435742        0.458755
+From surrogate in rank-0,  E: 0.000/0.003/-186.794, F: 0.026/0.030/0.159
+From base model in rank-0, E: 0.000/-186.484/-186.434, F: 0.299/0.558/0.560
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.541/-187.506, F: 0.035/0.280/0.273
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.581/-187.614, F: 0.248/0.562/0.337
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.569/-187.592, F: 0.050/0.147/0.129
+Warning: Get negative variance
+BFGS:  191 21:05:06     -186.434322        0.343095
+From surrogate in rank-0,  E: 0.000/0.003/-186.798, F: 0.023/0.030/0.129
+From base model in rank-0, E: 0.000/-186.499/-186.451, F: 0.342/0.532/0.542
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.549/-187.513, F: 0.035/0.148/0.160
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.582/-187.618, F: 0.251/0.626/0.367
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.572/-187.593, F: 0.051/0.194/0.148
+Warning: Get negative variance
+BFGS:  192 21:09:52     -186.451020        0.313336
+From surrogate in rank-0,  E: 0.000/0.003/-186.801, F: 0.023/0.030/0.075
+From base model in rank-0, E: 0.000/-186.525/-186.477, F: 0.347/0.496/0.518
+Warning: Get negative variance
+
+Update GP model => 22
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.84660**2 *RBF(length=0.77456) 307 energy (0.00250) 1451 forces (0.02500)
+
+From base model in rank-0, E: 0.002/-187.552/-187.516, F: 0.031/0.223/0.199
+From base model in rank-0, E: 0.006/-187.566/-187.611, F: 0.219/0.753/0.461
+From base model in rank-0, E: 0.000/-187.572/-187.593, F: 0.053/0.178/0.168
+BFGS:  193 22:07:09     -186.476626        0.320532
+From surrogate in rank-0,  E: 0.000/0.003/-186.802, F: 0.025/0.030/0.146
+From base model in rank-0, E: 0.009/-186.557/-186.504, F: 0.155/0.497/0.504
+From base model in rank-0, E: 0.007/-187.556/-187.523, F: 0.032/0.245/0.247
+From base model in rank-0, E: 0.001/-187.548/-187.602, F: 0.218/0.789/0.484
+From base model in rank-0, E: 0.000/-187.573/-187.592, F: 0.057/0.155/0.142
+BFGS:  194 22:11:54     -186.503759        0.359841
+From base model in rank-0, E: 0.014/-186.800/-186.791, F: 0.032/0.305/0.351
+From base model in rank-0, E: 0.009/-186.582/-186.537, F: 0.183/0.637/0.637
+
+Update GP model => 24
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.84953**2 *RBF(length=0.77325) 313 energy (0.00250) 1469 forces (0.02500)
+
+From base model in rank-0, E: 0.021/-187.549/-187.520, F: 0.034/0.289/0.351
+From base model in rank-0, E: 0.018/-187.526/-187.588, F: 0.213/0.775/0.484
+From base model in rank-0, E: 0.020/-187.571/-187.587, F: 0.056/0.172/0.171
+BFGS:  195 23:11:18     -186.536936        0.390754
+From base model in rank-0, E: 0.018/-186.798/-186.792, F: 0.034/0.446/0.403
+From base model in rank-0, E: 0.021/-186.613/-186.557, F: 0.147/0.655/0.678
+From base model in rank-0, E: 0.021/-187.524/-187.498, F: 0.039/0.323/0.398
+From base model in rank-0, E: 0.017/-187.509/-187.576, F: 0.217/0.757/0.433
+
+Update GP model => 23
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.85850**2 *RBF(length=0.77005) 320 energy (0.00250) 1485 forces (0.02500)
+
+From base model in rank-0, E: 0.008/-187.564/-187.579, F: 0.063/0.173/0.170
+BFGS:  196 00:11:32     -186.556560        0.393309
+From base model in rank-0, E: 0.008/-186.800/-186.796, F: 0.028/0.533/0.518
+From base model in rank-0, E: 0.009/-186.621/-186.570, F: 0.142/0.604/0.631
+From base model in rank-0, E: 0.011/-187.495/-187.467, F: 0.034/0.323/0.387
+From base model in rank-0, E: 0.004/-187.517/-187.572, F: 0.211/0.721/0.346
+From base model in rank-0, E: 0.012/-187.559/-187.574, F: 0.068/0.173/0.166
+BFGS:  197 00:17:11     -186.570034        0.372157
+From surrogate in rank-0,  E: 0.000/0.003/-186.803, F: 0.028/0.030/0.537
+From base model in rank-0, E: 0.005/-186.635/-186.585, F: 0.146/0.592/0.598
+From base model in rank-0, E: 0.005/-187.469/-187.444, F: 0.040/0.365/0.342
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.85865**2 *RBF(length=0.77055) 328 energy (0.00250) 1498 forces (0.02500)
+
+From base model in rank-0, E: 0.015/-187.530/-187.569, F: 0.210/0.715/0.332
+From base model in rank-0, E: 0.012/-187.560/-187.574, F: 0.056/0.178/0.185
+BFGS:  198 01:17:48     -186.585499        0.405072
+From base model in rank-0, E: 0.012/-186.808/-186.804, F: 0.025/0.407/0.425
+From base model in rank-0, E: 0.013/-186.657/-186.610, F: 0.120/0.732/0.736
+From base model in rank-0, E: 0.013/-187.458/-187.432, F: 0.028/0.382/0.371
+From base model in rank-0, E: 0.014/-187.537/-187.564, F: 0.208/0.728/0.311
+From base model in rank-0, E: 0.011/-187.564/-187.577, F: 0.060/0.193/0.198
+BFGS:  199 01:23:27     -186.609695        0.429585
+From surrogate in rank-0,  E: 0.000/0.003/-186.812, F: 0.025/0.030/0.203
+From base model in rank-0, E: 0.009/-186.678/-186.636, F: 0.136/0.804/0.817
+
+Update GP model => 21
+save the GP model to h2s-dissc-RBF-gpr.json and database to h2s-dissc-RBF-gpr.db
+------Gaussian Process Regression (0/8)------
+Kernel: 17.85968**2 *RBF(length=0.77003) 336 energy (0.00250) 1511 forces (0.02500)
+
+From surrogate in rank-0,  E: 0.000/0.003/-187.462, F: 0.029/0.030/0.395
+From base model in rank-0, E: 0.000/-187.531/-187.556, F: 0.184/0.901/0.294
+Warning: Get negative variance
+From base model in rank-0, E: 0.000/-187.566/-187.579, F: 0.057/0.209/0.201
+Warning: Get negative variance
+BFGS:  200 02:24:28     -186.635767        0.347820

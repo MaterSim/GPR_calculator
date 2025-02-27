@@ -1,0 +1,44 @@
+{
+    "noise": {
+        "energy": 0.0025,
+        "f_coef": 10,
+        "bounds": [
+            0.0025,
+            0.025
+        ]
+    },
+    "kernel": {
+        "name": "RBF_mb",
+        "sigma": 2.3099613976477436,
+        "l": 0.5970314862962056,
+        "zeta": 2.0,
+        "bounds": [
+            [
+                0.01,
+                50.0
+            ],
+            [
+                0.1,
+                10.0
+            ]
+        ]
+    },
+    "descriptor": {
+        "nmax": 3,
+        "lmax": 4,
+        "rcut": 5.0,
+        "alpha": 2.0,
+        "derivative": true,
+        "stress": false,
+        "_type": "SO3"
+    },
+    "db_filename": "O-diff-RBF-gpr.db",
+    "error": {
+        "energy_r2": 0.9773600933401363,
+        "energy_mae": 0.0007857229454991677,
+        "energy_rmse": 0.0009163127707195812,
+        "forces_r2": 0.9993435220626531,
+        "forces_mae": 0.005807060468062457,
+        "forces_rmse": 0.007632727495376281
+    }
+}

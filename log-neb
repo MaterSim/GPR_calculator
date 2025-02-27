@@ -1,0 +1,309 @@
+.............GPRANEB module loaded.............
+
+You're welcome to modify the code to suit your needs
+
+..........Good luck with your calculations..........
+
+
+Init the model
+
+Get the initial images
+      Step     Time          Energy          fmax
+BFGS:    0 20:40:03        4.219952        3.520758
+BFGS:    1 20:40:03        3.937039        2.176462
+BFGS:    2 20:40:03        3.719808        0.435015
+BFGS:    3 20:40:03        3.709652        0.229548
+BFGS:    4 20:40:03        3.708876        0.244048
+BFGS:    5 20:40:03        3.706081        0.257541
+BFGS:    6 20:40:03        3.698524        0.212674
+BFGS:    7 20:40:03        3.692124        0.245468
+BFGS:    8 20:40:03        3.692276        0.186725
+BFGS:    9 20:40:03        3.693476        0.172759
+BFGS:   10 20:40:03        3.692649        0.151254
+BFGS:   11 20:40:03        3.690805        0.073287
+BFGS:   12 20:40:03        3.690201        0.070434
+BFGS:   13 20:40:03        3.690379        0.077840
+BFGS:   14 20:40:03        3.690420        0.102992
+BFGS:   15 20:40:03        3.689884        0.099301
+BFGS:   16 20:40:03        3.689027        0.054007
+BFGS:   17 20:40:03        3.688737        0.028899
+
+Create the initial GPR model
+------Gaussian Process Regression------
+Kernel: 2.000**2 *Dot(length=2.000) 5 energy (0.005) 15 forces (0.050)
+
+Loss:      -64.796  2.000  2.000  0.005 
+Loss:     5526.244  0.010  1.606  0.003 
+Loss:      -76.615  1.336  1.869  0.004 
+Loss:      -91.056  0.673  1.737  0.003 
+Loss:      -83.325  0.236  1.651  0.003 
+Loss:      -94.218  0.490  1.701  0.003 
+Loss:     -100.400  0.414  1.686  0.003 
+Loss:     -100.516  0.421  1.688  0.003 
+------Gaussian Process Regression------
+Kernel: 0.421**2 *Dot(length=1.688) 5 energy (0.003) 15 forces (0.025)
+
+
+Run actual NEB
+From base model, E: 0.002/3.721/3.727, F: 0.171/1.639/1.632
+From surrogate,  E: 0.002/0.003/4.219, F: 0.104/0.030/3.517
+From base model, E: 0.002/3.718/3.725, F: 0.170/1.630/1.629
+      Step     Time          Energy          fmax
+BFGS:    0 20:40:07        4.219058        3.517425
+From base model, E: 0.001/3.642/3.650, F: 0.171/1.261/1.172
+From surrogate,  E: 0.002/0.003/3.917, F: 0.107/0.030/2.568
+From base model, E: 0.001/3.639/3.648, F: 0.170/1.253/1.169
+BFGS:    1 20:40:09        3.916727        2.568004
+From base model, E: 0.002/3.515/3.546, F: 0.170/0.421/0.466
+====================== Update the model =============== 14
+save the GP model to test-Dot-gpr.json and database to test-Dot-gpr.db
+------Gaussian Process Regression------
+Kernel: 0.666**2 *Dot(length=1.713) 5 energy (0.003) 29 forces (0.025)
+
+From base model, E: 0.003/3.666/3.724, F: 0.152/0.220/0.315
+From base model, E: 0.002/3.538/3.545, F: 0.073/0.449/0.462
+BFGS:    2 20:40:15        3.723818        0.332303
+From base model, E: 0.002/3.535/3.542, F: 0.074/0.434/0.448
+From base model, E: 0.003/3.664/3.718, F: 0.151/0.203/0.286
+From base model, E: 0.002/3.534/3.541, F: 0.073/0.432/0.444
+BFGS:    3 20:40:17        3.718471        0.299407
+From base model, E: 0.002/3.516/3.526, F: 0.073/0.364/0.379
+====================== Update the model =============== 12
+save the GP model to test-Dot-gpr.json and database to test-Dot-gpr.db
+------Gaussian Process Regression------
+Kernel: 0.604**2 *Dot(length=1.723) 5 energy (0.003) 41 forces (0.025)
+
+From base model, E: 0.002/3.675/3.691, F: 0.039/0.211/0.174
+From surrogate,  E: 0.001/0.003/3.518, F: 0.023/0.030/0.386
+BFGS:    4 20:40:25        3.691349        0.361432
+From surrogate,  E: 0.001/0.003/3.515, F: 0.021/0.030/0.336
+From base model, E: 0.002/3.676/3.691, F: 0.039/0.194/0.159
+From surrogate,  E: 0.001/0.003/3.513, F: 0.022/0.030/0.334
+BFGS:    5 20:40:27        3.690697        0.284853
+From surrogate,  E: 0.001/0.003/3.497, F: 0.024/0.030/0.460
+From base model, E: 0.002/3.670/3.686, F: 0.040/0.136/0.105
+From surrogate,  E: 0.001/0.003/3.490, F: 0.032/0.030/0.456
+BFGS:    6 20:40:29        3.685782        0.238204
+From surrogate,  E: 0.001/0.003/3.487, F: 0.026/0.030/0.434
+From base model, E: 0.002/3.665/3.684, F: 0.041/0.116/0.063
+====================== Update the model =============== 12
+save the GP model to test-Dot-gpr.json and database to test-Dot-gpr.db
+------Gaussian Process Regression------
+Kernel: 0.793**2 *Dot(length=1.741) 5 energy (0.003) 53 forces (0.025)
+
+From surrogate,  E: 0.001/0.003/3.492, F: 0.033/0.030/0.438
+BFGS:    7 20:40:39        3.684391        0.203709
+From surrogate,  E: 0.001/0.003/3.480, F: 0.033/0.030/0.389
+From base model, E: 0.002/3.677/3.687, F: 0.054/0.138/0.126
+From base model, E: 0.002/3.477/3.508, F: 0.041/0.378/0.376
+BFGS:    8 20:40:42        3.686703        0.215261
+From surrogate,  E: 0.001/0.003/3.480, F: 0.032/0.030/0.381
+From base model, E: 0.002/3.677/3.686, F: 0.053/0.137/0.127
+From base model, E: 0.002/3.477/3.505, F: 0.039/0.371/0.367
+BFGS:    9 20:40:45        3.685546        0.182231
+From surrogate,  E: 0.001/0.003/3.480, F: 0.032/0.030/0.377
+From base model, E: 0.002/3.676/3.681, F: 0.049/0.138/0.096
+From surrogate,  E: 0.001/0.003/3.480, F: 0.032/0.030/0.368
+BFGS:   10 20:40:48        3.681497        0.140875
+From surrogate,  E: 0.001/0.003/3.473, F: 0.035/0.030/0.376
+From base model, E: 0.002/3.675/3.680, F: 0.049/0.139/0.102
+From surrogate,  E: 0.001/0.003/3.474, F: 0.032/0.030/0.367
+BFGS:   11 20:40:50        3.680280        0.133145
+From base model, E: 0.002/3.449/3.512, F: 0.052/0.331/0.357
+====================== Update the model =============== 13
+save the GP model to test-Dot-gpr.json and database to test-Dot-gpr.db
+------Gaussian Process Regression------
+Kernel: 1.078**2 *Dot(length=1.746) 5 energy (0.003) 66 forces (0.025)
+
+From base model, E: 0.002/3.674/3.679, F: 0.031/0.081/0.075
+From surrogate,  E: 0.001/0.003/3.483, F: 0.025/0.030/0.346
+BFGS:   12 20:41:05        3.679297        0.280218
+From surrogate,  E: 0.001/0.003/3.495, F: 0.024/0.030/0.368
+From surrogate,  E: 0.002/0.003/3.673, F: 0.024/0.030/0.048
+From surrogate,  E: 0.001/0.003/3.485, F: 0.021/0.030/0.363
+BFGS:   13 20:41:07        3.672919        0.172775
+From surrogate,  E: 0.001/0.003/3.492, F: 0.022/0.030/0.375
+From surrogate,  E: 0.002/0.003/3.673, F: 0.020/0.030/0.032
+From surrogate,  E: 0.001/0.003/3.488, F: 0.020/0.030/0.374
+BFGS:   14 20:41:09        3.673118        0.118535
+From surrogate,  E: 0.001/0.003/3.491, F: 0.021/0.030/0.376
+From surrogate,  E: 0.002/0.003/3.673, F: 0.019/0.030/0.032
+From surrogate,  E: 0.001/0.003/3.488, F: 0.020/0.030/0.379
+BFGS:   15 20:41:11        3.673317        0.099535
+From surrogate,  E: 0.001/0.003/3.489, F: 0.020/0.030/0.374
+From surrogate,  E: 0.002/0.003/3.673, F: 0.019/0.030/0.035
+From surrogate,  E: 0.001/0.003/3.488, F: 0.020/0.030/0.386
+BFGS:   16 20:41:13        3.673479        0.072644
+From surrogate,  E: 0.001/0.003/3.486, F: 0.020/0.030/0.370
+From surrogate,  E: 0.002/0.003/3.673, F: 0.021/0.030/0.044
+From surrogate,  E: 0.001/0.003/3.487, F: 0.020/0.030/0.394
+BFGS:   17 20:41:15        3.673084        0.070268
+From surrogate,  E: 0.001/0.003/3.482, F: 0.021/0.030/0.364
+From surrogate,  E: 0.002/0.003/3.672, F: 0.024/0.030/0.032
+From surrogate,  E: 0.001/0.003/3.484, F: 0.021/0.030/0.399
+BFGS:   18 20:41:17        3.671949        0.077207
+From surrogate,  E: 0.001/0.003/3.480, F: 0.022/0.030/0.362
+From surrogate,  E: 0.002/0.003/3.671, F: 0.026/0.030/0.013
+From surrogate,  E: 0.001/0.003/3.482, F: 0.021/0.030/0.396
+BFGS:   19 20:41:19        3.671258        0.068848
+From surrogate,  E: 0.001/0.003/3.479, F: 0.022/0.030/0.365
+From surrogate,  E: 0.002/0.003/3.671, F: 0.027/0.030/0.017
+From surrogate,  E: 0.001/0.003/3.481, F: 0.021/0.030/0.390
+BFGS:   20 20:41:21        3.671206        0.053071
+From surrogate,  E: 0.001/0.003/3.479, F: 0.022/0.030/0.369
+From surrogate,  E: 0.002/0.003/3.671, F: 0.028/0.030/0.025
+From surrogate,  E: 0.001/0.003/3.481, F: 0.021/0.030/0.384
+BFGS:   21 20:41:23        3.671262        0.034355
+From base model, E: 0.001/3.312/3.315, F: 0.057/0.051/0.091
+From base model, E: 0.001/3.313/3.316, F: 0.056/0.052/0.075
+------Gaussian Process Regression------
+Kernel: 1.078**2 *Dot(length=1.746) 5 energy (0.003) 69 forces (0.025)
+
+
+Total number of base calls 25
+Total number of surrogate calls 43
+Total number of gpr_fit calls 5
+
+Create the initial GPR model
+------Gaussian Process Regression------
+Kernel: 1.000**2 *RBF(length=0.100) 5 energy (0.005) 15 forces (0.050)
+
+Loss:      -17.989  1.000  0.100  0.005 
+Loss:    23521.630  0.010 10.000  0.003 
+Loss:      -40.425  0.677  3.326  0.004 
+Loss:      -90.806  1.115  3.154  0.003 
+Loss:      -94.365  1.208  3.064  0.003 
+Loss:      -99.328  1.433  2.818  0.003 
+Loss:     -100.647  1.575  2.650  0.003 
+Loss:     -100.994  1.673  2.526  0.003 
+------Gaussian Process Regression------
+Kernel: 1.673**2 *RBF(length=2.526) 5 energy (0.003) 15 forces (0.025)
+
+
+Run actual NEB
+From base model, E: 0.002/3.723/3.727, F: 0.189/1.638/1.632
+From surrogate,  E: 0.002/0.003/4.218, F: 0.116/0.030/3.519
+From base model, E: 0.002/3.719/3.725, F: 0.188/1.629/1.629
+      Step     Time          Energy          fmax
+BFGS:    0 20:41:31        4.217535        3.518582
+From base model, E: 0.002/3.643/3.650, F: 0.189/1.256/1.171
+From surrogate,  E: 0.002/0.003/3.915, F: 0.120/0.030/2.552
+From base model, E: 0.002/3.641/3.648, F: 0.187/1.249/1.169
+BFGS:    1 20:41:33        3.915207        2.551764
+From base model, E: 0.002/3.518/3.545, F: 0.188/0.426/0.469
+====================== Update the model =============== 14
+save the GP model to test-RBF-gpr.json and database to test-RBF-gpr.db
+------Gaussian Process Regression------
+Kernel: 2.005**2 *RBF(length=2.385) 5 energy (0.003) 29 forces (0.025)
+
+From base model, E: 0.003/3.669/3.726, F: 0.145/0.201/0.304
+From base model, E: 0.002/3.536/3.544, F: 0.071/0.452/0.464
+BFGS:    2 20:41:39        3.725546        0.321133
+From base model, E: 0.002/3.533/3.540, F: 0.072/0.435/0.448
+From base model, E: 0.003/3.667/3.720, F: 0.145/0.191/0.283
+From base model, E: 0.002/3.532/3.540, F: 0.071/0.432/0.444
+BFGS:    3 20:41:42        3.720418        0.297677
+From base model, E: 0.002/3.513/3.524, F: 0.071/0.339/0.344
+====================== Update the model =============== 11
+save the GP model to test-RBF-gpr.json and database to test-RBF-gpr.db
+------Gaussian Process Regression------
+Kernel: 1.951**2 *RBF(length=2.430) 5 energy (0.003) 40 forces (0.025)
+
+From base model, E: 0.002/3.678/3.692, F: 0.039/0.131/0.099
+From surrogate,  E: 0.001/0.003/3.522, F: 0.022/0.030/0.354
+BFGS:    4 20:41:51        3.692412        0.251418
+From surrogate,  E: 0.001/0.003/3.516, F: 0.024/0.030/0.346
+From base model, E: 0.002/3.672/3.690, F: 0.039/0.168/0.135
+From surrogate,  E: 0.001/0.003/3.516, F: 0.025/0.030/0.344
+BFGS:    5 20:41:53        3.690145        0.268275
+From surrogate,  E: 0.002/0.003/3.482, F: 0.045/0.030/0.456
+From base model, E: 0.002/3.661/3.729, F: 0.063/0.482/0.397
+From surrogate,  E: 0.002/0.003/3.481, F: 0.045/0.030/0.458
+BFGS:    6 20:41:56        3.729108        0.496705
+From base model, E: 0.002/3.481/3.512, F: 0.037/0.369/0.395
+From base model, E: 0.002/3.657/3.707, F: 0.055/0.329/0.278
+====================== Update the model =============== 13
+save the GP model to test-RBF-gpr.json and database to test-RBF-gpr.db
+------Gaussian Process Regression------
+Kernel: 3.821**2 *RBF(length=2.233) 5 energy (0.003) 53 forces (0.025)
+
+From surrogate,  E: 0.002/0.003/3.520, F: 0.033/0.030/0.390
+BFGS:    7 20:42:11        3.707499        0.363772
+From surrogate,  E: 0.001/0.003/3.813, F: 0.040/0.030/1.955
+From base model, E: 0.003/4.188/4.237, F: 0.151/1.467/1.657
+From surrogate,  E: 0.001/0.003/3.793, F: 0.040/0.030/1.948
+BFGS:    8 20:42:14        4.236562        2.370545
+From surrogate,  E: 0.001/0.003/3.510, F: 0.027/0.030/0.357
+From base model, E: 0.002/3.662/3.686, F: 0.066/0.094/0.094
+From surrogate,  E: 0.001/0.003/3.511, F: 0.027/0.030/0.352
+BFGS:    9 20:42:16        3.685557        0.157618
+From surrogate,  E: 0.001/0.003/3.509, F: 0.025/0.030/0.374
+From base model, E: 0.002/3.661/3.684, F: 0.065/0.094/0.064
+From surrogate,  E: 0.001/0.003/3.509, F: 0.026/0.030/0.369
+BFGS:   10 20:42:19        3.684077        0.093558
+From surrogate,  E: 0.001/0.003/3.507, F: 0.024/0.030/0.396
+From base model, E: 0.002/3.660/3.683, F: 0.065/0.100/0.054
+From surrogate,  E: 0.001/0.003/3.507, F: 0.025/0.030/0.391
+BFGS:   11 20:42:22        3.682868        0.092902
+From surrogate,  E: 0.001/0.003/3.504, F: 0.024/0.030/0.414
+From base model, E: 0.002/3.658/3.682, F: 0.065/0.101/0.050
+From surrogate,  E: 0.001/0.003/3.504, F: 0.024/0.030/0.409
+BFGS:   12 20:42:25        3.681523        0.121468
+From surrogate,  E: 0.001/0.003/3.499, F: 0.024/0.030/0.431
+From base model, E: 0.002/3.655/3.679, F: 0.066/0.094/0.033
+From surrogate,  E: 0.001/0.003/3.499, F: 0.025/0.030/0.427
+BFGS:   13 20:42:27        3.679204        0.143726
+From surrogate,  E: 0.001/0.003/3.494, F: 0.027/0.030/0.420
+From base model, E: 0.002/3.652/3.678, F: 0.068/0.082/0.037
+From surrogate,  E: 0.001/0.003/3.494, F: 0.028/0.030/0.418
+BFGS:   14 20:42:30        3.678077        0.101670
+From surrogate,  E: 0.002/0.003/3.491, F: 0.029/0.030/0.398
+From base model, E: 0.003/3.651/3.678, F: 0.070/0.073/0.049
+====================== Update the model =============== 12
+save the GP model to test-RBF-gpr.json and database to test-RBF-gpr.db
+------Gaussian Process Regression------
+Kernel: 3.633**2 *RBF(length=2.598) 6 energy (0.003) 64 forces (0.025)
+
+From surrogate,  E: 0.001/0.003/3.492, F: 0.025/0.030/0.390
+BFGS:   15 20:42:48        3.678182        0.106856
+From surrogate,  E: 0.001/0.003/3.490, F: 0.025/0.030/0.379
+From surrogate,  E: 0.002/0.003/3.677, F: 0.018/0.030/0.051
+From surrogate,  E: 0.001/0.003/3.492, F: 0.025/0.030/0.379
+BFGS:   16 20:42:50        3.676965        0.098978
+From surrogate,  E: 0.001/0.003/3.491, F: 0.025/0.030/0.370
+From surrogate,  E: 0.002/0.003/3.677, F: 0.018/0.030/0.045
+From surrogate,  E: 0.001/0.003/3.491, F: 0.025/0.030/0.371
+BFGS:   17 20:42:52        3.676734        0.075807
+From surrogate,  E: 0.001/0.003/3.490, F: 0.025/0.030/0.366
+From surrogate,  E: 0.002/0.003/3.676, F: 0.018/0.030/0.037
+From surrogate,  E: 0.001/0.003/3.491, F: 0.024/0.030/0.369
+BFGS:   18 20:42:54        3.676196        0.090556
+From surrogate,  E: 0.001/0.003/3.490, F: 0.025/0.030/0.365
+From surrogate,  E: 0.002/0.003/3.675, F: 0.019/0.030/0.024
+From surrogate,  E: 0.001/0.003/3.489, F: 0.025/0.030/0.371
+BFGS:   19 20:42:56        3.675071        0.087974
+From surrogate,  E: 0.001/0.003/3.489, F: 0.026/0.030/0.371
+From surrogate,  E: 0.002/0.003/3.675, F: 0.020/0.030/0.028
+From surrogate,  E: 0.001/0.003/3.488, F: 0.026/0.030/0.377
+BFGS:   20 20:42:59        3.674932        0.057967
+From surrogate,  E: 0.001/0.003/3.488, F: 0.027/0.030/0.377
+From surrogate,  E: 0.002/0.003/3.675, F: 0.021/0.030/0.033
+From surrogate,  E: 0.001/0.003/3.488, F: 0.027/0.030/0.382
+BFGS:   21 20:43:01        3.674917        0.050875
+From surrogate,  E: 0.001/0.003/3.488, F: 0.027/0.030/0.381
+From surrogate,  E: 0.002/0.003/3.675, F: 0.022/0.030/0.034
+From surrogate,  E: 0.001/0.003/3.488, F: 0.027/0.030/0.384
+BFGS:   22 20:43:03        3.674868        0.050285
+From surrogate,  E: 0.001/0.003/3.488, F: 0.028/0.030/0.388
+From surrogate,  E: 0.002/0.003/3.675, F: 0.022/0.030/0.028
+From surrogate,  E: 0.001/0.003/3.488, F: 0.028/0.030/0.386
+BFGS:   23 20:43:05        3.674721        0.045799
+From base model, E: 0.001/3.313/3.315, F: 0.060/0.083/0.091
+From base model, E: 0.001/3.314/3.316, F: 0.060/0.069/0.075
+------Gaussian Process Regression------
+Kernel: 3.633**2 *RBF(length=2.598) 6 energy (0.003) 66 forces (0.025)
+
+
+Total number of base calls 26
+Total number of surrogate calls 48
+Total number of gpr_fit calls 5

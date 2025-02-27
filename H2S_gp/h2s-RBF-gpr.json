@@ -1,0 +1,44 @@
+{
+    "noise": {
+        "energy": 0.0025,
+        "f_coef": 10,
+        "bounds": [
+            0.0025,
+            0.025
+        ]
+    },
+    "kernel": {
+        "name": "RBF_mb",
+        "sigma": 17.386229056636097,
+        "l": 0.7154648644140258,
+        "zeta": 2.0,
+        "bounds": [
+            [
+                0.01,
+                50.0
+            ],
+            [
+                0.1,
+                10.0
+            ]
+        ]
+    },
+    "descriptor": {
+        "nmax": 3,
+        "lmax": 4,
+        "rcut": 5.0,
+        "alpha": 2.0,
+        "derivative": true,
+        "stress": false,
+        "_type": "SO3"
+    },
+    "db_filename": "h2s-RBF-gpr.db",
+    "error": {
+        "energy_r2": 0.9967977802596301,
+        "energy_mae": 0.0004497678074627347,
+        "energy_rmse": 0.0006289491791382104,
+        "forces_r2": 0.9961622836897093,
+        "forces_mae": 0.009974273656779732,
+        "forces_rmse": 0.014409978871971211
+    }
+}
