@@ -15,7 +15,7 @@ echo "Start Time : $(date)"
 
 start_time=$(date +%s)
 
-mpirun -np 8 python dft-gp-neb.py > log-neb.dat
+mpirun -np 16 python dft-gp-neb.py > log-neb.dat
 
 end_time=$(date +%s)
 run_time=$((end_time - start_time))

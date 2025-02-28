@@ -15,7 +15,7 @@ size = comm.Get_size()
 tag = 'h2s-RBF'
 
 # Set VASP parameters and Environment
-ncpu = 48
+ncpu = 80
 vasp_args = {"txt": 'vasp.out',
              "prec": 'Accurate',
              "encut": 400,

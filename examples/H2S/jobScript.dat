@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --partition=Apus
-#SBATCH -J h2s-gp-rbf
+#SBATCH -J h2s-gp-r2
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=96 #32
 #SBATCH --time=48:00:00
@@ -15,7 +15,7 @@ echo "Start Time : $(date)"
 
 start_time=$(date +%s)
 
-mpirun -np 8 python dft-gp-neb.py > log-neb.dat
+mpirun -np 16 python dft-gp-neb.py > log-neb.dat
 
 end_time=$(date +%s)
 run_time=$((end_time - start_time))

@@ -15,7 +15,7 @@ size = comm.Get_size()
 tag = 'h2s-RBF'
 
 # Set VASP parameters and Environment
-ncpu = 48
+ncpu = 80
 vasp_args = {"txt": 'vasp.out',
              "prec": 'Accurate',
              "encut": 400,
@@ -91,5 +91,5 @@ for i, image in enumerate(neb.images):
                      tag = tag,
                      return_std = True)
 
-qn = BFGS(neb, trajectory='neb.traj')
-qn.run(fmax=0.05, steps=500) #trajectory='neb.traj')
+qn = FIRE(neb, trajectory='neb.traj')
+qn.run(fmax=0.05, steps=1000) #trajectory='neb.traj')
