@@ -446,14 +446,13 @@ class GP_NEB:
         #images = self.path_update(images, neb_forces, velocity_vec, method, step_size)
         return images
 
-def plot_neb_path(data1, data2, unit='eV', figname='neb_path.png'):
+def plot_neb_path(data, unit='eV', figname='neb_path.png'):
     """
     This is just to show what it looks like
     There are more elegant ways to plot the path
     
     Args:
-        data1: list of tuples (image, energy, label)
-        data2: list of tuples (image, energy, label)
+        data: nested list [(imgs1, engs1, label2), (img2, engs, label2)]
         unit: unit of energy
         figname: name of the figure file
     """
@@ -463,21 +462,18 @@ def plot_neb_path(data1, data2, unit='eV', figname='neb_path.png'):
     # Calculate the energies of the images
     if rank == 0:
         # Plot the NEB path
+        colors = ['r', 'b', 'g', 'm'][:len(data)]
         plt.figure()
-        datas = [data1]
-        if data2 is not None:
-            datas.append(data2)
-
-        for data, color in zip(datas, ['r', 'b'][:len(datas)]):
-            (images, Y, label) = data
+        for d, color in zip(data, colors):
+            (images, Y, label) = d
             tmp = np.array([image.positions for image in images])
             X = np.cumsum([np.linalg.norm(tmp[i] - tmp[i+1]) for i in range(len(tmp)-1)])
             X = [0] + X.tolist()  # Add the initial point at distance 0
             X_smooth = np.linspace(min(X), max(X), 300)
             spline = make_interp_spline(X, Y, k=3)
             Y_smooth = spline(X_smooth)
-            plt.plot(X_smooth, Y_smooth, ls='--', color=color, label=label)
             plt.plot(X, Y, 'o')
+            plt.plot(X_smooth, Y_smooth, ls='--', color=color, label=label)
 
         plt.xlabel('Reaction path')
         plt.ylabel(f'Energy ({unit})')
