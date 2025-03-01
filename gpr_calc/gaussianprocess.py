@@ -858,6 +858,17 @@ class GaussianProcess():
         # Add the structures to the training data
         self.set_train_pts(pts_to_add, "w")
 
+    def _get_fixed_atoms(self, struc):
+        """Helper to get indices of fixed atoms"""
+        from ase.constraints import FixAtoms
+        fix_ids = []
+        if len(struc.constraints) > 0:
+            for c in struc.constraints:
+                if isinstance(c, FixAtoms):
+                    fix_ids = c.get_indices()
+                    break
+        return fix_ids
+
     def predict_structure(self, struc, stress=True, return_std=False, f_tol=1e-8):
         """
         Make prediction for a given structure.
@@ -869,37 +880,31 @@ class GaussianProcess():
             return_std bool, return variance or not
             f_tol float, precision to compute force
         """
-        from ase.constraints import FixAtoms
 
-        train_x = self.get_train_x()
-        fix_ids = []
-        if len(struc.constraints) > 0:
-            for c in struc.constraints:
-                if isinstance(c, FixAtoms):
-                    fix_ids = c.get_indices()
-                    break
-
-        #print(f"[Debug]-predict_struc in {self.rank}", struc.positions[0])
+        # Calculate the descriptor
         d = self.descriptor.calculate(struc)
         ele = [Element(ele).z for ele in d['elements']]
         ele = np.array(ele)
         data = {"energy": list_to_tuple([(d['x'], ele)], mode='energy')}
         #print(f"[Debug]-predict_structure in {self.rank}", d['x'].shape)
-        force_data = []
+        force_data = np.empty(len(struc), dtype=object)
+        x_shape = d['x'].shape[1]
+
         for i in range(len(struc)):
             ids = np.argwhere(d['seq'][:,1]==i).flatten()
             _i = d['seq'][ids, 0]
             _x, _dxdr, ele0 = d['x'][_i,:], d['dxdr'][ids], ele[_i]
 
             if stress:
-                _rdxdr = d['rdxdr'][ids]
-                _rdxdr = _rdxdr.reshape([len(ids), d['x'].shape[1], 9])[:, :, [0, 4, 8, 1, 2, 5]]
-                force_data.append((_x, np.concatenate((_dxdr, _rdxdr), axis=2), ele0))
+                _rdxdr = d['rdxdr'][ids].reshape(len(ids), x_shape, 9)[:, :, [0, 4, 8, 1, 2, 5]]
+                force_data[i] = (_x, np.concatenate((_dxdr, _rdxdr), axis=2), ele0)
             else:
-                force_data.append((_x, _dxdr, ele0))
+                force_data[i] = (_x, _dxdr, ele0)
         data["force"] = force_data
         #print(f"[Debug]-predict_structure in {self.rank}", list_to_tuple(force_data)[0].shape)
 
+        fix_ids = self._get_fixed_atoms(struc)
+        train_x = self.get_train_x()
         if stress:
             K_trans, K_trans1 = self.kernel.k_total_with_stress(data, train_x, f_tol)
         else:
@@ -944,6 +949,7 @@ class GaussianProcess():
             return E, F, S, E_std, F_std
         else:
             return E, F, S
+
 
     def add_structure(self, data, N_max=10, tol_e_var=1.2, tol_f_var=1.2, add_force=True):
         """

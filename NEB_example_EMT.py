@@ -1,4 +1,4 @@
-from gpr_calc.GPRANEB import GP_NEB
+from gpr_calc.GPRANEB import GP_NEB, plot_neb_path
 from gpr_calc.calculator import GPR
 from ase.optimize import BFGS
 from ase.mep import NEB
@@ -19,24 +19,25 @@ fmax = 0.05
 
 # Set NEB_GPR
 neb_gp = GP_NEB(initial, final, num_images=num_images)
-images = neb_gp.generate_images(IDPP = False)
+images0 = neb_gp.generate_images(IDPP = False)
 
 # Set NEB_base
 if rank == 0:
-    for image in images:
-        image.calc = EMT()
-    neb = NEB(images, parallel=False)
+    for image in images0: image.calc = EMT()
+    neb = NEB(images0, parallel=False)
     opt = BFGS(neb)
     opt.run(fmax=fmax)
-    neb_gp.plot_neb_path(images, figname='Ref.png')
-
+    eng = [image.get_potential_energy() for image in images0]
+    data1 = (images0, eng, 'EMT')
 
 # Test gpr calculator
 for kernel in ['RBF']: #, 'Dot']:
     images = neb_gp.generate_images(IDPP = False)
 
     print("\nCreate the initial GPR model")
-    neb_gp.set_GPR(kernel=kernel, noise_e=fmax/10)
+    neb_gp.set_GPR(kernel=kernel, 
+                   noise_e=0.03/len(image), 
+                   noise_f=0.1)
     neb_gp.train_GPR(images)
     print(neb_gp.model)
 
@@ -52,12 +53,15 @@ for kernel in ['RBF']: #, 'Dot']:
     neb = NEB(images, parallel=False)
     opt = BFGS(neb) # add callback function to update the F_std threshold
     opt.run(fmax=fmax, steps=50)
-    neb_gp.plot_neb_path(images, figname=kernel+'.png')
+    eng = [image.get_potential_energy() for image in images]
+    data2 = (images, eng, "GPR-"+kernel)
+    plot_neb_path(data1, data2, figname=kernel+'.png')
 
     if rank == 0:
         print("\nTotal number of base calls", neb_gp.model.count_use_base)
         print("Total number of surrogate calls", neb_gp.model.count_use_surrogate)
         print("Total number of gpr_fit calls", neb_gp.model.count_fits)
         print(neb_gp.model)
+        print(data1[1], data2[1])
 
 print(f"Total time in rank-{rank}: {time()-t0}")

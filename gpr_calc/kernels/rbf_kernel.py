@@ -109,7 +109,8 @@ def kef_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, transpos
     if isinstance(X1, list):
         X1 = list_to_tuple(X1, mode='energy')
 
-    if isinstance(X2, list):
+    #print("Debug: X2 type: ", type(X2), isinstance(X2, (list, np.ndarray)))
+    if isinstance(X2, (list, np.ndarray)):
         X2 = list_to_tuple(X2, stress=stress)
 
     (x1, ele1, x1_indices) = X1

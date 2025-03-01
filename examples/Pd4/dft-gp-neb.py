@@ -78,7 +78,7 @@ if os.path.exists(tag+'-gpr.json'):
     neb_gp.model = GP.load(tag + '-gpr.json')
     neb_gp.model.fit()
 else:
-    neb_gp.set_GPR(kernel='RBF', noise_e=0.0015, noise_f=0.1)
+    neb_gp.set_GPR(kernel='RBF', noise_e=0.00025, noise_f=0.08)
     neb_gp.train_GPR(images)
 
 if rank == 0: print(neb_gp.model)

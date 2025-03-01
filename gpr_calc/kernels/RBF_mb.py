@@ -138,7 +138,8 @@ class RBF_mb():
         if 'force' in data1 and 'energy' in data2:
             if len(data1['force']) > 0 and len(data2['energy']) > 0:
                 if not same:
-                    C_fe = kef_C(data2['energy'], data1['force'], 
+                    eng_data2 = data2['energy']
+                    C_fe = kef_C(eng_data2, data1['force'], 
                                  sigma, l, zeta, transpose=True)
                 else:
                     C_fe = C_ef.T if C_ef is not None else None
@@ -149,7 +150,7 @@ class RBF_mb():
             and len(data2['force']) > 0:
 
             force_data1 = data1['force']
-            if isinstance(force_data1, list):
+            if isinstance(force_data1, (list, np.ndarray)):
                 force_data1 = list_to_tuple(force_data1, stress=False)
             x1, dx1dr, ele1, x1_indices = force_data1
 

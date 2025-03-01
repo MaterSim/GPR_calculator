@@ -445,37 +445,44 @@ class GP_NEB:
         #neb_forces = self.calculate_neb_forces(images)
         #images = self.path_update(images, neb_forces, velocity_vec, method, step_size)
         return images
+
+def plot_neb_path(data1, data2, unit='eV', figname='neb_path.png'):
+    """
+    This is just to show what it looks like
+    There are more elegant ways to plot the path
     
-    # Function to plot the NEB path
-    def plot_neb_path(self, images, unit='eV', figname='neb_path.png'):
-        """
-        This is just to show what it looks like
-        There are more elegant ways to plot the path
-        """
-        import matplotlib.pyplot as plt
-        from scipy.interpolate import make_interp_spline
+    Args:
+        data1: list of tuples (image, energy, label)
+        data2: list of tuples (image, energy, label)
+        unit: unit of energy
+        figname: name of the figure file
+    """
+    import matplotlib.pyplot as plt
+    from scipy.interpolate import make_interp_spline
 
-        posToDist = np.array([image.positions for image in images])
-        imgDist = np.cumsum([np.linalg.norm(posToDist[i] - posToDist[i+1]) for i in range(len(posToDist)-1)])
-        imgDist = [0] + imgDist.tolist()  # Add the initial point at distance 0
+    # Calculate the energies of the images
+    if rank == 0:
+        # Plot the NEB path
+        plt.figure()
+        datas = [data1]
+        if data2 is not None:
+            datas.append(data2)
 
-        # Calculate the energies of the images
-        imgEnergies = [image.get_potential_energy() for image in images]
+        for data, color in zip(datas, ['r', 'b'][:len(datas)]):
+            (images, Y, label) = data
+            tmp = np.array([image.positions for image in images])
+            X = np.cumsum([np.linalg.norm(tmp[i] - tmp[i+1]) for i in range(len(tmp)-1)])
+            X = [0] + X.tolist()  # Add the initial point at distance 0
+            X_smooth = np.linspace(min(X), max(X), 300)
+            spline = make_interp_spline(X, Y, k=3)
+            Y_smooth = spline(X_smooth)
+            plt.plot(X_smooth, Y_smooth, ls='--', color=color, label=label)
+            plt.plot(X, Y, 'o')
 
-        if rank == 0:
-            # Spline interpolation for a smooth curve
-            imgDist_smooth = np.linspace(min(imgDist), max(imgDist), 300)
-            spline = make_interp_spline(imgDist, imgEnergies, k=3)
-            imgEnergies_smooth = spline(imgDist_smooth)
-
-            # Plot the NEB path
-            plt.figure()
-            plt.plot(imgDist_smooth, imgEnergies_smooth, marker='', linestyle='-', color='b', label='Interpolated Path')
-            plt.plot(imgDist, imgEnergies, 'o', color='r', label='Images')
-            plt.xlabel('Reaction path')
-            plt.ylabel(f'Energy ({unit})')
-            plt.title('NEB Path')
-            plt.legend()
-            plt.grid(True)
-            plt.savefig(figname)
-            plt.close()
+        plt.xlabel('Reaction path')
+        plt.ylabel(f'Energy ({unit})')
+        plt.title('NEB Path')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(figname)
+        plt.close()
