@@ -1009,7 +1009,7 @@ class GaussianProcess():
             xs_added = []
             for f_id in range(len(atoms)):
                 include = False
-                if np.max(F_std[f_id]) > tol_f_var:
+                if np.max(F_std[f_id]) > tol_f_var or np.max(abs(F[f_id] - F1[f_id])) > 1.5 * tol_f_var:
                     X = my_data["energy"][0][0][f_id]
                     _ele = my_data["energy"][0][2][f_id]
                     if len(xs_added) == 0:
