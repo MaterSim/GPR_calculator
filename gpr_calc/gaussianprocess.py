@@ -113,6 +113,11 @@ class GaussianProcess():
     def __repr__(self):
         return str(self)
 
+    def set_K_inv(self):
+        if self._K_inv is None:
+            L_inv = solve_triangular(self.L_.T, np.eye(self.L_.shape[0]))
+            self._K_inv = L_inv.dot(L_inv.T)
+
     def log_marginal_likelihood(self, params, eval_gradient=False, clone_kernel=False):
         """
         Compute the log marginal likelihood and its gradient
@@ -121,7 +126,7 @@ class GaussianProcess():
             params: hyperparameters
             eval_gradient: bool, evaluate the gradient or not
             clone_kernel: bool, clone the kernel or not
-        
+
         Returns:
             log marginal likelihood and its gradient
         """
@@ -132,7 +137,7 @@ class GaussianProcess():
         else:
             noise_e = params[-1]
             noise_f = self.f_coef * noise_e
-            kernel_params = params[:-1] 
+            kernel_params = params[:-1]
 
         if clone_kernel:
             kernel = self.kernel.update(kernel_params)
@@ -256,7 +261,7 @@ class GaussianProcess():
             params, _ = self.optimize(obj_func, hyper_params, hyper_bounds)
             # print(f"Optimized hyperparameters rank-{self.rank}", params, fun)
             params = self.comm.bcast(params, root=0)
-            
+
             if self.noise_bounds is not None:
                 self.kernel.update(params[:-1])
                 self.noise_e = params[-1]
@@ -291,7 +296,7 @@ class GaussianProcess():
             self.L_ = None
             self.alpha_ = None
             self._K_inv = None
-        
+
         # Broadcast L_ and alpha_ to all ranks
         self.L_ = self.comm.bcast(self.L_, root=0)
         self.alpha_ = self.comm.bcast(self.alpha_, root=0)
@@ -355,9 +360,6 @@ class GaussianProcess():
             y_cov = self.kernel.k_total(X) - K_trans.dot(v)
             return y_mean, y_cov
         elif return_std:
-            if self._K_inv is None:
-                L_inv = solve_triangular(self.L_.T, np.eye(self.L_.shape[0]))
-                self._K_inv = L_inv.dot(L_inv.T)
             y_var = self.kernel.diag(X)
             y_var -= np.einsum("ij,ij->i", np.dot(K_trans, self._K_inv), K_trans)
 
@@ -882,7 +884,7 @@ class GaussianProcess():
         """
 
         # Calculate the descriptor
-        d = self.descriptor.calculate(struc)
+        d = self.descriptor.calculate(struc, use_mpi=True)
         ele = [Element(ele).z for ele in d['elements']]
         ele = np.array(ele)
         data = {"energy": list_to_tuple([(d['x'], ele)], mode='energy')}
@@ -933,9 +935,6 @@ class GaussianProcess():
             if stress:
                 S += stress_off
         if return_std:
-            if self._K_inv is None:
-                L_inv = solve_triangular(self.L_.T, np.eye(self.L_.shape[0]))
-                self._K_inv = L_inv.dot(L_inv.T)
             y_var = self.kernel.diag(data)
             y_var -= np.einsum("ij,ij->i", np.dot(K_trans, self._K_inv), K_trans)
             y_var_negative = y_var < 0
@@ -988,7 +987,7 @@ class GaussianProcess():
             F_std = F_std.reshape((len(atoms), 3))
         else:
             # If the model is not trained, set the variance to be large
-            E = E1 = [energy / len(atoms)] # eV/atom 
+            E = E1 = [energy / len(atoms)] # eV/atom
             F = F1 = force.flatten()
             E_std = 2 * tol_e_var
             F_std = 2 * tol_f_var * np.ones((len(atoms), 3))

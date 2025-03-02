@@ -3,7 +3,6 @@ import numpy as np
 from ase.neighborlist import NeighborList, PrimitiveNeighborList
 from optparse import OptionParser
 from scipy.special import sph_harm, spherical_in
-from ase import Atoms
 
 class SO3:
     '''
@@ -184,94 +183,127 @@ class SO3:
                 delattr(self, attr)
         return
 
-    def calculate(self, atoms, atom_ids=None):
+    def calculate(self, atoms, atom_ids=None, use_mpi=False):
         '''
         Calculates the SO(3) power spectrum components of the
         smoothened atomic neighbor density function
         for given nmax, lmax, rcut, and alpha.
 
         Args:
-            atoms: an ASE atoms object corresponding to the desired
-                   atomic arrangement
+            atoms: an ASE atoms object 
+            atom_ids: list of atom indices to calculate the power spectrum
+            use_mpi: bool, if True, the calculation will be parallelized
 
-            backend: string, specifies the method to compute the neighborlist
-                     elements, either ASE or pymatgen
+        Returns:
+            x: a dictionary containing the power spectrum components
         '''
         self._atoms = atoms
-
         self.build_neighbor_list(atom_ids)
         self.initialize_arrays()
-
         ncoefs = self.nmax*(self.nmax+1)//2*(self.lmax+1)
         tril_indices = np.tril_indices(self.nmax, k=0)
-
         ls = np.arange(self.lmax+1)
         norm = np.sqrt(2*np.sqrt(2)*np.pi/np.sqrt(2*ls+1))
 
+        if use_mpi:
+            from mpi4py import MPI
+            comm = MPI.COMM_WORLD
+            rank = comm.Get_rank()
+            size = comm.Get_size()
+        else:
+            rank = 0
+            size = 1
+
         if self.derivative:
             # get expansion coefficients and derivatives
-            cs, dcs = compute_dcs(self.neighborlist, self.nmax, self.lmax, self.rcut, self.alpha, self._cutoff_function)
-            # weight cs and dcs
+            cs, dcs = compute_dcs(self.neighborlist, self.nmax, self.lmax, self.rcut, 
+                                  self.alpha, self._cutoff_function, use_mpi=use_mpi)
             cs *= self.atomic_weights[:,np.newaxis,np.newaxis,np.newaxis]
             dcs *= self.atomic_weights[:,np.newaxis,np.newaxis,np.newaxis,np.newaxis]
             cs = np.einsum('inlm,l->inlm', cs, norm)
             dcs = np.einsum('inlmj,l->inlmj', dcs, norm)
             Ris = self.center_atoms
             Rjs = self.neighborlist + Ris
-            for i in np.unique(self.seq[:,0]):
-                # find atoms for which i is the center
-                centers = self.neighbor_indices[:,0] == i
-                # find neighbors for which i is not the index
-                neighs = self.neighbor_indices[:,1] != i
-                # get the indices for both conditions
-                inds = centers*neighs
-                # total up the c array for the center atom
+
+            # Divide work among MPI ranks
+            unique_atoms = np.unique(self.seq[:, 0])
+            chunk_size = (len(unique_atoms) + size - 1) // size
+            start = rank * chunk_size
+            end = min((rank + 1) * chunk_size, len(unique_atoms))
+            local_atoms = unique_atoms[start:end]
+
+            # Initialize arrays for the power spectrum and its gradient
+            n_total_atoms = len(atoms)
+            n_total_pairs = len(self.seq)
+            local_plist = np.zeros((n_total_atoms, ncoefs), dtype=np.float64)
+            local_dplist = np.zeros((n_total_pairs, ncoefs, 3), dtype=np.float64)
+            local_pstress = np.zeros((n_total_pairs, ncoefs, 3, 3), dtype=np.float64)
+
+            # Process atoms in the local chunk
+            for i in local_atoms:
+                centers = self.neighbor_indices[:, 0] == i
                 ctot = cs[centers].sum(axis=0)
-                #ctot = np.einsum('nlm,l->nlm', ctot,norm)
-                # get dc weights
-                # compute the power spectrum
+
+                # Compute the power spectrum
                 P = np.einsum('ijk,ljk->ilj', ctot, np.conj(ctot)).real
-                # compute the gradient of the power spectrum for each neighbor
                 dP = np.einsum('wijkn,ljk->wiljn', dcs[centers], np.conj(ctot))
-                dP += np.conj(np.transpose(dP, axes=[0,2,1,3,4]))
+                dP += np.conj(np.transpose(dP, axes=[0, 2, 1, 3, 4]))
                 dP = dP.real
 
                 rdPi = np.einsum('wn,wijkm->wijknm', Ris[centers], dP)
                 rdPj = np.einsum('wn,wijkm->wijknm', Rjs[centers], dP)
-                # get ij pairs for center atom
+
                 ijs = self.neighbor_indices[centers]
-                # loop over unique neighbor indices
-                for j in np.unique(ijs[:,1]):
-                    # get the location of ij pairs in the NL
-                    # and therefore dP
-                    ijlocs = self.neighbor_indices[centers,1] == j
-                    # get the location of the dplist element
-                    temp = self.seq == np.array([i,j])
-                    seqloc = temp[:,0]*temp[:,1]
-                    # sum over ij pairs
+                for j in np.unique(ijs[:, 1]):
+                    ijlocs = self.neighbor_indices[centers, 1] == j
+                    temp = self.seq == np.array([i, j])
+                    seqloc = temp[:, 0] * temp[:, 1]
                     dPsum = np.sum(dP[ijlocs], axis=0)
                     rdPjsum = np.sum(rdPj[ijlocs], axis=0)
-                    # flatten into dplist and rdplist
-                    self._dplist[seqloc] += (dPsum[tril_indices].flatten()).reshape(ncoefs,3)
-                    self._pstress[seqloc] -= (rdPjsum[tril_indices].flatten()).reshape(ncoefs,3,3)
+                    local_dplist[seqloc] += (dPsum[tril_indices].flatten()).reshape(ncoefs, 3)
+                    local_pstress[seqloc] -= (rdPjsum[tril_indices].flatten()).reshape(ncoefs, 3, 3)
 
-                # get unique elements and store in feature vector
-                self._plist[i] = P[tril_indices].flatten()
-                # get location if ii pair in seq
-                temp = self.seq == np.array([i,i])
-                iiloc = temp[:,0]*temp[:,1]
-                # get location of all ijs in seq
-                ilocs = self.seq[:,0] == i
-                self._dplist[iiloc] -= np.sum(self._dplist[ilocs],axis=0)
-                rdPisum = np.sum(rdPi, axis=0)
-                self._pstress[iiloc] += (rdPisum[tril_indices].flatten()).reshape(ncoefs,3,3)
+                local_plist[i] = P[tril_indices].flatten()
+                temp = self.seq == np.array([i, i])
+                iiloc = np.where(np.all(temp, axis=1))[0]
+                ilocs = np.where(self.seq[:, 0] == i)[0]
+                if len(iiloc) > 0:
+                    local_dplist[iiloc] -= np.sum(local_dplist[ilocs], axis=0)
+                    rdPisum = np.sum(rdPi, axis=0)
+                    local_pstress[iiloc] += (rdPisum[tril_indices].flatten()).reshape(ncoefs, 3, 3)
 
+            # Gather results from all ranks
+            if use_mpi:
+                # Use MPI.SUM to combine arrays directly
+                total_plist = np.zeros_like(local_plist) if rank == 0 else None
+                total_dplist = np.zeros_like(local_dplist) if rank == 0 else None
+                total_pstress = np.zeros_like(local_pstress) if rank == 0 else None
+
+                # Reduce arrays with MPI.SUM operation
+                comm.Reduce(local_plist, total_plist, op=MPI.SUM, root=0)
+                comm.Reduce(local_dplist, total_dplist, op=MPI.SUM, root=0)
+                comm.Reduce(local_pstress, total_pstress, op=MPI.SUM, root=0)
+
+                # Set the results on root rank
+                if rank == 0:
+                    self._plist = total_plist
+                    self._dplist = total_dplist
+                    self._pstress = total_pstress
+
+                # Broadcast results to all ranks
+                self._plist = comm.bcast(self._plist if rank == 0 else None, root=0)
+                self._dplist = comm.bcast(self._dplist if rank == 0 else None, root=0)
+                self._pstress = comm.bcast(self._pstress if rank == 0 else None, root=0)
+            else:
+                self._plist = local_plist
+                self._dplist = local_dplist
+                self._pstress = local_pstress
 
             x = {'x':self._plist, 'dxdr':self._dplist,
                  'elements':list(atoms.symbols), 'seq':self.seq}
             if self._stress:
                 vol = atoms.get_volume()
-                x['rdxdr'] = -self._pstress/vol
+                x['rdxdr'] = -self._pstress / vol
             else:
                 x['rdxdr'] = None
 
@@ -420,7 +452,7 @@ def GaussChebyshevQuadrature(nmax,lmax):
         quad_array[i-1] = x
     return quad_array, np.pi/NQuad
 
-def compute_cs(pos, nmax, lmax, rcut, alpha, cutoff):
+def compute_cs(pos, nmax, lmax, rcut, alpha, cutoff, use_mpi=False):
 
     # compute the overlap matrix
     w = W(nmax)
@@ -437,9 +469,7 @@ def compute_cs(pos, nmax, lmax, rcut, alpha, cutoff):
     # compute the arguments for the bessel functions
     BesselArgs = 2*alpha*np.outer(Ris,Quadrature)#(Nneighbors x Nquad)
 
-    # initalize the arrays for the bessel function values
-    # and the G function values
-    Bessels = np.zeros((len(Ris), len(Quadrature), lmax+1), dtype=np.float64) #(Nneighbors x Nquad x lmax+1)
+    # initalize the arrays for the G function values
     Gs = np.zeros((nmax, len(Quadrature)), dtype=np.float64) # (nmax, nquad)
 
     # compute the g values
@@ -447,8 +477,7 @@ def compute_cs(pos, nmax, lmax, rcut, alpha, cutoff):
         Gs[n-1,:] = g(Quadrature, n, nmax, rcut, w)
 
     # compute the bessel values
-    for l in range(lmax+1):
-        Bessels[:,:,l] = spherical_in(l, BesselArgs)
+    Bessels = compute_bessel_values(Ris, Quadrature, lmax, BesselArgs, use_mpi=use_mpi)
 
     # mutliply the terms in the integral separate from the Bessels
     Quad_Squared = Quadrature**2
@@ -488,7 +517,95 @@ def compute_cs(pos, nmax, lmax, rcut, alpha, cutoff):
     C = np.einsum('i,ijkl->ijkl', exparray, Y_mul_innerprod)
     return C
 
-def compute_dcs(pos, nmax, lmax, rcut, alpha, cutoff):
+
+def compute_bessel_values(Ris, Quadrature, lmax, BesselArgs, derivative=False, use_mpi=False):
+    """
+    Compute Bessel function values in parallel using MPI.
+    
+    Args:
+        Ris: array of distances
+        Quadrature: quadrature points
+        lmax: maximum angular momentum
+        BesselArgs: arguments for Bessel functions
+        derivative: whether to compute derivatives
+        use_mpi: whether to use MPI parallelization
+    
+    Returns:
+        Bessels: array of Bessel function values
+        dBessels: array of Bessel function derivatives (if derivative=True)
+    """
+    if use_mpi:
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+        size = comm.Get_size()
+    else:
+        rank = 0
+        size = 1
+
+    # Initialize arrays
+    Bessels = np.zeros((len(Ris), len(Quadrature), lmax+1), dtype=np.float64)
+    if derivative:
+        dBessels = np.zeros_like(Bessels)
+    
+    # Divide work among ranks
+    l_values = np.arange(lmax + 1)
+    chunk_size = (len(l_values) + size - 1) // size
+    start = rank * chunk_size
+    end = min(start + chunk_size, len(l_values))
+    local_l_values = l_values[start:end]
+
+    # Compute local Bessel values
+    local_Bessels = np.zeros((len(Ris), len(Quadrature), len(local_l_values)), dtype=np.float64)
+    if derivative:
+        local_dBessels = np.zeros_like(local_Bessels)
+
+    for idx, l in enumerate(local_l_values):
+        local_Bessels[:,:,idx] = spherical_in(l, BesselArgs)
+        if derivative:
+            local_dBessels[:,:,idx] = spherical_in(l, BesselArgs, derivative=True)
+
+    if use_mpi and size > 1:
+        sendcounts = comm.gather(len(local_l_values), root=0)
+        
+        if rank == 0:
+            for r in range(size):
+                if r == 0:
+                    Bessels[:,:,start:end] = local_Bessels
+                    if derivative:
+                        dBessels[:,:,start:end] = local_dBessels
+                else:
+                    r_start = r * chunk_size
+                    r_size = sendcounts[r]
+                    if r_size > 0:
+                        r_end = r_start + r_size
+                        recv_bessels = comm.recv(source=r, tag=11)
+                        Bessels[:,:,r_start:r_end] = recv_bessels
+                        if derivative:
+                            recv_dbessels = comm.recv(source=r, tag=12)
+                            dBessels[:,:,r_start:r_end] = recv_dbessels
+        else:
+            if len(local_l_values) > 0:
+                comm.send(local_Bessels, dest=0, tag=11)
+                if derivative:
+                    comm.send(local_dBessels, dest=0, tag=12)
+
+        # Broadcast results
+        Bessels = comm.bcast(Bessels if rank == 0 else None, root=0)
+        if derivative:
+            dBessels = comm.bcast(dBessels if rank == 0 else None, root=0)
+    else:
+        Bessels[:,:,start:end] = local_Bessels
+        if derivative:
+            dBessels[:,:,start:end] = local_dBessels
+
+    if derivative:
+        #print('Debug B', Bessels[:3, :3, 0])
+        return Bessels, dBessels
+    return Bessels
+
+
+def compute_dcs(pos, nmax, lmax, rcut, alpha, cutoff, use_mpi=False):
     # compute the overlap matrix
     w = W(nmax)
 
@@ -509,19 +626,16 @@ def compute_dcs(pos, nmax, lmax, rcut, alpha, cutoff):
 
     # initalize the arrays for the bessel function values
     # and the G function values
-    Bessels = np.zeros((len(Ris), len(Quadrature), lmax+1), dtype=np.float64) #(Nneighbors x Nquad x lmax+1)
     Gs = np.zeros((nmax, len(Quadrature)), dtype=np.float64) # (nmax, nquad)
-    dBessels = np.zeros((len(Ris), len(Quadrature), lmax+1), dtype=np.float64) #(Nneighbors x Nquad x lmax+1)
 
     # compute the g values
     for n in range(1,nmax+1,1):
         Gs[n-1,:] = g(Quadrature, n, nmax, rcut,w)*weight
 
     # compute the bessel values
-    for l in range(lmax+1):
-        Bessels[:,:,l] = spherical_in(l, BesselArgs)
-        dBessels[:,:,l] = spherical_in(l, BesselArgs, derivative=True)
-
+    Bessels, dBessels = compute_bessel_values(Ris, Quadrature, lmax, BesselArgs, 
+                                            derivative=True, use_mpi=use_mpi)
+    
     #(Nneighbors x Nquad x lmax+1) unit vector here
     gradBessels = np.einsum('ijk,in->ijkn',dBessels,upos)
     gradBessels *= 2*alpha
