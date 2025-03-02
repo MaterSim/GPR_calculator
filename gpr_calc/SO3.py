@@ -307,7 +307,6 @@ class SO3:
         # of spherical harmonic expansion (including 0)
         ncoefs = nmax*(nmax+1)//2*(lmax+1)
 
-
         self._plist = np.zeros((ncell, ncoefs), dtype=np.float64)
         self._dplist = np.zeros((len(self.seq), ncoefs, 3), dtype=np.float64)
         self._pstress = np.zeros((len(self.seq), ncoefs, 3, 3), dtype=np.float64)
@@ -382,86 +381,6 @@ def Cosine(Rij, Rc, derivative=False):
     else:
         result = -0.5 * np.pi / Rc * np.sin(np.pi * Rij / Rc)
     return result
-
-def Tanh(Rij, Rc, derivative=False):
-
-    if derivative is False:
-        result = np.tanh(1-Rij/Rc)**3
-
-    else:
-        tanh_square = np.tanh(1-Rij/Rc)**2
-        result = - (3/Rc) * tanh_square * (1-tanh_square)
-    return result
-
-def Poly1(Rij, Rc, derivative=False):
-
-    if derivative is False:
-        x = Rij/Rc
-        x_square = x**2
-        result = x_square * (2*x-3) + 1
-
-    else:
-        term1 = (6 / Rc**2) * Rij
-        term2 = Rij/Rc - 1
-        result = term1*term2
-    return result
-
-def Poly2(Rij, Rc, derivative=False):
-
-    if derivative is False:
-        x = Rij/Rc
-        result = x**3 * (x*(15-6*x)-10) + 1
-
-    else:
-        x = Rij/Rc
-        result = (-30/Rc) * (x**2 * (x-1)**2)
-    return result
-
-def Poly3(Rij, Rc, derivative=False):
-
-    if derivative is False:
-        x = Rij/Rc
-        result = x**4*(x*(x*(20*x-70)+84)-35)+1
-
-    else:
-        x = Rij/Rc
-        result = (140/Rc) * (x**3 * (x-1)**3)
-    return result
-
-def Poly4(Rij, Rc, derivative=False):
-
-    if derivative is False:
-        x = Rij/Rc
-        result = x**5*(x*(x*(x*(315-70*x)-540)+420)-126)+1
-
-    else:
-        x = Rij/Rc
-        result = (-630/Rc) * (x**4 * (x-1)**4)
-    return result
-
-def Exponent(Rij, Rc, derivative=False):
-
-    if derivative is False:
-        x = Rij/Rc
-        try:
-            result = np.exp(1 - 1/(1-x**2))
-        except:
-            result = 0
-
-    else:
-        x = Rij/Rc
-        try:
-            result = 2*x * np.exp(1 - 1/(1-x**2)) / (1+x**2)**2
-        except:
-            result = 0
-            return result
-
-def Unity(Rij, Rc, derivative=False):
-    if derivative is False:
-        return np.ones(len(Rij))
-
-    else:
-        return np.ones(len(Rij))
 
 def W(nmax):
     arr = np.zeros((nmax,nmax), np.float64)
