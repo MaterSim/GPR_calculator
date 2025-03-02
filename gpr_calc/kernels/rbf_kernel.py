@@ -2,7 +2,6 @@ from cffi import FFI
 import numpy as np
 from ..utilities import list_to_tuple
 from ._rbf_kernel import lib
-from mpi4py import MPI
 
 ffi = FFI()
 def kee_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False):
