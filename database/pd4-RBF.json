@@ -1,0 +1,42 @@
+{
+    "noise": {
+        "energy": 0.00025,
+        "force": 0.08,
+        "f_coef": 10,
+        "bounds": null
+    },
+    "kernel": {
+        "name": "RBF_mb",
+        "sigma": 24.99290767873284,
+        "l": 3.107283211515612,
+        "zeta": 2.0,
+        "bounds": [
+            [
+                0.01,
+                50.0
+            ],
+            [
+                0.1,
+                10.0
+            ]
+        ]
+    },
+    "descriptor": {
+        "nmax": 3,
+        "lmax": 4,
+        "rcut": 5.0,
+        "alpha": 2.0,
+        "derivative": true,
+        "stress": false,
+        "_type": "SO3"
+    },
+    "db_filename": "database/pd4-RBF.db",
+    "error": {
+        "energy_r2": 0.9989574083914902,
+        "energy_mae": 6.606750605507286e-05,
+        "energy_rmse": 8.435480488612074e-05,
+        "forces_r2": 0.9986700243017558,
+        "forces_mae": 0.02506520428282454,
+        "forces_rmse": 0.034106444766524954
+    }
+}
