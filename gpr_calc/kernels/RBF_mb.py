@@ -57,6 +57,10 @@ class RBF_mb():
         """
         sigma2, l2, zeta = self.sigma**2, self.l**2, self.zeta
         C_ee, C_ff = None, None
+        # Get MPI info
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+        size = comm.Get_size()
 
         if "energy" in data:
             NE = data['energy'][-1]
@@ -69,8 +73,47 @@ class RBF_mb():
                 count += ne
 
         if "force" in data:
-            C_ff = self._compute_K_ff(data['force'], data['force'], same=True, diag=True)
-            C_ff = np.diag(C_ff)
+            NF = len(data["force"])
+            force_data = data["force"]
+            # Process force data
+            if isinstance(force_data, (list, np.ndarray)):
+                force_data = list_to_tuple(force_data, stress=False)
+            x1, dx1dr, ele1, x1_indices = force_data
+
+            # Calculate chunk size for each rank
+            chunk_size = (NF + size - 1) // size
+            start = rank * chunk_size
+            end = min(start + chunk_size, NF)
+
+            # Initialize local C_ff array
+            local_C_ff = np.zeros(3*(end-start)) if start < NF else np.zeros(0)
+
+            # Calculate local C_ff
+            for i in range(start, end):
+                if i < NF:
+                    start1 = sum(x1_indices[:i])
+                    end1 = sum(x1_indices[:i+1])
+                    dat = (x1[start1:end1], dx1dr[start1:end1], ele1[start1:end1], [x1_indices[i]])
+                    tmp = kff_C(dat, dat, self.sigma, self.l, self.zeta)
+                    local_idx = i - start
+                    local_C_ff[local_idx*3:(local_idx+1)*3] = np.diag(tmp)
+
+            # Gather results to rank 0
+            all_C_ff = comm.gather(local_C_ff, root=0)
+
+            # Combine results on rank 0
+            if rank == 0:
+                C_ff = np.zeros(3 * NF)
+                offset = 0
+                for chunk in all_C_ff:
+                    size = len(chunk)
+                    if size > 0:
+                        C_ff[offset:offset+len(chunk)] = chunk
+                        offset += size
+            # Broadcast the result to all ranks
+            C_ff = comm.bcast(C_ff, root=0)
+
+        #if rank == 0: print('debug', C_ff[:3])
         if C_ff is None:
             return C_ee
         elif C_ee is None:
@@ -125,6 +168,9 @@ class RBF_mb():
                 local_ff, local_ff_s, local_ff_l = kff_C(local_data,
                                                          force_data1,
                                                          sigma, l, zeta, tol=tol, grad=True)
+            elif diag:
+                local_ff = kff_C(local_data, local_data, sigma, l, zeta, tol=tol, diag=True)
+                local_ff = np.diag(local_ff)
             else:
                 local_ff = kff_C(local_data,
                                  force_data1 if same else force_data2,
@@ -140,10 +186,13 @@ class RBF_mb():
 
         # Combine results on rank 0
         if rank == 0:
-            C_ff = np.vstack([ff for ff in all_ff if ff is not None])
-            if grad:
-                C_ff_s = np.vstack([ff_s for ff_s in all_ff_s if ff_s is not None])
-                C_ff_l = np.vstack([ff_l for ff_l in all_ff_l if ff_l is not None])
+            if diag:
+                C_ff = np.hstack([ff for ff in all_ff if ff is not None])
+            else:
+                C_ff = np.vstack([ff for ff in all_ff if ff is not None])
+                if grad:
+                    C_ff_s = np.vstack([ff_s for ff_s in all_ff_s if ff_s is not None])
+                    C_ff_l = np.vstack([ff_l for ff_l in all_ff_l if ff_l is not None])
         else:
             C_ff = C_ff_s = C_ff_l = None
 
