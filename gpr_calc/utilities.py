@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 plt.style.use("ggplot")
 
 def PyXtal(sgs, species, numIons, conventional=True):
-    """ 
+    """
     PyXtal interface for the followings,
 
     Parameters
@@ -40,7 +40,7 @@ def new_pt(data, Refs, d_tol=1e-1, eps=1e-8):
             if 1-d**2 < d_tol:
                 return False
     return True
- 
+
 def rmse(true, predicted):
     """ Calculate root mean square error of energy or force. """
     true, predicted = np.array(true), np.array(predicted)
@@ -105,14 +105,14 @@ def convert_train_data(data, des,  N_force=100000):
 
     for _data in data:
         (struc, energy, forces) = _data
-        d = des.calculate(struc) 
+        d = des.calculate(struc)
         ele = [Element(ele).z for ele in d['elements']]
         ele = np.array(ele)
         f_ids = []
         for i in range(len(struc)):
             if len(force_data) < N_force:
                 ids = np.argwhere(d['seq'][:,1]==i).flatten()
-                _i = d['seq'][ids, 0] 
+                _i = d['seq'][ids, 0]
                 if len(xs_added) == 0:
                     force_data.append((d['x'][_i,:], d['dxdr'][ids], forces[i], ele[_i]))
                     f_ids.append(i)
@@ -122,7 +122,7 @@ def convert_train_data(data, des,  N_force=100000):
                         f_ids.append(i)
                         xs_added.append((X, ele[i]))
 
-        energy_data.append((d['x'], energy/len(struc), ele)) 
+        energy_data.append((d['x'], energy/len(struc), ele))
         db_data.append((struc, energy, forces, True, f_ids))
 
     train_data = {"energy": energy_data, "force": force_data, "db": db_data}
@@ -142,7 +142,7 @@ def get_data(db_name, des, N_force=100000, lists=None, select=False, no_energy=F
     for id in range(len(X)):
         ele = [Element(ele).z for ele in X[id]['elements']]
         ele = np.array(ele)
-        energy_data.append((X[id]['x'], Y["energy"][id]/len(X[id]['x']), ele)) 
+        energy_data.append((X[id]['x'], Y["energy"][id]/len(X[id]['x']), ele))
         if select:
             ids = [0] #[choice(range(len(X[id]['x'])))]
         else:
@@ -151,7 +151,7 @@ def get_data(db_name, des, N_force=100000, lists=None, select=False, no_energy=F
         for i in ids:
             if len(force_data) < N_force:
                 ids = np.argwhere(X[id]['seq'][:,1]==i).flatten()
-                _i = X[id]['seq'][ids, 0] 
+                _i = X[id]['seq'][ids, 0]
                 force_data.append((X[id]['x'][_i,:], X[id]['dxdr'][ids], Y['forces'][id][i], ele[_i]))
                 f_ids.append(i)
 
@@ -205,7 +205,7 @@ def convert_struc(db_file, des, ids=None, N=None, ncpu=1, stress=False):
         for i, struc in enumerate(structures):
             strs = '\rDescriptor calculation: {:4d} out of {:4d}'.format(i+1, len(structures))
             print(strs, flush=False, end='')
-            d = des.calculate(struc) 
+            d = des.calculate(struc)
             xs.append(d)
     else:
         print('---Parallel mode is on, {} cores with be used'.format(ncpu))
@@ -218,7 +218,7 @@ def convert_struc(db_file, des, ids=None, N=None, ncpu=1, stress=False):
             xs = p.map(func, structures0)
             p.close()
             p.join()
-    train_x = xs 
+    train_x = xs
 
     return train_x, train_Y, structures
 
@@ -269,11 +269,11 @@ def write_db(data, db_filename='viz.db', permission='w'):
     with connect(db_filename, serial=True) as db:
         print("writing data to db: ", len(structures))
         for i, x in enumerate(structures):
-            kvp = {"QM_energy": y_qm[i], 
-                   "ML_energy": y_ml[i], 
+            kvp = {"QM_energy": y_qm[i],
+                   "ML_energy": y_ml[i],
                    "diff_energy": abs(y_qm[i]-y_ml[i])}
             db.write(x, key_value_pairs=kvp)
-    
+
 def plot(Xs, Ys, labels, figname='results.png', draw_line=True, type='Energy'):
     x_mins, x_maxs = [], []
     for x, y, label in zip(Xs, Ys, labels):
@@ -293,10 +293,10 @@ def plot(Xs, Ys, labels, figname='results.png', draw_line=True, type='Energy'):
         unit = "(eV/A)"
     elif type == 'Stress':
         unit = "GPa"
-    plt.xlabel('True' + unit) 
+    plt.xlabel('True' + unit)
     plt.ylabel('Prediction' + unit)
     plt.legend(loc=2)
-    plt.tight_layout() 
+    plt.tight_layout()
     plt.savefig(figname)
     plt.close()
     print("save the figure to ", figname)
@@ -310,15 +310,15 @@ def write_db(data, db_filename='viz.db', permission='w'):
     with connect(db_filename, serial=True) as db:
         print("writing data to db: ", len(structures))
         for i, x in enumerate(structures):
-            kvp = {"QM_energy": y_qm[i], 
-                   "ML_energy": y_ml[i], 
+            kvp = {"QM_energy": y_qm[i],
+                   "ML_energy": y_ml[i],
                    "diff_energy": abs(y_qm[i]-y_ml[i])}
             db.write(x, key_value_pairs=kvp)
- 
+
 def plot_two_body(model, figname, rs=[1.0, 5.0]):
     from ase import Atoms
     from .calculator import GPR
-    
+
     rs = np.linspace(rs[0], rs[1], 50)
     cell = 10*np.eye(3)
     dimers = [Atoms("2Si", positions=[[0,0,0], [r,0,0]], cell=cell) for r in rs]
@@ -342,7 +342,7 @@ def list_to_tuple(data, stress=False, include_value=False, mode='force'):
     for fd in data:
         icol += fd[0].shape[0]
     jcol = fd[0].shape[1]
-    
+
     ELE = []
     indices = []
     values = []
@@ -388,7 +388,7 @@ def list_to_tuple(data, stress=False, include_value=False, mode='force'):
             return (X, ELE, indices, values)
         else:
             return (X, ELE, indices)
-        
+
 
 def tuple_to_list(data, mode='force'):
     X1 = []
@@ -396,11 +396,11 @@ def tuple_to_list(data, mode='force'):
     if mode == 'force':
         X, dXdR, ELE, indices = data
         for ind in indices:
-            X1.append((X[c:c+ind], dXdR[c:c+ind], ELE[c:c+ind])) 
+            X1.append((X[c:c+ind], dXdR[c:c+ind], ELE[c:c+ind]))
             c += ind
     else:
         X, ELE, indices = data
         for ind in indices:
-            X1.append((X[c:c+ind], ELE[c:c+ind])) 
+            X1.append((X[c:c+ind], ELE[c:c+ind]))
             c += ind
     return X1

@@ -268,7 +268,7 @@ class RBF_mb():
             # Compute local portion of energy-energy kernel
             if start < n_energies:
                 if grad:
-                    local_ee, local_ee_s, local_ee_l = kee_C(local_data, eng_data2, 
+                    local_ee, local_ee_s, local_ee_l = kee_C(local_data, eng_data2,
                                                              sigma, l, zeta, grad=True)
                 else:
                     local_ee = kee_C(local_data, eng_data2, sigma, l, zeta)
@@ -333,7 +333,7 @@ class RBF_mb():
 
         # Determine dimensions of the data
         n_energies = len(eng_data[-1])
-        n_forces = len(force_data[-1]) 
+        n_forces = len(force_data[-1])
         #print("Debug-Kef-nenergies/nforces", n_energies, n_forces)
 
         if n_energies == 0 or n_forces == 0:
