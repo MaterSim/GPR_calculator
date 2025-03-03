@@ -121,14 +121,13 @@ class RBF_mb():
         else:
             return np.hstack((C_ee, C_ff))
 
-    def _compute_K_ff(self, force_data1, force_data2, same=False, grad=False, diag=False, tol=1e-10):
+    def _compute_K_ff(self, force_data1, force_data2, grad=False, diag=False, tol=1e-10):
         """
         Compute the force-force kernel with MPI parallelization
 
         Args:
             force_data1: tuple of force data
             force_data2: tuple of force data
-            same: whether the two force data sets are the same
             grad: whether to compute the gradient of the kernel
             diag: whether to compute the diagonal of the kernel
             tol: tolerance for the force-force kernel
@@ -165,16 +164,13 @@ class RBF_mb():
         if start < n_forces:
             local_data = (x1_local, dx1dr_local, ele1_local, x1_indices_local)
             if grad:
-                local_ff, local_ff_s, local_ff_l = kff_C(local_data,
-                                                         force_data1,
+                local_ff, local_ff_s, local_ff_l = kff_C(local_data, force_data2,
                                                          sigma, l, zeta, tol=tol, grad=True)
             elif diag:
                 local_ff = kff_C(local_data, local_data, sigma, l, zeta, tol=tol, diag=True)
                 local_ff = np.diag(local_ff)
             else:
-                local_ff = kff_C(local_data,
-                                 force_data1 if same else force_data2,
-                                 sigma, l, zeta, diag=diag, tol=tol)
+                local_ff = kff_C(local_data, force_data2, sigma, l, zeta, diag=diag, tol=tol)
         else:
             local_ff = None
 
@@ -198,13 +194,51 @@ class RBF_mb():
 
         # Broadcast the result to all ranks
         C_ff = comm.bcast(C_ff, root=0)
-        if diag and rank == 0: print(f"[Debug]-Cff-Diag\n", C_ff[:3], C_ff.shape)
+        #if diag and rank == 0: print(f"[Debug]-Cff-Diag\n", C_ff[:3], C_ff.shape)
         if grad:
             C_ff_s = comm.bcast(C_ff_s, root=0)
             C_ff_l = comm.bcast(C_ff_l, root=0)
             return C_ff, C_ff_s, C_ff_l
         else:
             return C_ff
+
+    def _compute_K_ee(self, eng_data1, eng_data2, grad=False, use_mpi=False):
+        """
+        Compute the energy-energy kernel with MPI parallelization
+        Args:
+            eng_data1: tuple of energy data
+            eng_data2: tuple of energy data
+            grad: whether to compute the gradient of the kernel
+            use_mpi: whether use mpi or not
+        """
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+        size = comm.Get_size()
+        sigma, l, zeta = self.sigma, self.l, self.zeta
+        # Process energy data
+        if isinstance(eng_data1, list):
+            eng_data1 = list_to_tuple(eng_data1, mode="energy")
+
+        n_energies = len(eng_data1[0])
+        if n_energies == 0:
+            if grad:
+                return None, None, None
+            else:
+                return None
+
+        if use_mpi and size > 1:
+            pass
+        else:
+            if grad:
+                C_ee, C_ee_s, C_ee_l = kee_C(eng_data1, eng_data2, sigma, l, zeta, grad=True)
+            else:
+                C_ee = kee_C(eng_data1, eng_data2, sigma, l, zeta)
+
+        if grad:
+            return C_ee, C_ee_s, C_ee_l
+        else:
+            return C_ee
+
 
     def _compute_K_ef(self, eng_data, force_data, grad=False, transpose=False, use_mpi=False):
         """
@@ -327,6 +361,7 @@ class RBF_mb():
     def k_total(self, data1, data2=None, f_tol=1e-10):
         """
         Compute the covairance for train data
+        {"energy": [x, ele, indices], "force": [x, dx1dr, ele, indices]}
         Used for energy/force prediction
 
         Args:
@@ -334,38 +369,31 @@ class RBF_mb():
             data2: dictionary of training data
             f_tol: tolerance for the force-force kernel
         """
-        sigma, l, zeta = self.sigma, self.l, self.zeta
         C_ee, C_ef, C_fe, C_ff = None, None, None, None
 
+        same = False
         if data2 is None:
             data2 = data1
             same = True
-        else:
-            same = False
 
         # Energy-energy terms
         if 'energy' in data1 and 'energy' in data2:
-            if len(data1['energy']) > 0 and len(data2['energy']) > 0:
-                eng_data1 = data1['energy']
-                if isinstance(eng_data1, list): eng_data1 = list_to_tuple(eng_data1, mode="energy")
-                C_ee = kee_C(eng_data1, data2['energy'], sigma, l, zeta)
-                #print(f"[Debug]-Cee-Rank-{rank}", C_ee[:5, :5])
+            C_ee = self._compute_K_ee(data1['energy'], data2['energy'])
 
         # Energy-force terms with MPI parallelization
         if 'energy' in data1 and 'force' in data2:
             C_ef = self._compute_K_ef(data1['energy'], data2['force'], use_mpi=False)
 
         if 'force' in data1 and 'energy' in data2:
-            if len(data1['force']) > 0 and len(data2['energy']) > 0:
-                if not same:
-                    C_fe = self._compute_K_ef(data2['energy'], data1['force'], transpose=True, use_mpi=False)
-                else:
-                    C_fe = C_ef.T if C_ef is not None else None
+            if not same:
+                C_fe = self._compute_K_ef(data2['energy'], data1['force'], transpose=True, use_mpi=False)
+            else:
+                C_fe = C_ef.T if C_ef is not None else None
 
         # Force-force terms with MPI parallelization
         if 'force' in data1 and 'force' in data2:
-            C_ff = self._compute_K_ff(data1['force'], data2['force'], same=same, tol=f_tol)
-            #print(f"[Debug]-Cff-Rank-{rank}\n", C_ff[:3, :3])
+            C_ff = self._compute_K_ff(data1['force'], data2['force'], tol=f_tol)
+
         return build_covariance(C_ee, C_ef, C_fe, C_ff)
 
     def k_total_with_grad(self, data1, f_tol=1e-10):
@@ -376,19 +404,14 @@ class RBF_mb():
             data1: dictionary of training (energy/force) data
             f_tol: tolerance for the force-force kernel
         """
-        sigma, l, zeta = self.sigma, self.l, self.zeta
         eng_data = data1['energy']
         force_data = data1['force']
 
         # Energy-energy terms
-        if len(data1['energy']) > 0:
-        	C_ee, C_ee_s, C_ee_l = kee_C(eng_data, eng_data, sigma, l, zeta, grad=True)
-        else:
-            C_ee = C_ee_s = C_ee_l = None
+        C_ee, C_ee_s, C_ee_l = self._compute_K_ee(eng_data, eng_data, grad=True, use_mpi=False)
 
         # Energy-force terms
-        if len(data1['energy']) > 0:
-        	C_ef, C_ef_s, C_ef_l = self._compute_K_ef(eng_data, force_data, grad=True, use_mpi=False)
+        C_ef, C_ef_s, C_ef_l = self._compute_K_ef(eng_data, force_data, grad=True, use_mpi=False)
 
         # Force-energy terms
         if C_ef is not None:
@@ -397,7 +420,7 @@ class RBF_mb():
             C_fe = C_fe_s = C_fe_l = None
 
         # Force-force terms
-        C_ff, C_ff_s, C_ff_l = self._compute_K_ff(force_data, force_data, same=True, grad=True, tol=f_tol)
+        C_ff, C_ff_s, C_ff_l = self._compute_K_ff(force_data, force_data, grad=True, tol=f_tol)
 
         # Build final matrices
         C = build_covariance(C_ee, C_ef, C_fe, C_ff, None, None)
