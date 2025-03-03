@@ -446,7 +446,6 @@ class GaussianProcess():
 
         for d in self.train_db:
             (atoms, energy, force, energy_in, force_in, e_id, _f_ids) = d
-            keep = False
             if e_id in e_ids:
                 energy_in = False
             _force_in = []
