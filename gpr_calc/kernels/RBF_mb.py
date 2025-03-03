@@ -153,18 +153,18 @@ class RBF_mb():
 
         # Energy-force terms with MPI parallelization
         if 'energy' in data1 and 'force' in data2:
-            C_ef = self._compute_K_ef(data1['energy'], data2['force'], use_mpi=False)
+            C_ef = self._compute_K_ef(data1['energy'], data2['force'])
 
         if 'force' in data1 and 'energy' in data2:
             if not same:
-                C_fe = self._compute_K_ef(data2['energy'], data1['force'], transpose=True, use_mpi=False)
+                C_fe = self._compute_K_ef(data2['energy'], data1['force'], transpose=True)
             else:
                 C_fe = C_ef.T if C_ef is not None else None
 
         # Force-force terms with MPI parallelization
         if 'force' in data1 and 'force' in data2:
             C_ff = self._compute_K_ff(data1['force'], data2['force'], tol=f_tol)
-
+        #print("Debug-Cff", C_ee.shape, C_ef.shape, C_fe.shape, C_ff.shape)
         return build_covariance(C_ee, C_ef, C_fe, C_ff)
 
     def k_total_with_grad(self, data1, f_tol=1e-10):
@@ -179,10 +179,10 @@ class RBF_mb():
         force_data = data1['force']
 
         # Energy-energy terms
-        C_ee, C_ee_s, C_ee_l = self._compute_K_ee(eng_data, eng_data, grad=True, use_mpi=False)
+        C_ee, C_ee_s, C_ee_l = self._compute_K_ee(eng_data, eng_data, grad=True)
 
         # Energy-force terms
-        C_ef, C_ef_s, C_ef_l = self._compute_K_ef(eng_data, force_data, grad=True, use_mpi=False)
+        C_ef, C_ef_s, C_ef_l = self._compute_K_ef(eng_data, force_data, grad=True)
 
         # Force-energy terms
         if C_ef is not None:
@@ -227,7 +227,7 @@ class RBF_mb():
 
     # Detailed K_ee, K_ff, K_ef functions
 
-    def _compute_K_ee(self, eng_data1, eng_data2, grad=False, use_mpi=False):
+    def _compute_K_ee(self, eng_data1, eng_data2, grad=False, use_mpi=True):
         """
         Compute the energy-energy kernel with MPI parallelization
         Args:
@@ -244,7 +244,7 @@ class RBF_mb():
         if isinstance(eng_data1, list):
             eng_data1 = list_to_tuple(eng_data1, mode="energy")
 
-        n_energies = len(eng_data1[0])
+        n_energies = len(eng_data1[-1])
         if n_energies == 0:
             if grad:
                 return None, None, None
@@ -252,7 +252,50 @@ class RBF_mb():
                 return None
 
         if use_mpi and size > 1:
-            pass
+            # Calculate workload distribution for energy points
+            chunk_size = (n_energies + size - 1) // size
+            start = rank * chunk_size
+            end = min(start + chunk_size, n_energies)
+
+            # Get local data slice for energy points
+            start1 = sum(eng_data1[2][:start])
+            end1 = sum(eng_data1[2][:end])
+            local_x = eng_data1[0][start1:end1]
+            local_ele = eng_data1[1][start1:end1]
+            local_indices = eng_data1[2][start:end]
+            local_data = (local_x, local_ele, local_indices)
+
+            # Compute local portion of energy-energy kernel
+            if start < n_energies:
+                if grad:
+                    local_ee, local_ee_s, local_ee_l = kee_C(local_data, eng_data2, 
+                                                             sigma, l, zeta, grad=True)
+                else:
+                    local_ee = kee_C(local_data, eng_data2, sigma, l, zeta)
+            else:
+                local_ee = local_ee_s = local_ee_l = None
+
+            # Gather results to rank 0
+            #print("Debug-rank", start, end, rank, local_ee.shape)
+            all_ee = comm.gather(local_ee, root=0)
+            if grad:
+                all_ee_s = comm.gather(local_ee_s, root=0)
+                all_ee_l = comm.gather(local_ee_l, root=0)
+
+            if rank == 0:
+                C_ee = np.vstack([ee for ee in all_ee if ee is not None])
+                if grad:
+                    C_ee_s = np.vstack([ee_s for ee_s in all_ee_s if ee_s is not None])
+                    C_ee_l = np.vstack([ee_l for ee_l in all_ee_l if ee_l is not None])
+            else:
+                C_ee = C_ee_s = C_ee_l = None
+
+            # Broadcast the result to all ranks
+            C_ee = comm.bcast(C_ee, root=0)
+            # print("Debug-rank", rank, C_ee.shape)
+            if grad:
+                C_ee_s = comm.bcast(C_ee_s, root=0)
+                C_ee_l = comm.bcast(C_ee_l, root=0)
         else:
             if grad:
                 C_ee, C_ee_s, C_ee_l = kee_C(eng_data1, eng_data2, sigma, l, zeta, grad=True)
@@ -265,7 +308,7 @@ class RBF_mb():
             return C_ee
 
 
-    def _compute_K_ef(self, eng_data, force_data, grad=False, transpose=False, use_mpi=False):
+    def _compute_K_ef(self, eng_data, force_data, grad=False, transpose=False, use_mpi=True):
         """
         Compute the energy-force kernel with MPI parallelization
 
@@ -277,6 +320,10 @@ class RBF_mb():
             use_mpi: whether use mpi or not
         """
         sigma, l, zeta = self.sigma, self.l, self.zeta
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+        size = comm.Get_size()
+
         # Process energy data
         if isinstance(eng_data, list):
             eng_data = list_to_tuple(eng_data, mode="energy")
@@ -285,8 +332,9 @@ class RBF_mb():
             force_data = list_to_tuple(force_data, stress=False)
 
         # Determine dimensions of the data
-        n_energies = len(eng_data[0])
-        n_forces = len(force_data[-1]) if transpose else len(force_data[3])  # Use indices array length
+        n_energies = len(eng_data[-1])
+        n_forces = len(force_data[-1]) 
+        #print("Debug-Kef-nenergies/nforces", n_energies, n_forces)
 
         if n_energies == 0 or n_forces == 0:
             if grad:
@@ -294,10 +342,7 @@ class RBF_mb():
             else:
                 return None
 
-        if use_mpi:
-            comm = MPI.COMM_WORLD
-            rank = comm.Get_rank()
-            size = comm.Get_size()
+        if use_mpi and size > 1:
 
             # Choose which dimension to parallelize based on relative sizes
             if n_energies > n_forces:
@@ -307,8 +352,10 @@ class RBF_mb():
                 end = min(start + chunk_size, n_energies)
 
                 # Get local data slice for energy points
-                local_x = eng_data[0][start:end]
-                local_ele = eng_data[1][start:end]
+                start1 = sum(eng_data[2][:start])
+                end1 = sum(eng_data[2][:end])
+                local_x = eng_data[0][start1:end1]
+                local_ele = eng_data[1][start1:end1]
                 local_indices = eng_data[2][start:end] # QZ: double check this
                 local_data = (local_x, local_ele, local_indices)
 
@@ -322,6 +369,7 @@ class RBF_mb():
                         local_ef = kef_C(local_data, force_data, sigma, l, zeta, transpose=transpose)
                 else:
                     local_ef = local_ef_s = local_ef_l = None
+                #print("Energy for split", start, end, local_ef.shape)
             else:
                 # Calculate workload distribution for force points
                 chunk_size = (n_forces + size - 1) // size
@@ -330,12 +378,11 @@ class RBF_mb():
 
                 # Get local force data slice
                 x, dx1dr, ele, indices = force_data
-                start_idx = sum(indices[:start])
-                end_idx = sum(indices[:end])
-
-                local_x = x[start_idx:end_idx]
-                local_dx1dr = dx1dr[start_idx:end_idx]
-                local_ele = ele[start_idx:end_idx]
+                start1 = sum(indices[:start])
+                end1 = sum(indices[:end])
+                local_x = x[start1:end1]
+                local_dx1dr = dx1dr[start1:end1]
+                local_ele = ele[start1:end1]
                 local_indices = indices[start:end]
                 local_data = (local_x, local_dx1dr, local_ele, local_indices)
 
@@ -344,11 +391,16 @@ class RBF_mb():
                     if grad:
                         local_ef, local_ef_s, local_ef_l = kef_C(eng_data, local_data,
                                                                  sigma, l, zeta,
-                                                                 transpose=transpose, grad=True)
+                                                                 transpose=transpose,
+                                                                 grad=True)
+                        #local_ef_s = local_ef_s.T
+                        #local_ef_l = local_ef_l.T
                     else:
                         local_ef = kef_C(eng_data, local_data, sigma, l, zeta, transpose=transpose)
+                        if transpose: local_ef = local_ef.T
                 else:
                     local_ef = local_ef_s = local_ef_l = None
+                #print("Force for split", start, end, local_ef.shape)
 
             # Gather results to rank 0
             all_ef = comm.gather(local_ef, root=0)
@@ -358,10 +410,12 @@ class RBF_mb():
 
             # Combine results on rank 0
             if rank == 0:
-                C_ef = np.vstack([ef for ef in all_ef if ef is not None])
+                C_ef = np.hstack([ef for ef in all_ef if ef is not None])
+                if transpose: C_ef = C_ef.T
+                #print("Debug-rank", rank, C_ef.shape)
                 if grad:
-                    C_ef_s = np.vstack([ef_s for ef_s in all_ef_s if ef_s is not None])
-                    C_ef_l = np.vstack([ef_l for ef_l in all_ef_l if ef_l is not None])
+                    C_ef_s = np.hstack([ef_s for ef_s in all_ef_s if ef_s is not None])
+                    C_ef_l = np.hstack([ef_l for ef_l in all_ef_l if ef_l is not None])
             else:
                 C_ef = C_ef_s = C_ef_l = None
 
