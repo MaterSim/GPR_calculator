@@ -33,6 +33,99 @@ def get_mask(ele1, ele2):
     else:
         return ids
 
+def K_ff_RBF(x1, x2, dx1dr, dx2dr, sigma2, l2, zeta=2, mask=None, eps=1e-8):
+    """
+    Compute the Kff between one and many configurations
+    x2, dx1dr, dx2dr will be called from the cuda device in the GPU mode
+    """
+    x1_norm = np.linalg.norm(x1, axis=1) + eps
+    x1_norm2 = x1_norm**2
+    x1_norm3 = x1_norm**3
+    x1x2_dot = x1@x2.T
+    x1_x1_norm3 = x1/x1_norm3[:,None]
+
+    x2_norm = np.linalg.norm(x2, axis=1) + eps
+    x2_norm2 = x2_norm**2
+    tmp30 = np.ones(x2.shape)/x2_norm[:,None]
+    tmp33 = np.eye(x2.shape[1])[None,:,:] - x2[:,:,None] * (x2/x2_norm2[:,None])[:,None,:]
+
+
+    x2_norm3 = x2_norm**3
+    x1x2_norm = x1_norm[:,None]*x2_norm[None,:]
+    x2_x2_norm3 = x2/x2_norm3[:,None]
+
+    d = x1x2_dot/(eps+x1x2_norm)
+    D2 = d**(zeta-2)
+    D1 = d*D2
+    D = d*D1
+    k = sigma2*np.exp(-(0.5/l2)*(1-D))
+
+    if mask is not None:
+        k[mask] = 0
+
+    dk_dD = (-0.5/l2)*k
+    zd2 = -0.5/l2*zeta*zeta*(D1**2)
+
+    tmp31 = x1[:,None,:] * tmp30[None,:,:]
+
+    #t0 = time()
+    tmp11 = x2[None, :, :] * x1_norm[:, None, None]
+    tmp12 = x1x2_dot[:,:,None] * (x1/x1_norm[:, None])[:,None,:]
+    tmp13 = x1_norm2[:, None, None] * x2_norm[None, :, None]
+    dd_dx1 = (tmp11-tmp12)/tmp13
+
+    tmp21 = x1[:, None, :] * x2_norm[None,:,None]
+    tmp22 = x1x2_dot[:,:,None] * (x2/x2_norm[:, None])[None,:,:]
+    tmp23 = x1_norm[:, None, None] * x2_norm2[None, :, None]
+    dd_dx2 = (tmp21-tmp22)/tmp23  # (29, 1435, 24)
+
+
+    tmp31 = tmp31[:,:,None,:] * x1_x1_norm3[:,None,:,None]
+    tmp32 = x1_x1_norm3[:,None,:,None] * x2_x2_norm3[None,:,None,:] * x1x2_dot[:,:,None,None]
+    out1 = tmp31-tmp32
+    out2 = tmp33[None,:,:,:]/x1x2_norm[:,:,None,None]
+    d2d_dx1dx2 = out2 - out1
+
+    dd_dx1_dd_dx2 = dd_dx1[:,:,:,None] * dd_dx2[:,:,None,:]
+    dD_dx1_dD_dx2 = zd2[:,:,None,None] * dd_dx1_dd_dx2
+
+    d2D_dx1dx2 = dd_dx1_dd_dx2 * D2[:,:,None,None] * (zeta-1)
+    d2D_dx1dx2 += D1[:,:,None,None]*d2d_dx1dx2
+    d2D_dx1dx2 *= zeta
+    d2k_dx1dx2 = -d2D_dx1dx2 + dD_dx1_dD_dx2 # m, n, d1, d2
+
+    tmp0 = d2k_dx1dx2 * dk_dD[:,:,None,None] #n1, n2, d, d
+    _kff1 = (dx1dr[:,None,:,None,:] * tmp0[:,:,:,:,None]).sum(axis=(0,2)) # n1,n2,3
+    kff = (_kff1[:,:,:,None] * dx2dr[:,:,None,:]).sum(axis=1)  # n2, 3, 9
+    kff = kff.sum(axis=0)
+    return kff
+
+def K_ee_RBF(x1, x2, sigma2, l2, zeta=2, mask=None, eps=1e-8):
+    """
+    Compute the Kee between two structures
+    Args:
+        x1: [M, D] 2d array
+        x2: [N, D] 2d array
+        sigma2: float
+        l2: float
+        zeta: power term, float
+        mask: to set the kernel zero if the chemical species are different
+    """
+    x1_norm = np.linalg.norm(x1, axis=1) + eps
+    x2_norm = np.linalg.norm(x2, axis=1) + eps
+    x1x2_dot = x1@x2.T
+    d = x1x2_dot/(eps+x1_norm[:,None]*x2_norm[None,:])
+    D = d**zeta
+
+    k = sigma2*np.exp(-(0.5/l2)*(1-D))
+    if mask is not None: k[mask] = 0
+
+    Kee = k.sum(axis=0)
+    m = len(x1)
+    n = len(x2)
+    return Kee.sum()/(m*n)
+
+
 
 
 # ======================= Functions related to d and D ===================================

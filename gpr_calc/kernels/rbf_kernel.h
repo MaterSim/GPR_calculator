@@ -36,10 +36,10 @@ extern "C" void rbf_kff_many_stress(int n1, int n2, int n2_start, int n2_end, in
         int x2i, double zeta, double sigma2, double l2, double tol, 
         double* x1, double* dx1dr, int* ele1, int* x1_inds, 
         double* x2, double* dx2dr, int* ele2, int* x2_inds, double* pout);
- 
-extern "C" void rbf_kff_many_diag(int n1, int d, 
+
+/*extern "C" void rbf_kff_many_diag(int n1, int d, 
         int x2i, double zeta, double sigma2, double l2, double tol, 
         double* x1, double* dx1dr, int* ele1, int* x1_inds, 
-        double* x2, double* dx2dr, int* ele2, int* x2_inds, double* pout);
+        double* x2, double* dx2dr, int* ele2, int* x2_inds, double* pout);*/
  
 #endif // RBF_KERNEL_H
