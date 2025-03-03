@@ -58,11 +58,6 @@ class RBF_mb():
         sigma2, l2, zeta = self.sigma**2, self.l**2, self.zeta
         C_ee, C_ff = None, None
 
-        # Get MPI info
-        comm = MPI.COMM_WORLD
-        rank = comm.Get_rank()
-        size = comm.Get_size()
-
         if "energy" in data:
             NE = data['energy'][-1]
             C_ee = np.zeros(len(NE))
@@ -74,40 +69,8 @@ class RBF_mb():
                 count += ne
 
         if "force" in data:
-            NF = len(data["force"])
-
-            # Calculate chunk size for each rank
-            chunk_size = (NF + size - 1) // size
-            start = rank * chunk_size
-            end = min(start + chunk_size, NF)
-
-            # Initialize local C_ff array
-            local_C_ff = np.zeros(3*(end-start)) if start < NF else np.zeros(0)
-
-            # Calculate local C_ff
-            for i in range(start, end):
-                if i < NF:
-                    (x1, dx1dr, ele1) = data["force"][i]
-                    mask = get_mask(ele1, ele1)
-                    tmp = K_ff(x1, x1, dx1dr, dx1dr, sigma2, l2, zeta, mask)
-                    local_idx = i - start
-                    local_C_ff[local_idx*3:(local_idx+1)*3] = np.diag(tmp)
-
-            # Gather results to rank 0
-            all_C_ff = comm.gather(local_C_ff, root=0)
-
-            # Combine results on rank 0
-            if rank == 0:
-                C_ff = np.zeros(3*NF)
-                offset = 0
-                for chunk in all_C_ff:
-                    size = len(chunk)
-                    if size > 0:
-                        C_ff[offset:offset+len(chunk)] = chunk
-                        offset += size
-            # Broadcast the result to all ranks
-            C_ff = comm.bcast(C_ff, root=0)
-
+            C_ff = self._compute_K_ff(data['force'], data['force'], same=True, diag=True)
+            C_ff = np.diag(C_ff)
         if C_ff is None:
             return C_ee
         elif C_ee is None:
@@ -115,7 +78,7 @@ class RBF_mb():
         else:
             return np.hstack((C_ee, C_ff))
 
-    def _compute_K_ff(self, force_data1, force_data2, same=False, grad=False, tol=1e-10):
+    def _compute_K_ff(self, force_data1, force_data2, same=False, grad=False, diag=False, tol=1e-10):
         """
         Compute the force-force kernel with MPI parallelization
 
@@ -124,6 +87,7 @@ class RBF_mb():
             force_data2: tuple of force data
             same: whether the two force data sets are the same
             grad: whether to compute the gradient of the kernel
+            diag: whether to compute the diagonal of the kernel
             tol: tolerance for the force-force kernel
         """
         sigma, l, zeta = self.sigma, self.l, self.zeta
@@ -164,7 +128,7 @@ class RBF_mb():
             else:
                 local_ff = kff_C(local_data,
                                  force_data1 if same else force_data2,
-                                 sigma, l, zeta, tol=tol)
+                                 sigma, l, zeta, diag=diag, tol=tol)
         else:
             local_ff = None
 
@@ -185,6 +149,7 @@ class RBF_mb():
 
         # Broadcast the result to all ranks
         C_ff = comm.bcast(C_ff, root=0)
+        if diag and rank == 0: print(f"[Debug]-Cff-Diag\n", C_ff[:3], C_ff.shape)
         if grad:
             C_ff_s = comm.bcast(C_ff_s, root=0)
             C_ff_l = comm.bcast(C_ff_l, root=0)
@@ -449,8 +414,6 @@ def K_ff(x1, x2, dx1dr, dx2dr, sigma2, l2, zeta=2, mask=None, eps=1e-8):
     Compute the Kff between one and many configurations
     x2, dx1dr, dx2dr will be called from the cuda device in the GPU mode
     """
-    l = np.sqrt(l2)
-
     x1_norm = np.linalg.norm(x1, axis=1) + eps
     x1_norm2 = x1_norm**2
     x1_norm3 = x1_norm**3

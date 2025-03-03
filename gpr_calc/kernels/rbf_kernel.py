@@ -188,7 +188,7 @@ def kef_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, transpos
     else:
         return C
 
-def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, tol=1e-12):
+def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, diag=False, tol=1e-12):
     """
     Compute the force-force relation through RBF kernel.
 
@@ -200,6 +200,8 @@ def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, tol=1e-1
         zeta: scaling factor
         grad: if True, compute gradient w.r.t. hyperparameters
         stress: if True, compute force-stress relation
+        diag: if True, compute diagonal of force-force kernel
+        tol: tolerance for numerical stability
 
     Returns:
         C: the force-force kernel
@@ -264,7 +266,6 @@ def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, tol=1e-1
 
     elif grad:
         # Handle gradient calculation
-
         #print(f"[Debug] Size info - m1: {m1}, m2: {m2}, m1p: {m1p}, m2p: {m2p}, d: {d}")
         # Allocate memory for dx1dr array with explicit size check
         dx1dr_size = m1p * d * 3
@@ -294,14 +295,22 @@ def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, tol=1e-1
         out = np.frombuffer(ffi.buffer(pout, m1*3*m2*3*8), dtype=np.float64)
         out = out.reshape((m1, 3, m2*3))
         C = out[:, :3, :].reshape([m1*3, m2*3])
-
         dout_dl = np.frombuffer(ffi.buffer(dpout_dl, m1*3*m2*3*8), dtype=np.float64)
         dout_dl = dout_dl.reshape((m1, 3, m2*3))
         C_l = dout_dl[:, :3, :].reshape([m1*3, m2*3])
         C_s = (2/sigma)*C
-
         #print(f"[Debug] Successfully processed arrays")
-            
+    elif diag:
+        # Handle diagonal calculation
+        pdat_dx1dr = ffi.new('double['+str(m1p*d*3)+']', dx1dr.ravel().tolist())
+        pout = ffi.new('double['+str(m1*3*m2*3)+']')
+        lib.rbf_kff_many_diag(m1p, d, m2, zeta, sigma2, l2, tol,
+                        pdat_x1, pdat_dx1dr, pdat_ele1, pdat_x1_inds,
+                        pdat_x2, pdat_dx2dr, pdat_ele2, pdat_x2_inds,
+                        pout)
+        out = np.frombuffer(ffi.buffer(pout, m1*3*m2*3*8), dtype=np.float64)
+        out.shape = (m1, 3, m2*3)
+        C = out[:, :3, :].reshape([m1*3, m2*3])
     else:
         # Handle standard calculation
         pdat_dx1dr = ffi.new('double['+str(m1p*d*3)+']', dx1dr.ravel().tolist())
