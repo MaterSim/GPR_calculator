@@ -71,11 +71,14 @@ class RBF_mb():
         size = comm.Get_size()
 
         if "energy" in data:
-            NE = data['energy'][-1]
+            eng_data = data["energy"]
+            if isinstance(eng_data, list):
+                eng_data = list_to_tuple(eng_data, mode="energy")
+            NE = eng_data[-1]
             C_ee = np.zeros(len(NE))
             count = 0
             for i, ne in enumerate(NE):
-                x1, ele1 = data['energy'][0][count:count+ne], data['energy'][1][count:count+ne]
+                x1, ele1 = eng_data[0][count:count+ne], eng_data[1][count:count+ne]
                 mask = get_mask(ele1, ele1)
                 C_ee[i] = K_ee_RBF(x1, x1, sigma2, l2, zeta, mask=mask)
                 count += ne

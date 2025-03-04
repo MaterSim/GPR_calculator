@@ -38,6 +38,7 @@ for etol in [0.015, 0.025, 0.05]:
                    noise_e=etol/len(images[0]), 
                    noise_f=0.1)
     neb_gp.train_GPR(images)
+    neb_gp.model.set_K_inv()
     print(neb_gp.model)
     tag = f'GPR-{etol}'
 

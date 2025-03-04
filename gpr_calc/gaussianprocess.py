@@ -310,6 +310,7 @@ class GaussianProcess():
         self.N_forces_queue = 0
         self.N_queue = 0
         self.count_fits += 1
+        self.set_K_inv()
 
     def predict(self, X, stress=False, total_E=False, return_std=False, return_cov=False):
         """

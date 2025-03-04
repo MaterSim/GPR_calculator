@@ -7,15 +7,17 @@ from ase.mep import NEB
 from ase.optimize import FIRE, BFGS
 from ase.calculators.vasp import Vasp
 import socket 
+import psutil
 
 # Set MPI
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 tag = 'h2s-RBF'
+cpu_count = psutil.cpu_count(logical=False)
 
 # Set VASP parameters and Environment
-ncpu = 80
+ncpu = cpu_count - size
 vasp_args = {"txt": 'vasp.out',
              "prec": 'Accurate',
              "encut": 400,
@@ -55,9 +57,6 @@ if rank == 0:
 
 # Set NEB Parameters
 nimages = 5
-fmax = 0.1
-
-# Set the GP model
 neb_gp = GP_NEB("POSCAR_initial",
                 "POSCAR_final",
                 num_images = nimages,
@@ -78,16 +77,16 @@ if os.path.exists(tag+'-gpr.json'):
     neb_gp.model = GP.load(tag + '-gpr.json')
     neb_gp.model.fit()
 else:
-    neb_gp.set_GPR(kernel='RBF', noise_e=0.0015, noise_f=0.1)
+    neb_gp.set_GPR(kernel='RBF', noise_e=0.05/len(image), noise_f=0.10)
     neb_gp.train_GPR(images)
-
+neb_gp.model.set_K_inv()
 if rank == 0: print(neb_gp.model)
 
 for i, image in enumerate(neb.images):
     base = Vasp(**vasp_args, directory=f"neb_calc_{i}")
     image.calc = GPR(base_calculator = base,
                      ff = neb_gp.model,
-                     freq = 20,
+                     freq = 10,
                      tag = tag,
                      return_std = True)
 

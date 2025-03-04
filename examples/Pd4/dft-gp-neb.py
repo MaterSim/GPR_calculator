@@ -81,6 +81,7 @@ if os.path.exists(tag+'-gpr.json'):
 else:
     neb_gp.set_GPR(kernel='RBF', noise_e=0.1/len(image), noise_f=0.10)
     neb_gp.train_GPR(images)
+neb_gp.model.set_K_inv()
 
 if rank == 0: print(neb_gp.model)
 
