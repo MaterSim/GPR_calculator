@@ -28,10 +28,10 @@ Usage:
 
 Example:
 -----------
-neb_gp = GP_NEB(initial_state, 
-                final_state, 
-                num_images=5, 
-                k_spring=5, 
+neb_gp = GP_NEB(initial_state,
+                final_state,
+                num_images=5,
+                k_spring=5,
                 iterMax=100)
 images = neb_gp.generate_images()
 velocity_vec = np.zeros((num_images-2)*num_atoms*3)
@@ -41,7 +41,7 @@ images = neb_gp.run_neb(IDPP=True,
                         Emax_std=0.05,
                         fmax_std=0.1,
                         velocity_vec=velocity_vec)
-neb_gp.plot_neb_path(images, filename='neb_path.png')  
+neb_gp.plot_neb_path(images, filename='neb_path.png')
 """
 if rank == 0:
     print("...............GPRANEB module loaded................")
@@ -53,13 +53,13 @@ def set_pbc(atoms, vacuum=10):
     atoms.center()
     atoms.pbc = [True, True, True]
     return atoms
-    
+
 class GP_NEB:
-    def __init__(self, initial_state, final_state, 
-                 num_images = 5, 
-                 k_spring = 0.1, 
-                 iterMax = 100, 
-                 f_cov = 0.05, 
+    def __init__(self, initial_state, final_state,
+                 num_images = 5,
+                 k_spring = 0.1,
+                 iterMax = 100,
+                 f_cov = 0.05,
                  useCalc=EMT(),
                  pbc=True):
 
@@ -90,26 +90,26 @@ class GP_NEB:
             #des = build_desc("SO3", lmax=lm, nmax=nm, rcut=rcut)
             des = SO3(nmax=nm, lmax=lm, rcut=rcut)
             if kernel == 'Dot':
-                from gpr_calc.kernels.Dot_mb import Dot_mb 
-                gp_kernel = Dot_mb(para=[2, 2.0], 
+                from gpr_calc.kernels.Dot_mb import Dot_mb
+                gp_kernel = Dot_mb(para=[2, 2.0],
                                    bounds=[[0.01, 5.0], [0.01, 10]],
-                                   zeta=zeta, 
+                                   zeta=zeta,
                                    device=device)
             else:
                 from gpr_calc.kernels.RBF_mb import RBF_mb
-                gp_kernel = RBF_mb(para=[1.0, 0.1], 
-                                   zeta=zeta, 
+                gp_kernel = RBF_mb(para=[1.0, 0.1],
+                                   zeta=zeta,
                                    device=device)
 
-            self.model = gpr(kernel=gp_kernel, 
-                             descriptor=des, 
+            self.model = gpr(kernel=gp_kernel,
+                             descriptor=des,
                              noise_e=noise_e,
                              noise_f=noise_f)
 
     def generate_images(self, IDPP = False):
         """
         Generate initial images from ASE's NEB module
-        The number of images generated is self.num_images - 2 
+        The number of images generated is self.num_images - 2
         """
         initial = self.initial_state
         final = self.final_state
@@ -160,7 +160,7 @@ class GP_NEB:
 
         self.model.fit()
         self.model.validate_data()
-    
+
     def train_gpr_model(self, pts):
         """
         Function to train the GPR model
@@ -173,24 +173,24 @@ class GP_NEB:
         metric_single(train_F, train_F1, "Train Forces")
         print(self.model)
 
-   
+
     def useBFGS(self, images):
         """
         USE ASE's internal BFGS
         """
         from ase.optimize import BFGS
-        
-        for image in images: 
+
+        for image in images:
             image.calc = self.useCalc
             data = (image, image.get_potential_energy(), image.get_forces())
             pts, N_pts, _ = self.model.add_structure(data)
             if N_pts > 0:
-                self.model.set_train_pts(pts, mode="a+") 
+                self.model.set_train_pts(pts, mode="a+")
         self.model.fit()
 
         for image in images:
             image.calc = GPR(base_calculator=self.useCalc,
-                             ff=self.model, 
+                             ff=self.model,
                              return_std=True)
         # Now we can use the BFGS optimizer to optimize the images
         neb = NEB(images)
@@ -215,9 +215,9 @@ class GP_NEB:
             neb_forces = self.neb_force_calc(images)
             return neb_forces
 
-    
+
     def neb_force_calc(self, images):
-        """ 
+        """
         We shall use the original NEB implementation
         Find the Improved Tangent Method in the articles below
         Henkelman et al. J. Chem. Phys. 113, 9901 (2000)
@@ -233,7 +233,7 @@ class GP_NEB:
             ###image.calc = self.gpr_calculator(image)
             forces_atoms.append(image.get_forces())
             E_images.append(image.get_potential_energy())
-        
+
         forces_atoms = np.array(forces_atoms)
         real_forces = np.zeros(forces_atoms.shape)
         real_forces[1:-1] = forces_atoms[1:-1]
@@ -261,10 +261,10 @@ class GP_NEB:
             total_perp_force = spring_force - true_force
             total_perp_force = total_perp_force.reshape((self.num_atoms, 3))
             fin_neb_forces.append(total_perp_force)
-        
+
         """
         The ITM method will be implemented here with if statement to check if called upon
-        
+
         """
         return fin_neb_forces
 
@@ -300,14 +300,14 @@ class GP_NEB:
             new_positions = new_positions.reshape((self.num_images-2, self.num_atoms, 3))
             for i in range(1, self.num_images-1):
                 images[i].set_positions(new_positions[i-1])
-            
+
             return images
         else:
-            
+
             """
              J. Chem. Phys. 128, 134106 2008; DOI: 10.1063/1.2841941
              # Implement simple Quick-min update function
-            
+
             # velocity_vec is same length as positions and forces
             # Project the velocity in the direction of the force
             velocity_vec = np.array(velocity_vec).flatten() # This is precaution incase the velocity_vec is multidimensional
@@ -370,15 +370,15 @@ class GP_NEB:
             # Update the positions of the images
             for i in range(1, self.num_images-1):
                 images[i].set_positions(new_positions[i-1])
-            
+
             return images, velocity_vec, n_reset, alpha
 
     # Now let's the driver function to run the NEB calculation
     # call it run_neb
-    def run_neb(self, IDPP = False, SD=True, 
-                step_size=0.1, 
-                velocity_vec = None, 
-                n_reset = 0, 
+    def run_neb(self, IDPP = False, SD=True,
+                step_size=0.1,
+                velocity_vec = None,
+                n_reset = 0,
                 alpha = 0.1,
                 ):
 
@@ -389,19 +389,19 @@ class GP_NEB:
         log_file.write('............Starting the NEB calculation........\n')
 
         num_useCalc = 0
-        for image in images: 
+        for image in images:
             image.calc = self.useCalc
             data = (image, image.get_potential_energy(), image.get_forces())
             pts, N_pts, _ = self.model.add_structure(data)
             if N_pts > 0:
-                self.model.set_train_pts(pts, mode="a+") 
+                self.model.set_train_pts(pts, mode="a+")
         self.model.fit()
 
         self.calc = GPR(base_calculator=self.useCalc,
                         ff=self.model, return_std=True)
         for image in images:
             image.calc = self.calc
- 
+
         for i in range(self.iterMax):
             neb_forces = self.calculate_neb_forces(images)#, ase_nebLib = False)
             if SD:
@@ -441,7 +441,7 @@ class GP_NEB:
         log_file.write('..................End of NEB log file..................\n')
         log_file.close()
         print(f"\nTotal Number of useCalc calls: {num_useCalc}")
-            
+
         #neb_forces = self.calculate_neb_forces(images)
         #images = self.path_update(images, neb_forces, velocity_vec, method, step_size)
         return images
@@ -450,7 +450,7 @@ def plot_neb_path(data, unit='eV', figname='neb_path.png'):
     """
     This is just to show what it looks like
     There are more elegant ways to plot the path
-    
+
     Args:
         data: nested list [(imgs1, engs1, label2), (img2, engs, label2)]
         unit: unit of energy

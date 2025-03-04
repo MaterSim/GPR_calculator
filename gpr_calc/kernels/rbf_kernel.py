@@ -270,7 +270,7 @@ def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, diag=Fal
         # Allocate memory for dx1dr array with explicit size check
         dx1dr_size = m1p * d * 3
         pdat_dx1dr = ffi.new(f'double[{dx1dr_size}]')
-        
+
         # Copy data in chunks if needed
         chunk_size = 1000000  # Adjust based on available memory
         for i in range(0, len(dx1dr.ravel()), chunk_size):
@@ -290,7 +290,7 @@ def kff_C(X1, X2, sigma=1.0, l=1.0, zeta=2.0, grad=False, stress=False, diag=Fal
             pdat_x2, pdat_dx2dr, pdat_ele2, pdat_x2_inds,
             pout, dpout_dl
         )
-        
+
         # Convert output to numpy arrays safely
         out = np.frombuffer(ffi.buffer(pout, m1*3*m2*3*8), dtype=np.float64)
         out = out.reshape((m1, 3, m2*3))

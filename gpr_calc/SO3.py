@@ -190,7 +190,7 @@ class SO3:
         for given nmax, lmax, rcut, and alpha.
 
         Args:
-            atoms: an ASE atoms object 
+            atoms: an ASE atoms object
             atom_ids: list of atom indices to calculate the power spectrum
             use_mpi: bool, if True, the calculation will be parallelized
 
@@ -216,7 +216,7 @@ class SO3:
 
         if self.derivative:
             # get expansion coefficients and derivatives
-            cs, dcs = compute_dcs(self.neighborlist, self.nmax, self.lmax, self.rcut, 
+            cs, dcs = compute_dcs(self.neighborlist, self.nmax, self.lmax, self.rcut,
                                   self.alpha, self._cutoff_function, use_mpi=use_mpi)
             cs *= self.atomic_weights[:,np.newaxis,np.newaxis,np.newaxis]
             dcs *= self.atomic_weights[:,np.newaxis,np.newaxis,np.newaxis,np.newaxis]
@@ -521,7 +521,7 @@ def compute_cs(pos, nmax, lmax, rcut, alpha, cutoff, use_mpi=False):
 def compute_bessel_values(Ris, Quadrature, lmax, BesselArgs, derivative=False, use_mpi=False):
     """
     Compute Bessel function values in parallel using MPI.
-    
+
     Args:
         Ris: array of distances
         Quadrature: quadrature points
@@ -529,7 +529,7 @@ def compute_bessel_values(Ris, Quadrature, lmax, BesselArgs, derivative=False, u
         BesselArgs: arguments for Bessel functions
         derivative: whether to compute derivatives
         use_mpi: whether to use MPI parallelization
-    
+
     Returns:
         Bessels: array of Bessel function values
         dBessels: array of Bessel function derivatives (if derivative=True)
@@ -547,7 +547,7 @@ def compute_bessel_values(Ris, Quadrature, lmax, BesselArgs, derivative=False, u
     Bessels = np.zeros((len(Ris), len(Quadrature), lmax+1), dtype=np.float64)
     if derivative:
         dBessels = np.zeros_like(Bessels)
-    
+
     # Divide work among ranks
     l_values = np.arange(lmax + 1)
     chunk_size = (len(l_values) + size - 1) // size
@@ -567,7 +567,7 @@ def compute_bessel_values(Ris, Quadrature, lmax, BesselArgs, derivative=False, u
 
     if use_mpi and size > 1:
         sendcounts = comm.gather(len(local_l_values), root=0)
-        
+
         if rank == 0:
             for r in range(size):
                 if r == 0:
@@ -633,9 +633,9 @@ def compute_dcs(pos, nmax, lmax, rcut, alpha, cutoff, use_mpi=False):
         Gs[n-1,:] = g(Quadrature, n, nmax, rcut,w)*weight
 
     # compute the bessel values
-    Bessels, dBessels = compute_bessel_values(Ris, Quadrature, lmax, BesselArgs, 
+    Bessels, dBessels = compute_bessel_values(Ris, Quadrature, lmax, BesselArgs,
                                             derivative=True, use_mpi=use_mpi)
-    
+
     #(Nneighbors x Nquad x lmax+1) unit vector here
     gradBessels = np.einsum('ijk,in->ijkn',dBessels,upos)
     gradBessels *= 2*alpha
