@@ -31,7 +31,7 @@ if rank == 0:
     data = [(images0, eng, 'EMT')]
 
 # Test gpr calculator
-for etol in [0.015, 0.025, 0.05]:
+for etol in [0.015, 0.025, 0.050]:
     images = neb_gp.generate_images(IDPP = False)
     print("\nCreate the initial GPR model")
     neb_gp.set_GPR(kernel='RBF', 

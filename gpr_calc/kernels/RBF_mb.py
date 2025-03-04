@@ -349,6 +349,7 @@ class RBF_mb():
 
             # Choose which dimension to parallelize based on relative sizes
             if n_energies > n_forces:
+                force_split = False
                 # Calculate workload distribution for energy points
                 chunk_size = (n_energies + size - 1) // size
                 start = rank * chunk_size
@@ -374,6 +375,7 @@ class RBF_mb():
                     local_ef = local_ef_s = local_ef_l = None
                 #print("Energy for split", start, end, local_ef.shape)
             else:
+                force_split = True
                 # Calculate workload distribution for force points
                 chunk_size = (n_forces + size - 1) // size
                 start = rank * chunk_size
@@ -414,8 +416,8 @@ class RBF_mb():
             # Combine results on rank 0
             if rank == 0:
                 C_ef = np.hstack([ef for ef in all_ef if ef is not None])
-                if transpose: C_ef = C_ef.T
-                #print("Debug-rank", rank, C_ef.shape)
+                if transpose and force_split: C_ef = C_ef.T
+                #print("Debug-rank", rank, C_ef.shape, transpose)
                 if grad:
                     C_ef_s = np.hstack([ef_s for ef_s in all_ef_s if ef_s is not None])
                     C_ef_l = np.hstack([ef_l for ef_l in all_ef_l if ef_l is not None])
