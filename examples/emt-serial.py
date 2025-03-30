@@ -22,11 +22,13 @@ for etol in [0.02, 0.1, 0.2]:
                           noise_e=etol/len(images[0]),
                           noise_f=0.1)
     # Set GPR calculator
-    calc = GPR(base=EMT(), ff=gp_model)
+    calc = GPR(base=EMT(), ff=gp_model, save=False)
 
     # Run NEB calculation
     images, engs, _ = neb_calc(images, calc, fmax=fmax)
     N_calls = gp_model.count_use_base
     data.append((images, engs, f'GPR-{etol:.2f} ({N_calls})'))
+    print(gp_model, '\n\n')
 
+# Plot the results
 neb_plot_path(data, figname='NEB-test.png')

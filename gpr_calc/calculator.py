@@ -29,6 +29,11 @@ class GPR(Calculator):
         else:
             self.freq = 10
 
+        if 'save' in self.parameters:
+            self.save = self.parameters.save
+        else:
+            self.save = True
+
     def freeze(self):
         self.update = False
 
@@ -81,7 +86,7 @@ class GPR(Calculator):
             # update model
             if self.update and (self.parameters.ff.N_queue > self.freq or self.parameters.ff.N_energy_queue  >= 2):
                 self.parameters.ff.fit(opt=True, show=False)
-                if rank == 0:
+                if rank == 0 and self.save:
                     self.parameters.ff.save(f'{self.tag}-gpr.json', f'{self.tag}-gpr.db')
                     print(self.parameters.ff)
 

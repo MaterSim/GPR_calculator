@@ -24,9 +24,7 @@ if rank == 0:
 # Set VASP calculator
 os.system("module load vasp/6.4.3")
 os.environ["ASE_VASP_COMMAND"] = (
-    "mpirun "
-    "--bind-to core "
-    "--map-by rankfile:file=../rankfile.txt " 
+    "mpirun --bind-to core --map-by rankfile:file=../rankfile.txt "
     f"-np {ncpu} vasp_std")
 os.environ["VASP_PP_PATH"] = "/projects/mmi/potcarFiles/VASP6.4"
 kpts = [2, 2, 1]

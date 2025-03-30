@@ -849,16 +849,18 @@ class GP():
             return_std bool, return variance or not
             f_tol float, precision to compute force
         """
-
         # Calculate the descriptor
         d = self.descriptor.calculate(struc, use_mpi=True)
         ele = [Element(ele).z for ele in d['elements']]
         ele = np.array(ele)
+
+        fix_ids = self._get_fixed_atoms(struc)
+        free_ids = list(set(range(len(struc))) - set(fix_ids))
         data = {"energy": list_to_tuple([(d['x'], ele)], mode='energy')}
         #print(f"[Debug]-predict_structure in {self.rank}", d['x'].shape)
-        force_data = np.empty(len(struc), dtype=object)
+        force_data = np.empty(len(free_ids), dtype=object)
         x_shape = d['x'].shape[1]
-
+        id_force_data = 0
         for i in range(len(struc)):
             ids = np.argwhere(d['seq'][:,1]==i).flatten()
             _i = d['seq'][ids, 0]
@@ -868,15 +870,18 @@ class GP():
                 _rdxdr = d['rdxdr'][ids].reshape(len(ids), x_shape, 9)[:, :, [0, 4, 8, 1, 2, 5]]
                 force_data[i] = (_x, np.concatenate((_dxdr, _rdxdr), axis=2), ele0)
             else:
-                force_data[i] = (_x, _dxdr, ele0)
+                if i not in fix_ids:
+                    force_data[id_force_data] = (_x, _dxdr, ele0)
+                    id_force_data += 1
+                    #print(f"[Debug]-predict_struc", i, _x.shape, _dxdr.shape, ele0.shape)
         data["force"] = force_data
         #print(f"[Debug]-predict_structure in {self.rank}", list_to_tuple(force_data)[0].shape)
 
-        fix_ids = self._get_fixed_atoms(struc)
         train_x = self.get_train_x()
         if stress:
             K_trans, K_trans1 = self.kernel.k_total_with_stress(data, train_x, f_tol)
         else:
+            #print(len(data["force"]), len(data["energy"]))
             K_trans = self.kernel.k_total(data, train_x, f_tol)
 
         pred = K_trans.dot(self.alpha_)
@@ -886,8 +891,8 @@ class GP():
         y_mean = pred[:, 0]
         y_mean[0] *= len(struc) #total energy
         E = y_mean[0]
-        F = y_mean[1:].reshape([len(struc), 3])
-        if len(fix_ids) > 0: F[fix_ids] = 0.0
+        F = np.zeros((len(struc), 3))
+        F[free_ids] = y_mean[1:].reshape([len(free_ids), 3])
 
         if stress:
             S = K_trans1.dot(self.alpha_)[:,0].reshape([len(struc), 6])
@@ -901,6 +906,7 @@ class GP():
             F += force_off
             if stress:
                 S += stress_off
+
         if return_std:
             y_var = self.kernel.diag(data)
             y_var -= np.einsum("ij,ij->i", np.dot(K_trans, self._K_inv), K_trans)
@@ -908,8 +914,10 @@ class GP():
             y_var[y_var_negative] = 0.0
             y_var = np.sqrt(y_var)
             E_std = y_var[0]  # eV/atom
-            F_std = y_var[1:].reshape([len(struc), 3])
-            if len(fix_ids) > 0: F_std[fix_ids] = 0.0
+            F_std = np.zeros((len(struc), 3))
+            F_std[free_ids] = y_var[1:].reshape([len(free_ids), 3])
+            #F_std = y_var[1:].reshape([len(struc), 3])
+            #if len(fix_ids) > 0: F_std[fix_ids] = 0.0
             # print(f"[Debug]-predict_structure in {self.rank}", E_std, fix_ids)
 
             return E, F, S, E_std, F_std
