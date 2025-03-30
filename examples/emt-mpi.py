@@ -25,12 +25,12 @@ for etol in [0.02, 0.1, 0.2]:
 
     # initialize GPR model
     gp_model = GP.set_GPR(images,
-                          base_calculator=EMT(),
+                          base=EMT(),
                           kernel='RBF',
                           noise_e=etol/len(images[0]),
                           noise_f=0.1)
     # Set GPR calculator
-    calc = GPR(base_calculator=EMT(), ff=gp_model)
+    calc = GPR(base=EMT(), ff=gp_model)
 
     # Run NEB calculation
     images, energies, _ = neb_calc(images, calc, fmax=fmax, steps=100)

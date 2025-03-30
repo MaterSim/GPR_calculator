@@ -61,14 +61,14 @@ class GPR(Calculator):
             #print(f"# Enter loop in rank-{rank}, {E:.4f}, {Fmax:.4f}")
             self.parameters.ff.count_use_base += 1
             if rank == 0:
-                atoms.calc = self.parameters.base_calculator
+                atoms.calc = self.parameters.base
                 eng = atoms.get_potential_energy()
                 forces = atoms.get_forces()
                 forces[fix_ids] = 0.0
                 atoms.calc = None
                 data = (atoms.copy(), eng, forces)
                 f_max = np.abs(forces).max()
-                print(f"From Base model in rank-0, E: {E_std:.3f}/{E:.3f}/{eng:.3f}, F: {F_std:.3f}/{Fmax:.3f}/{f_max:.3f}")
+                print(f"From Base model E: {E_std:.3f}/{E:.3f}/{eng:.3f}, F: {F_std:.3f}/{Fmax:.3f}/{f_max:.3f}")
             else:
                 data, eng, forces = None, None, None
 
@@ -77,7 +77,6 @@ class GPR(Calculator):
             self.parameters.ff.add_structure(data)
             self.results["energy"] = eng
             self.results["forces"] = forces
-            #print(f"Debug: dummy1 in rank-{rank}", atoms.get_potential_energy(), atoms.get_forces()[-1])
 
             # update model
             if self.update and (self.parameters.ff.N_queue > self.freq or self.parameters.ff.N_energy_queue  >= 2):
@@ -103,7 +102,7 @@ class GPR(Calculator):
         else:
             self.parameters.ff.count_use_surrogate += 1
             if rank == 0:
-                print(f"From Surrogate in rank-{rank},  E: {E_std:.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}/{Fmax:.3f}")
+                print(f"From Surrogate  E: {E_std:.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}/{Fmax:.3f}")
         #print(f"rank-{rank} exits the calculator", atoms.positions.shape)
         #comm.barrier()
 

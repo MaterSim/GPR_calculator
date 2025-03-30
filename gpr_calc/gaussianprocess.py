@@ -108,9 +108,8 @@ class GaussianProcess():
             s += " {:d} forces ({:.5f})\n".format(self.N_forces, self.noise_f)
 
         if self.count_use_base > 0:
-            s += "Total number of base calls: {:d}\n".format(self.count_use_base)
-            s += "Total number of surrogate calls: {:d}\n".format(self.count_use_surrogate)
-            s += "Total number of gpr_fit calls: {:d}\n".format(self.count_fits)
+            N1, N2, N3 = self.count_use_base, self.count_use_surrogate, self.count_fits
+            s += "Total base/surrogate/gpr_fit calls: {}/{}/{}/\n".format(N1, N2, N3)
         return s
 
     def todict(self):
@@ -379,8 +378,8 @@ class GaussianProcess():
 
             # If get negative variance, set to 0.
             y_var_negative = y_var < 0
-            if np.any(y_var_negative) and self.rank == 0:
-                print("Warning: Get negative variance")
+            #if np.any(y_var_negative) and self.rank == 0:
+            #    print("Warning: Get negative variance")
             y_var[y_var_negative] = 0.0
 
             return y_mean, np.sqrt(y_var)*factors
@@ -1022,15 +1021,15 @@ class GaussianProcess():
             self.remove_train_pts(pts_e, pts_f)
 
     @classmethod
-    def set_GPR(cls, images, base_calculator,
-                kernel='Dot', zeta=2.0, noise_e=0.002, noise_f=0.1,
-                lmax=4, nmax=3, rcut=5.0, json=None):
+    def set_GPR(cls, images, base, kernel='RBF', 
+                zeta=2.0, noise_e=0.002, noise_f=0.1,
+                lmax=4, nmax=3, rcut=5.0, json_file=None):
         """
         Setup and train GPR model from images
 
         Args:
             images: list of images
-            base_calculator: ase calculator
+            base: ase calculator
             kernel: kernel type (Dot or RBF)
             zeta: zeta value for the kernel
             noise_e: noise for energy
@@ -1038,11 +1037,12 @@ class GaussianProcess():
             lmax: lmax for the descriptor
             nmax: nmax for the descriptor
             rcut: cutoff radius for the descriptor
-            json: json file to load the model
+            json_file: json file to load the model
         """
-        if json is not None and os.path.exists(json):
-            instance = cls()
-            instance.load(json)
+        if json_file is not None and os.path.exists(json_file):
+            with open(json_file, "r") as fp:
+                dict0 = json.load(fp)
+            instance = cls.load_from_dict(dict0)
         else:
             instance = cls(kernel=None, descriptor=None, base_potential=None)
             if kernel == 'Dot':
@@ -1054,17 +1054,17 @@ class GaussianProcess():
             instance.noise_f = noise_f
 
         # Train the initial model
-        instance.train_images(images, base_calculator)
+        instance.train_images(images, base)
         return instance
 
-    def train_images(self, images, base_calculator):
+    def train_images(self, images, base):
         """
         Function to train the GPR model from the images
 
         Args:
             model: gpr object
             images: list of images
-            base_calculator: ase calculator e.g Vasp
+            base: ase base calculator e.g Vasp
 
         """
         for i, image in enumerate(images):
@@ -1077,10 +1077,10 @@ class GaussianProcess():
                     new_env.pop(var, None)
 
                 # Set the calculator and calculate the energy and forces
-                image.calc = base_calculator
+                image.calc = base
                 # For vasp calculator, set the directory for each image
                 if hasattr(image.calc, 'set'):
-                    image.calc.set(directory = f"neb_calc_{i}")
+                    image.calc.set(directory = f"calc_{i}")
                 eng = image.get_potential_energy()
                 forces = image.get_forces()
                 print(f"Calculate E/F for image {i}: {eng:.6f}")

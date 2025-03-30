@@ -12,11 +12,10 @@ pr.enable()
 
 t0 = time()
 #gpr = GPR.load('database/h2s-RBF-gpr.json', N_max=10)
-gpr = GPR.load('database/pd4-RBF.json') #, N_max=100)
+gpr = GPR.load('database/pd4-RBF.json', N_max=100)
 gpr.fit(opt=False)
-#gpr.sparsify()
 gpr.set_K_inv()
-#gpr.validate_data(return_std=True)
+
 if rank == 0: print(f'Time: {time() - t0:.2f}s')
 
 struc = read('database/POSCAR_initial_pd4', format='vasp')

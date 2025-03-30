@@ -123,9 +123,7 @@ From Surrogate ,  E: 0.082/0.200/3.344, F: 0.069/0.120/0.041
 From Surrogate ,  E: 0.082/0.200/3.346, F: 0.067/0.120/0.048
 ------Gaussian Process Regression (0/2)------
 Kernel: 2.80314**2 *RBF(length=1.52921) 7 energy (0.01538) 55 forces (0.10000)
-Total number of base calls: 22
-Total number of surrogate calls: 106
-Total number of gpr_fit calls: 4
+Total base/surrogate/gpt_fit calls: 22/106/4
 ```
 
 The trained GPR model is saved as:

@@ -12,7 +12,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="gpr_calc",
-    version="0.0.2",
+    version="0.0.3",
     description="GPR",
     long_description=long_description,
     long_description_content_type="text/markdown",

@@ -3,7 +3,7 @@ NEB related functions
 """
 from ase.mep import NEB
 
-def neb_calc(images, calculator, algo='BFGS', fmax=0.05, steps=100):
+def neb_calc(images, calculator=None, algo='BFGS', fmax=0.05, steps=100):
     """
     NEB calculation with ASE's NEB module
     The function will return the images and energies of the NEB calculation
@@ -26,10 +26,9 @@ def neb_calc(images, calculator, algo='BFGS', fmax=0.05, steps=100):
     neb = NEB(images, parallel=False)
 
     # Set the calculator for the images
-    for i, image in enumerate(images):
-        image.calc = copy(calculator)
-        if hasattr(image.calc, 'set'):
-            image.calc.set(directory = f"neb_calc_{i}")
+    if calculator is not None:
+        for image in images:
+            image.calc = copy(calculator)
 
     # Set the optimizer
     if algo == 'BFGS':
@@ -45,7 +44,8 @@ def neb_calc(images, calculator, algo='BFGS', fmax=0.05, steps=100):
     return images, eng, opt.nsteps
     #return data
 
-def neb_generate_images(init, final, num_images=5, IDPP=False, mic=False):
+def neb_generate_images(init, final, num_images=5, vaccum=0.0, 
+                        IDPP=False, mic=False, apply_constraint=False):
     """
     Generate initial images from ASE's NEB module
     The number of images generated is self.num_images - 2
@@ -54,8 +54,10 @@ def neb_generate_images(init, final, num_images=5, IDPP=False, mic=False):
         init: initial structure file
         final: final structure file
         num_images: number of images
+        vaccum: vacuum size in angstrom
         IDPP: use the improved dimer
         mic: use the minimum image convention
+        apply_constraint: apply constraint to the images
 
     Returns:
         images: list of initial images for NEB calculation
@@ -66,8 +68,8 @@ def neb_generate_images(init, final, num_images=5, IDPP=False, mic=False):
     num_images = num_images
 
     # Set the PBC condition (mostly for surfaces)
-    if initial.pbc[-1]:
-        def set_pbc(atoms, vacuum=10):
+    if initial.pbc[-1] and vaccum > 0:
+        def set_pbc(atoms, vacuum=vaccum):
             atoms.cell[2, 2] += vacuum
             atoms.center()
             atoms.pbc = [True, True, True]
@@ -80,9 +82,9 @@ def neb_generate_images(init, final, num_images=5, IDPP=False, mic=False):
     # Set intermediate images
     neb = NEB(images, parallel=False)
     if IDPP:
-        neb.interpolate(method='idpp', mic=mic)
+        neb.interpolate(method='idpp', mic=mic, apply_constraint=apply_constraint)
     else:
-        neb.interpolate(apply_constraint=False, mic=mic)
+        neb.interpolate(apply_constraint=apply_constraint, mic=mic)
 
     return images
 
@@ -121,3 +123,41 @@ def neb_plot_path(data, unit='eV', figname='neb_path.png'):
     plt.grid(True)
     plt.savefig(figname)
     plt.close()
+
+
+def get_vasp_calculator(**kwargs):
+    """
+    Set up and return a VASP calculator with specified parameters.
+
+    Args:
+        **kwargs: Additional VASP parameters to override defaults
+        
+    Returns:
+        ase.calculators.vasp.Vasp: Configured VASP calculator
+    """
+    from ase.calculators.vasp import Vasp
+
+    vasp_args = {
+        "txt": 'vasp.out',
+        "prec": 'Accurate',
+        "encut": 400,
+        "algo": 'Fast',
+        "xc": 'pbe',
+        "icharg": 2,
+        "ediff": 1.0e-4,
+        "ediffg": -0.03,
+        "ismear": 1,
+        "sigma": 0.1,
+        "ibrion": -1,
+        "isym": 0,
+        "idipol": 3,
+        "ldipol": True,
+        "lwave": False,
+        "lcharg": False,
+        "lreal": 'Auto',
+        "npar": 2,
+        "kpts": [2, 2, 1],
+    }
+    vasp_args.update(kwargs)
+    
+    return Vasp(**vasp_args)
