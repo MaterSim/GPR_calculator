@@ -1,9 +1,10 @@
 from distutils.core import setup
-import setuptools  # noqa
-from os import path
+import os
 
-this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
+# Set compiler to g++
+os.environ['CC'] = 'g++'
+this_directory = os.path.abspath(path.dirname(__file__))
+with open(os.path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 with open("README.md", "r") as fh:

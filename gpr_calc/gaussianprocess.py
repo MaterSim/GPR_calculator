@@ -1,8 +1,13 @@
 import numpy as np
-from pyxtal.database.element import Element
-from .utilities import new_pt, convert_train_data, list_to_tuple, tuple_to_list, metric_values
 from scipy.linalg import cholesky, cho_solve, solve_triangular
 from scipy.optimize import minimize
+
+from pyxtal.database.element import Element
+from .utilities import new_pt, convert_train_data, list_to_tuple, tuple_to_list, metric_values
+from .SO3 import SO3
+from .kernels.Dot_mb import Dot_mb
+from .kernels.RBF_mb import RBF_mb
+
 import json
 from ase.db import connect
 import os
@@ -10,6 +15,9 @@ from copy import deepcopy
 from mpi4py import MPI
 import logging
 
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
 
 class GaussianProcess():
     """
@@ -54,9 +62,9 @@ class GaussianProcess():
                             filename=self.log_file)
         self.logging = logging
 
-        self.comm = MPI.COMM_WORLD
-        self.rank = self.comm.Get_rank()
-        self.size = self.comm.Get_size()
+        self.comm = comm
+        self.rank = rank
+        self.size = size
         if type(noise_e) is not list:
             self.noise_e = noise_e
             self.noise_f = noise_f
@@ -98,6 +106,11 @@ class GaussianProcess():
         if hasattr(self, "train_x"):
             s += " {:d} energy ({:.5f})".format(self.N_energy, self.noise_e)
             s += " {:d} forces ({:.5f})\n".format(self.N_forces, self.noise_f)
+
+        if self.count_use_base > 0:
+            s += "Total number of base calls: {:d}\n".format(self.count_use_base)
+            s += "Total number of surrogate calls: {:d}\n".format(self.count_use_surrogate)
+            s += "Total number of gpr_fit calls: {:d}\n".format(self.count_fits)
         return s
 
     def todict(self):
@@ -678,53 +691,7 @@ class GaussianProcess():
             dict0["base_potential"] = self.base_potential.save_dict()
         return dict0
 
-    @classmethod
-    def load_from_dict(cls, dict0, device='cpu'):
-        """
-        Load the model from dictionary
 
-        Args:
-            dict0: a dictionary of the model
-            device: the device to run the model
-        """
-
-        instance = cls(kernel=None, descriptor=None, base_potential=None)
-        #keys = ['kernel', 'descriptor', 'Noise']
-        if dict0["kernel"]["name"] == "RBF_mb":
-            from .kernels.RBF_mb import RBF_mb
-            instance.kernel = RBF_mb()
-        elif dict0["kernel"]["name"] == "Dot_mb":
-            from .kernels.Dot_mb import Dot_mb
-            instance.kernel = Dot_mb()
-        else:
-            msg = "unknow kernel {:s}".format(dict0["kernel"]["name"])
-            raise NotImplementedError(msg)
-        instance.kernel.load_from_dict(dict0["kernel"])
-
-        if dict0["descriptor"]["_type"] == "SO3":
-            from .SO3 import SO3
-            instance.descriptor = SO3()
-            instance.descriptor.load_from_dict(dict0["descriptor"])
-        else:
-            msg = "unknow descriptors {:s}".format(dict0["descriptor"]["name"])
-            raise NotImplementedError(msg)
-
-        if "base_potential" in dict0.keys():
-            if dict0["base_potential"]["name"] == "LJ":
-                from .calculator import LJ
-                instance.base_potential = LJ()
-                instance.base_potential.load_from_dict(dict0["base_potential"])
-            else:
-                msg = "unknow base potential {:s}".format(dict0["base_potential"]["name"])
-                raise NotImplementedError(msg)
-        instance.kernel.device = device
-        instance.noise_e = dict0["noise"]["energy"]
-        instance.noise_f = dict0["noise"]["force"]
-        instance.f_coef = dict0["noise"]["f_coef"]
-        instance.noise_bounds = dict0["noise"]["bounds"]
-        # instance.noise_f = instance.f_coef * instance.noise_e
-
-        return instance
 
     def export_ase_db(self, db_filename, permission="w"):
         """
@@ -1053,6 +1020,132 @@ class GaussianProcess():
         print("{:d} energy and {:d} forces will be removed".format(len(pts_e), len(pts_f)))
         if len(pts_e) + len(pts_f) > 0:
             self.remove_train_pts(pts_e, pts_f)
+
+    @classmethod
+    def set_GPR(cls, images, base_calculator,
+                kernel='Dot', zeta=2.0, noise_e=0.002, noise_f=0.1,
+                lmax=4, nmax=3, rcut=5.0, json=None):
+        """
+        Setup and train GPR model from images
+
+        Args:
+            images: list of images
+            base_calculator: ase calculator
+            kernel: kernel type (Dot or RBF)
+            zeta: zeta value for the kernel
+            noise_e: noise for energy
+            noise_f: noise for forces
+            lmax: lmax for the descriptor
+            nmax: nmax for the descriptor
+            rcut: cutoff radius for the descriptor
+            json: json file to load the model
+        """
+        if json is not None and os.path.exists(json):
+            instance = cls()
+            instance.load(json)
+        else:
+            instance = cls(kernel=None, descriptor=None, base_potential=None)
+            if kernel == 'Dot':
+                instance.kernel = Dot_mb(para=[2, 2.0], zeta=zeta)
+            else:
+                instance.kernel = RBF_mb(para=[1.0, 0.1], zeta=zeta)
+            instance.descriptor = SO3(nmax=nmax, lmax=lmax, rcut=rcut)
+            instance.noise_e = noise_e
+            instance.noise_f = noise_f
+
+        # Train the initial model
+        instance.train_images(images, base_calculator)
+        return instance
+
+    def train_images(self, images, base_calculator):
+        """
+        Function to train the GPR model from the images
+
+        Args:
+            model: gpr object
+            images: list of images
+            base_calculator: ase calculator e.g Vasp
+
+        """
+        for i, image in enumerate(images):
+            if self.rank == 0:
+                new_env = os.environ.copy()
+                for var in ["OMPI_COMM_WORLD_SIZE",
+                            "OMPI_COMM_WORLD_RANK",
+                            "PMI_RANK",
+                            "PMI_SIZE"]:
+                    new_env.pop(var, None)
+
+                # Set the calculator and calculate the energy and forces
+                image.calc = base_calculator
+                # For vasp calculator, set the directory for each image
+                if hasattr(image.calc, 'set'):
+                    image.calc.set(directory = f"neb_calc_{i}")
+                eng = image.get_potential_energy()
+                forces = image.get_forces()
+                print(f"Calculate E/F for image {i}: {eng:.6f}")
+
+            else:
+                eng = 0.0
+                forces = None
+
+            # Reset calculator
+            image.calc = None
+
+            self.comm.Barrier()
+            eng = self.comm.bcast(eng, root=0)
+            forces = self.comm.bcast(forces, root=0)
+            self.add_structure((image.copy(), eng, forces))
+
+        self.fit()
+        self.validate_data()
+        self.set_K_inv()
+
+    @classmethod
+    def load_from_dict(cls, dict0, device='cpu'):
+        """
+        Load the model from dictionary
+
+        Args:
+            dict0: a dictionary of the model
+            device: the device to run the model
+        """
+
+        instance = cls(kernel=None, descriptor=None, base_potential=None)
+        #keys = ['kernel', 'descriptor', 'Noise']
+        if dict0["kernel"]["name"] == "RBF_mb":
+            instance.kernel = RBF_mb()
+        elif dict0["kernel"]["name"] == "Dot_mb":
+            instance.kernel = Dot_mb()
+        else:
+            msg = "unknow kernel {:s}".format(dict0["kernel"]["name"])
+            raise NotImplementedError(msg)
+        instance.kernel.load_from_dict(dict0["kernel"])
+
+        if dict0["descriptor"]["_type"] == "SO3":
+            instance.descriptor = SO3()
+            instance.descriptor.load_from_dict(dict0["descriptor"])
+        else:
+            msg = "unknow descriptors {:s}".format(dict0["descriptor"]["name"])
+            raise NotImplementedError(msg)
+
+        if "base_potential" in dict0.keys():
+            if dict0["base_potential"]["name"] == "LJ":
+                from .calculator import LJ
+                instance.base_potential = LJ()
+                instance.base_potential.load_from_dict(dict0["base_potential"])
+            else:
+                msg = "unknow base potential {:s}".format(dict0["base_potential"]["name"])
+                raise NotImplementedError(msg)
+        instance.kernel.device = device
+        instance.noise_e = dict0["noise"]["energy"]
+        instance.noise_f = dict0["noise"]["force"]
+        instance.f_coef = dict0["noise"]["f_coef"]
+        instance.noise_bounds = dict0["noise"]["bounds"]
+        # instance.noise_f = instance.f_coef * instance.noise_e
+
+        return instance
+
 
 
 def CUR(K, l_tol=1e-10):

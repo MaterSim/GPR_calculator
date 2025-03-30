@@ -15,7 +15,19 @@ class GPR(Calculator):
         Calculator.__init__(self, **kwargs)
         self.results = {}
         self.update = True
-        self.verbose = False
+        self.verbose = True #False
+        #print(self.name)
+        #self.name = 'GPR'
+        # Set the tag for the model
+        if 'tag' in self.parameters:
+            self.tag = self.parameters.tag
+        else:
+            self.tag = 'GPR'
+
+        if 'freq' in self.parameters:
+            self.freq = self.parameters.freq
+        else:
+            self.freq = 10
 
     def freeze(self):
         self.update = False
@@ -25,7 +37,6 @@ class GPR(Calculator):
 
     def calculate(self, atoms=None, properties=['energy', 'forces'], system_changes=all_changes):
 
-        tag = self.parameters.tag
         fix_ids = []
         if len(atoms.constraints) > 0:
             for c in atoms.constraints:
@@ -69,10 +80,10 @@ class GPR(Calculator):
             #print(f"Debug: dummy1 in rank-{rank}", atoms.get_potential_energy(), atoms.get_forces()[-1])
 
             # update model
-            if self.update and (self.parameters.ff.N_queue > self.parameters.freq or self.parameters.ff.N_energy_queue  >= 2):
+            if self.update and (self.parameters.ff.N_queue > self.freq or self.parameters.ff.N_energy_queue  >= 2):
                 self.parameters.ff.fit(opt=True, show=False)
                 if rank == 0:
-                    self.parameters.ff.save(f'{tag}-gpr.json', f'{tag}-gpr.db')
+                    self.parameters.ff.save(f'{self.tag}-gpr.json', f'{self.tag}-gpr.db')
                     print(self.parameters.ff)
 
                 #print("Validate the model")
@@ -111,9 +122,9 @@ class GPR(Calculator):
             f_tol = 1e-12
 
         if hasattr(self.parameters, 'return_std'):
-            return_std=self.parameters.return_std
+            return_std = self.parameters.return_std
         else:
-            return_std=False
+            return_std = True #False
 
         res = self.parameters.ff.predict_structure(atoms, stress, return_std, f_tol=f_tol)
 
