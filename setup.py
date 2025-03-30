@@ -3,7 +3,7 @@ import os
 
 # Set compiler to g++
 os.environ['CC'] = 'g++'
-this_directory = os.path.abspath(path.dirname(__file__))
+this_directory = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 

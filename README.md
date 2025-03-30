@@ -1,23 +1,27 @@
-# On the Fly Atomistic Calculator
+# On-the-Fly Atomistic Calculator
 
-This is an On-the-Fly Atomistic Calculator based on Gaussian Process Regression (GPR), designed as an ASE add-on calculator. It incorporates a hybrid approach by combining:
+This is an on-the-fly atomistic calculator based on Gaussian Process Regression (GPR), designed as an add-on calculator for the Atomic Simulation Environment (ASE). It employs a hybrid approach, combining:
 
-
-1. `Base calculator`: A high-fidelity ab initio calculator (e.g., DFT) that serves as the reference (“gold standard”) for accurate but computationally expensive calculations.
-2. `Surrogate GPR calculator`: A computationally inexpensive model trained on-the-fly to approximate the base calculator and accelerate simulations.
+1.  `Base calculator`: A high-fidelity ab initio calculator (e.g., DFT) that serves as the reference ("gold standard") for accurate but computationally expensive calculations.
+2.  `Surrogate GPR calculator`: A computationally inexpensive model trained on-the-fly to approximate the base calculator, significantly accelerating simulations.
 
 ## Motivation
 
-Many atomistic simulations—such as geometry optimization, barrier calculations, molecular dynamics (MD), and equation-of-state (EOS) simulations—require sampling a large number of atomic configurations in a compact phase space. The workhorse method for such calculations is often Density Functional Theory (DFT), which provides a balance between accuracy and computational cost. However, DFT can still be prohibitively expensive, particularly for large systems or simulations for many snapshots.
-
+Many atomistic simulations, such as geometry optimizations, barrier calculations (e.g., NEB), molecular dynamics (MD), and equation-of-state (EOS) simulations, require sampling a large number of atomic configurations within a relatively small phase space. Density Functional Theory (DFT) is frequently used for these calculations, offering a balance between accuracy and computational cost. However, DFT calculations can still be prohibitively expensive, especially for large systems or long simulation times. The GPR calculator aims to alleviate this computational bottleneck. **At the moment, we focus on the NEB simulation only.**
 
 ## How It Works?
 
-1.	Initially, the calculator invokes the base calculator (e.g., a DFT code) to compute energy, forces, and stress tensors for each atomic configuration.
-2.	These computed data points are used to train an internal surrogate model based on Gaussian Process Regression (GPR).
-3.	As the surrogate model accumulates training data, it gradually learns the energy and force landscape of the system.
-4.	Once the model achieves sufficient accuracy, it begins predicting the mean and variance of energy, forces, and stress tensors, enabling efficient on-the-fly calculations.
-5.	If the predicted uncertainty is low, the model replaces the expensive DFT evaluations. Otherwise, the base calculator is called again to refine the model.
+The GPR calculator operates through an iterative learning and prediction process:
+
+1.  **Initial Data Collection:** The simulation begins by using the `base calculator` (e.g., DFT) to calculate energies and forces for a small set of initial atomic configurations. These data serve as the initial training set for the GPR model.
+2.  **Surrogate Model Training:** A Gaussian Process Regression (GPR) model is trained using the data obtained from the base calculator. This model learns to predict the energy and forces of new atomic configurations based on the existing training data.
+3.  **On-the-Fly Prediction and Uncertainty Quantification:** During the simulation, for each new atomic configuration, the GPR model predicts the energy and forces, along with an estimate of the uncertainty in these predictions.
+4.  **Choice of Calculator:** The GPR calculator adaptively decides whether to use the GPR model's prediction or to invoke the base calculator based on the predicted uncertainty.
+    *   If the uncertainty is below a user-defined threshold, the GPR model's prediction is used, saving computational cost.
+    *   If the uncertainty is above the threshold, the base calculator is invoked to obtain a more accurate calculation. The new data point is then added to the training set, and the GPR model is retrained.
+5.  **Iterative Refinement:** Steps 3 and 4 are repeated throughout the simulation. As the GPR model accumulates more data, its accuracy improves, leading to a greater reliance on the surrogate model and a reduction in the number of calls to the base calculator.
+
+This adaptive strategy allows the GPR calculator to achieve a balance between accuracy and computational efficiency, by using the computationally expensive base calculator only when necessary.
 
 ## Installation
 ```
@@ -63,9 +67,14 @@ for etol in [0.02, 0.1, 0.2]:
 
 neb_plot_path(data, figname='NEB-test.png')
 ```
+This example demonstrates NEB calculations using:
 
-The output should look like the following. In the process of NEB calculation, the base calculators were used frequently in the beginning.
-Some of the representative data points were then added to the GPR model. After the model becomes more accurate, the predictions from surrogate model were useded more frequently.
+1.  A pure `EMT` calculator (for rapid testing).
+2.  The GPR calculator with `EMT` as the base calculator and an uncertainty threshold of 0.02 eV per structure.
+3.  The GPR calculator with `EMT` as the base calculator and an uncertainty threshold of 0.10 eV per structure.
+4.  The GPR calculator with `EMT` as the base calculator and an uncertainty threshold of 0.20 eV per structure.
+
+The output below illustrates the NEB calculation process. Initially, the base calculator (`EMT`) is used to generate reference data. These data points are then added to the GPR model. As the model learns and becomes more accurate, predictions from the surrogate model are used more frequently, reducing the computational cost.
 
 ```
 Calculate E/F for image 0: 3.314754
@@ -75,7 +84,6 @@ Calculate E/F for image 3: 3.724974
 Calculate E/F for image 4: 3.316117
 ------Gaussian Process Regression (0/2)------
 Kernel: 1.00000**2 *RBF(length=0.10000) 5 energy (0.00769) 15 forces (0.10000)
-
 
 Update GP model => 20
 Loss:       -2.916  1.000  0.100
@@ -103,14 +111,6 @@ From Base model , E: 0.093/3.527/3.723, F: 0.303/0.594/0.309
 ...
 ...
 ...
-From Surrogate ,  E: 0.081/0.200/3.532, F: 0.091/0.120/0.404
-From Surrogate ,  E: 0.095/0.200/3.695, F: 0.061/0.120/0.073
-From Surrogate ,  E: 0.081/0.200/3.529, F: 0.090/0.120/0.388
-BFGS:   38 20:08:23        3.695437        0.074676
-From Surrogate ,  E: 0.081/0.200/3.531, F: 0.092/0.120/0.404
-From Surrogate ,  E: 0.095/0.200/3.695, F: 0.062/0.120/0.059
-From Surrogate ,  E: 0.081/0.200/3.528, F: 0.092/0.120/0.388
-BFGS:   39 20:08:27        3.695121        0.065271
 From Surrogate ,  E: 0.081/0.200/3.529, F: 0.095/0.120/0.400
 From Surrogate ,  E: 0.095/0.200/3.694, F: 0.062/0.120/0.051
 From Surrogate ,  E: 0.081/0.200/3.526, F: 0.094/0.120/0.390
@@ -128,16 +128,19 @@ Total number of surrogate calls: 106
 Total number of gpr_fit calls: 4
 ```
 
-The generated model will be stored as
+The trained GPR model is saved as:
 
-- a `json` file to store the parameters
-- a `db` file to store training structure, reference energy and forces
+*   A `json` file containing the model parameters.
+*   A `db` file storing the training structures, energies, and forces.
 
-The final result is shown as follows
- <img src="https://raw.githubusercontent.com/MaterSim/GPR_calculator/master/database/NEB-test.png" alt="NEB"/>
+The following figure illustrates a typical NEB path calculated using the GPR calculator:
+
+![NEB Path](https://raw.githubusercontent.com/MaterSim/GPR_calculator/master/database/NEB-test.png)
+
+The results demonstrate that the GPR calculator, even with a limited number of base calculator calls, can achieve reasonable accuracy compared to the reference calculation. A smaller energy uncertainty threshold (`etol`) generally leads to more accurate results. In scenarios where each base calculator call is computationally expensive, the GPR calculator offers a significant speedup without sacrificing accuracy. This approach is particularly beneficial for handling computationally demanding tasks such as large-scale NEB calculations for surface diffusion and reaction studies.
 
 
-It can be reused as follows
+In addition, the trained model can be reused as follows if you want to restart the previously unconverged calculation.
 
 ```python
 from gpr_calc.gaussianprocess import GaussianProcess as GPR
@@ -147,4 +150,4 @@ print(gpr)
 gpr.validate_data(show=True)
 gpr.fit(opt)
 ```
-For more productive example using VASP as the base calculator, please check the [Examples](https://github.com/MaterSim/GPR_calculator/tree/main/examples).
+For more productive examples using VASP as the base calculator, please check the [Examples](https://github.com/MaterSim/GPR_calculator/tree/main/examples).

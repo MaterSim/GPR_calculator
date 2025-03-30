@@ -41,7 +41,7 @@ def neb_calc(images, calculator, algo='BFGS', fmax=0.05, steps=100):
     eng = [image.get_potential_energy() for image in images]
 
     # Return the images and energie
-    return images, eng
+    return images, eng, opt.nsteps
     #return data
 
 def neb_generate_images(init, final, num_images=5, IDPP=False):
