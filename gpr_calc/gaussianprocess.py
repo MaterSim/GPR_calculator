@@ -19,7 +19,7 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-class GaussianProcess():
+class GP():
     """
     Gaussian Process Regressor class to fit the interatomic potential
     from the reference energy/forces.
@@ -109,7 +109,7 @@ class GaussianProcess():
 
         if self.count_use_base > 0:
             N1, N2, N3 = self.count_use_base, self.count_use_surrogate, self.count_fits
-            s += "Total base/surrogate/gpr_fit calls: {}/{}/{}/\n".format(N1, N2, N3)
+            s += "Total base/surrogate/gpr_fit calls: {}/{}/{}\n".format(N1, N2, N3)
         return s
 
     def todict(self):
@@ -663,10 +663,11 @@ class GaussianProcess():
         """
         with open(filename, "r") as fp: dict0 = json.load(fp)
         instance = cls.load_from_dict(dict0, device=device)
+        instance.extract_db(dict0["db_filename"], N_max)
         if instance.rank == 0:
             print(f"load GP model from {filename}")
+            print(instance)
             instance.logging.info(f"load GP model from {filename}")
-        instance.extract_db(dict0["db_filename"], N_max)
         return instance
 
     def save_dict(self, db_filename):
@@ -1040,9 +1041,9 @@ class GaussianProcess():
             json_file: json file to load the model
         """
         if json_file is not None and os.path.exists(json_file):
-            with open(json_file, "r") as fp:
-                dict0 = json.load(fp)
-            instance = cls.load_from_dict(dict0)
+            instance = cls.load(json_file)
+            instance.fit()
+            instance.set_K_inv()
         else:
             instance = cls(kernel=None, descriptor=None, base_potential=None)
             if kernel == 'Dot':
@@ -1053,8 +1054,8 @@ class GaussianProcess():
             instance.noise_e = noise_e
             instance.noise_f = noise_f
 
-        # Train the initial model
-        instance.train_images(images, base)
+            # Train the initial model
+            instance.train_images(images, base)
         return instance
 
     def train_images(self, images, base):
@@ -1118,7 +1119,7 @@ class GaussianProcess():
         elif dict0["kernel"]["name"] == "Dot_mb":
             instance.kernel = Dot_mb()
         else:
-            msg = "unknow kernel {:s}".format(dict0["kernel"]["name"])
+            msg = "unknown kernel {:s}".format(dict0["kernel"]["name"])
             raise NotImplementedError(msg)
         instance.kernel.load_from_dict(dict0["kernel"])
 
@@ -1126,7 +1127,7 @@ class GaussianProcess():
             instance.descriptor = SO3()
             instance.descriptor.load_from_dict(dict0["descriptor"])
         else:
-            msg = "unknow descriptors {:s}".format(dict0["descriptor"]["name"])
+            msg = "unknown descriptors {:s}".format(dict0["descriptor"]["name"])
             raise NotImplementedError(msg)
 
         if "base_potential" in dict0.keys():

@@ -3,7 +3,8 @@ NEB related functions
 """
 from ase.mep import NEB
 
-def neb_calc(images, calculator=None, algo='BFGS', fmax=0.05, steps=100):
+def neb_calc(images, calculator=None, algo='BFGS',
+             fmax=0.05, steps=100, k=0.1, trajectory=None):
     """
     NEB calculation with ASE's NEB module
     The function will return the images and energies of the NEB calculation
@@ -14,6 +15,8 @@ def neb_calc(images, calculator=None, algo='BFGS', fmax=0.05, steps=100):
         algo: algorithm for the NEB calculation (BFGS, FIRE, etc.)
         fmax: maximum force
         steps: maximum number of steps
+        k: spring constant (optional)
+        trajectory: trajectory file name (optional)
 
     Returns:
         images: list of images after NEB calculation
@@ -23,7 +26,7 @@ def neb_calc(images, calculator=None, algo='BFGS', fmax=0.05, steps=100):
     from copy import copy
 
     # Set NEB calculation
-    neb = NEB(images, parallel=False)
+    neb = NEB(images, k=k, parallel=False)
 
     # Set the calculator for the images
     if calculator is not None:
@@ -32,9 +35,9 @@ def neb_calc(images, calculator=None, algo='BFGS', fmax=0.05, steps=100):
 
     # Set the optimizer
     if algo == 'BFGS':
-        opt = BFGS(neb)
+        opt = BFGS(neb, trajectory=trajectory)
     elif algo == 'FIRE':
-        opt = FIRE(neb)
+        opt = FIRE(neb, trajectory=trajectory)
     else:
         raise ValueError('Invalid algorithm for NEB calculation')
     opt.run(fmax=fmax, steps=steps)
@@ -42,10 +45,9 @@ def neb_calc(images, calculator=None, algo='BFGS', fmax=0.05, steps=100):
 
     # Return the images and energie
     return images, eng, opt.nsteps
-    #return data
 
-def neb_generate_images(init, final, num_images=5, vaccum=0.0, 
-                        IDPP=False, mic=False, apply_constraint=False):
+def init_images(init, final, num_images=5, vaccum=0.0, 
+                IDPP=False, mic=False, apply_constraint=False):
     """
     Generate initial images from ASE's NEB module
     The number of images generated is self.num_images - 2

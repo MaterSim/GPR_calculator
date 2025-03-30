@@ -1,6 +1,6 @@
-from gpr_calc.NEB import neb_calc, neb_generate_images, neb_plot_path, get_vasp_calculator
+from gpr_calc.NEB import neb_calc, init_images, neb_plot_path, get_vasp_calculator
 from gpr_calc.calculator import GPR
-from gpr_calc.gaussianprocess import GaussianProcess as GP
+from gpr_calc.gaussianprocess import GP
 from mpi4py import MPI
 import os
 import socket
@@ -32,17 +32,18 @@ os.environ["VASP_PP_PATH"] = "/projects/mmi/potcarFiles/VASP6.4"
 kpts = [2, 2, 1]
 
 # Set NEB Images
-ini, final, tag = 'POSCAR_initial', 'POSCAR_final', 'h2s-RBF'
-images = neb_generate_images(ini, final, 7, IDPP=True, mic=True)
+init, final, tag = 'POSCAR_initial', 'POSCAR_final', 'h2s-RBF-0.03'
+images = init_images(init, final, 7, IDPP=True, mic=True)
 
 # Set the GP model
 base_calc = get_vasp_calculator(kpts=kpts)
-noise_e, noise_f = 0.05/len(images[0]), 0.10
+noise_e, noise_f = 0.03/len(images[0]), 0.10
 gp_model = GP.set_GPR(images, base_calc,
                       noise_e=noise_e,
                       noise_f=noise_f,
                       json_file=tag+'-gpr.json')
 
+#import sys; sys.exit()
 # Set the GP calculators
 for i, image in enumerate(images):
     base_calc = get_vasp_calculator(kpts=kpts, directory=f"calc_{i}")
