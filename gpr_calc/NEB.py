@@ -19,16 +19,17 @@ def neb_calc(images, calculator, algo='BFGS', fmax=0.05, steps=100):
         images: list of images after NEB calculation
         eng: list of energies of the images
     """
-    from ase.optimize import BFGS
-    from ase.optimize import FIRE
+    from ase.optimize import BFGS, FIRE
     from copy import copy
 
     # Set NEB calculation
     neb = NEB(images, parallel=False)
 
     # Set the calculator for the images
-    for image in images:
+    for i, image in enumerate(images):
         image.calc = copy(calculator)
+        if hasattr(image.calc, 'set'):
+            image.calc.set(directory = f"neb_calc_{i}")
 
     # Set the optimizer
     if algo == 'BFGS':
@@ -44,7 +45,7 @@ def neb_calc(images, calculator, algo='BFGS', fmax=0.05, steps=100):
     return images, eng, opt.nsteps
     #return data
 
-def neb_generate_images(init, final, num_images=5, IDPP=False):
+def neb_generate_images(init, final, num_images=5, IDPP=False, mic=False):
     """
     Generate initial images from ASE's NEB module
     The number of images generated is self.num_images - 2
@@ -54,6 +55,7 @@ def neb_generate_images(init, final, num_images=5, IDPP=False):
         final: final structure file
         num_images: number of images
         IDPP: use the improved dimer
+        mic: use the minimum image convention
 
     Returns:
         images: list of initial images for NEB calculation
@@ -78,9 +80,9 @@ def neb_generate_images(init, final, num_images=5, IDPP=False):
     # Set intermediate images
     neb = NEB(images, parallel=False)
     if IDPP:
-        neb.interpolate(method='idpp')
+        neb.interpolate(method='idpp', mic=mic)
     else:
-        neb.interpolate(apply_constraint=False)
+        neb.interpolate(apply_constraint=False, mic=mic)
 
     return images
 
