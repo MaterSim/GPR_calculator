@@ -1,4 +1,4 @@
-from gpr_calc.gaussianprocess import GaussianProcess as GPR
+from gpr_calc.gaussianprocess import GPR
 from mpi4py import MPI
 from time import time
 from ase.io import read

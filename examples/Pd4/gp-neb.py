@@ -47,7 +47,7 @@ for i, image in enumerate(images):
     image.calc = GPR(base=base_calc, ff=gp_model, freq=10, tag=tag)
 
 # Run NEB calculation
-images, engs_gpr, _ = neb_calc(images, steps=1000, algo='FIRE')
+images, engs_gpr, _ = neb_calc(images, steps=1000, algo='FIRE', trajectory='neb.traj')
 
 # Plot the NEB path
 if rank == 0:

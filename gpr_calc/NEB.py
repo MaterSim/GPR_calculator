@@ -2,6 +2,7 @@
 NEB related functions
 """
 from ase.mep import NEB
+from ase.geometry import find_mic
 
 def neb_calc(images, calculator=None, algo='BFGS',
              fmax=0.05, steps=100, k=0.1, trajectory=None):
@@ -108,10 +109,20 @@ def neb_plot_path(data, unit='eV', figname='neb_path.png'):
     for d, color in zip(data, colors):
         (images, Y, label) = d
         tmp = np.array([image.positions for image in images])
-        X = np.cumsum([np.linalg.norm(tmp[i] - tmp[i+1]) for i in range(len(tmp)-1)])
-        X = [0] + X.tolist()  # Add the initial point at distance 0
-        X = np.array(X)
-        X /= X[-1]  # Normalize the distance
+
+        # Apply minimum image convention for periodic boundaries
+        X = np.zeros(len(tmp))
+        for i in range(len(tmp)-1):
+            # Create a single atoms object to calculate distances
+            d = tmp[i+1] - tmp[i]
+            # Find the minimum image convention
+            d = find_mic(d, images[0].get_cell(), images[0].pbc)[0]
+            X[i+1] = np.linalg.norm(d)
+        X = np.cumsum(X)
+
+        # Normalize the distance
+        X /= X[-1]
+
         X_smooth = np.linspace(min(X), max(X), 30)
         spline = make_interp_spline(X, Y, k=3)
         Y_smooth = spline(X_smooth)
@@ -125,7 +136,6 @@ def neb_plot_path(data, unit='eV', figname='neb_path.png'):
     plt.grid(True)
     plt.savefig(figname)
     plt.close()
-
 
 def get_vasp_calculator(**kwargs):
     """

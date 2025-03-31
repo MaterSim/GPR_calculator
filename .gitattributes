@@ -1,0 +1,17 @@
+# Python files
+*.py    text diff=python
+
+# C++ files
+*.cpp   text diff=cpp
+*.h     text diff=cpp
+
+# Documentation
+*.md    text diff=markdown
+*.rst   text
+*.txt   text
+
+# Data files
+*.json  text
+
+# Binary files
+*.png   binary

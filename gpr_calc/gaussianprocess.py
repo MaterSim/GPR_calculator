@@ -1050,6 +1050,16 @@ class GP():
         """
         if json_file is not None and os.path.exists(json_file):
             instance = cls.load(json_file)
+            # Allow the user to change the kernel and noise
+            if instance.noise_e != noise_e:
+                instance.noise_e = noise_e
+            if instance.noise_f != noise_f:
+                instance.noise_f = noise_f
+            if instance.kernel.name != kernel:
+                if kernel == "RBF":
+                    instance.kernel = RBF_mb(para=[1.0, 0.1], zeta=zeta)
+                else:
+                    instance.kernel = Dot_mb(para=[2, 2.0], zeta=zeta)
             instance.fit()
             instance.set_K_inv()
         else:
@@ -1122,9 +1132,9 @@ class GP():
 
         instance = cls(kernel=None, descriptor=None, base_potential=None)
         #keys = ['kernel', 'descriptor', 'Noise']
-        if dict0["kernel"]["name"] == "RBF_mb":
+        if dict0["kernel"]["name"] in ["RBF", "RBF_mb"]:
             instance.kernel = RBF_mb()
-        elif dict0["kernel"]["name"] == "Dot_mb":
+        elif dict0["kernel"]["name"] in ["Dot", "Dot_mb"]:
             instance.kernel = Dot_mb()
         else:
             msg = "unknown kernel {:s}".format(dict0["kernel"]["name"])

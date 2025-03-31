@@ -24,7 +24,7 @@ class RBF_mb():
                  ncpu=1,
                  device='cpu'):
 
-        self.name = 'RBF_mb'
+        self.name = 'RBF'
         self.bounds = bounds
         self.update(para)
         self.zeta = zeta

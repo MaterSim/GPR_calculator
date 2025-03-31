@@ -54,15 +54,15 @@ class GPR(Calculator):
         atoms.cell.array = comm.bcast(atoms.cell.array, root=0)
 
         self._calculate(atoms, properties, system_changes)
-        e_tol = max([0.005, len(atoms) * self.parameters.ff.noise_e])
-        f_tol = max([0.10, 1.2 * self.parameters.ff.noise_f])
+        e_tol = len(atoms) * self.parameters.ff.noise_e
+        f_tol = 1.2 * self.parameters.ff.noise_f
         E_std, F_std = self.results['var_e']*len(atoms), self.results['var_f'].max()
         E = self.results['energy']
         Fmax = np.abs(self.results['forces']).max()
         #if rank==0: print(f"# Decide model in rank-{rank}, {E:.4f}/{E_std:.5f}, {Fmax:.4f}/{F_std:.4f}")
         # print(f"Debug: dummy0 rank-{rank}", atoms.get_potential_energy(), atoms.get_forces()[-1])
         #import sys; sys.exit()
-        if E_std > e_tol or F_std > max([f_tol, Fmax/10]):
+        if self.update and (E_std > e_tol or F_std > max([f_tol, Fmax/10])):
             #print(f"# Enter loop in rank-{rank}, {E:.4f}, {Fmax:.4f}")
             self.parameters.ff.count_use_base += 1
             if rank == 0:
@@ -84,7 +84,8 @@ class GPR(Calculator):
             self.results["forces"] = forces
 
             # update model
-            if self.update and (self.parameters.ff.N_queue > self.freq or self.parameters.ff.N_energy_queue  >= 2):
+            freq = max([1, self.freq * 20 // self.parameters.ff.N_forces])
+            if self.parameters.ff.N_queue > freq or self.parameters.ff.N_energy_queue >= 2:
                 self.parameters.ff.fit(opt=True, show=False)
                 if rank == 0 and self.save:
                     self.parameters.ff.save(f'{self.tag}-gpr.json', f'{self.tag}-gpr.db')
