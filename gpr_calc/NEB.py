@@ -91,50 +91,54 @@ def init_images(init, final, num_images=5, vaccum=0.0,
 
     return images
 
-def neb_plot_path(data, unit='eV', figname='neb_path.png'):
+def neb_plot_path(data, unit='eV', fontsize=15, figname='neb_path.png', 
+                  title='NEB Path', max_yticks=5):
     """
     Function to plot the NEB path
 
     Args:
         data: nested list [(imgs1, engs1, label2), (img2, engs, label2)]
         unit: unit of energy
+        fontsize: font size of the plot
         figname: name of the figure file
+        title: title of the plot
+        max_yticks: maximum number of yticks
     """
     import numpy as np
     import matplotlib.pyplot as plt
+    from matplotlib.ticker import MaxNLocator
     from scipy.interpolate import make_interp_spline
 
-    colors = ['r', 'b', 'g', 'm'][:len(data)]
-    plt.figure()
-    for d, color in zip(data, colors):
+    plt.figure(figsize=(8, 6)) 
+    for d in data:
         (images, Y, label) = d
         tmp = np.array([image.positions for image in images])
-
-        # Apply minimum image convention for periodic boundaries
-        X = np.zeros(len(tmp))
+        X = np.zeros(len(images))
         for i in range(len(tmp)-1):
-            # Create a single atoms object to calculate distances
-            d = tmp[i+1] - tmp[i]
             # Find the minimum image convention
+            d = tmp[i+1] - tmp[i]
             d = find_mic(d, images[0].get_cell(), images[0].pbc)[0]
             X[i+1] = np.linalg.norm(d)
-        X = np.cumsum(X)
 
         # Normalize the distance
+        X = np.cumsum(X)
         X /= X[-1]
 
         X_smooth = np.linspace(min(X), max(X), 30)
         spline = make_interp_spline(X, Y, k=3)
         Y_smooth = spline(X_smooth)
-        plt.plot(X, Y, 'o')
-        plt.plot(X_smooth, Y_smooth, ls='--', color=color, label=label)
+        line, = plt.plot(X, Y, 'o')  # Get the line object
+        plt.plot(X_smooth, Y_smooth, ls='--', label=label, color=line.get_color())
 
-    plt.xlabel('Normalized Reaction Coordinates')
-    plt.ylabel(f'Energy ({unit})')
-    plt.title('Simulated NEB Path')
-    plt.legend()
-    plt.grid(True)
-    plt.savefig(figname)
+    plt.gca().yaxis.set_major_locator(MaxNLocator(max_yticks))
+    plt.xlabel('Normalized Reaction Coordinates', fontsize=fontsize)
+    plt.ylabel(f'Energy ({unit})', fontsize=fontsize)
+    plt.title(title, fontsize=fontsize*1.1)
+    plt.legend(fontsize=fontsize, frameon=False)
+    plt.xticks(fontsize=fontsize*0.9)
+    plt.yticks(fontsize=fontsize*0.9)
+    plt.tight_layout()
+    plt.savefig(figname, dpi=300)
     plt.close()
 
 def get_vasp_calculator(**kwargs):

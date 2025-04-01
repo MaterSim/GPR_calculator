@@ -14,7 +14,7 @@ images, energies, steps = neb_calc(images, EMT(), fmax=fmax)
 data = [(images, energies, f'EMT ({steps*(len(images)-2)+2})')]
 
 # Run NEB with gpr calculators
-for etol in [0.02, 0.1, 0.2]:
+for etol in [0.02, 0.2]:
     images = init_images(init, final, num_images)
 
     # initialize GPR model
@@ -31,4 +31,5 @@ for etol in [0.02, 0.1, 0.2]:
     print(gp_model, '\n\n')
 
 # Plot the results
-neb_plot_path(data, figname='NEB-test.png')
+neb_plot_path(data, figname='NEB-test.png', fontsize=16,
+              title='Au diffusion on Al(100)')

@@ -637,20 +637,21 @@ class GP():
             self.train_y['force'] = F
 
 
-    def save(self, filename, db_filename):
+    def save(self, filename, db_filename, verbose=True):
         """
         Save the model to the files
 
         Args:
             filename: the file to save json information
             db_filename: the file to save structural information
+            verbose: bool, print the information or not
         """
         dict0 = self.save_dict(db_filename)
         with open(filename, "w") as fp:
             json.dump(dict0, fp, indent=4)
         self.export_ase_db(db_filename, permission="w")
-
-        print("save the GP model to", filename, "and database to", db_filename)
+        if verbose:
+            print(f"save model to {filename} and {db_filename}")
 
     @classmethod
     def load(cls, filename, N_max=None, device='cpu'):
@@ -1032,7 +1033,8 @@ class GP():
     @classmethod
     def set_GPR(cls, images, base, kernel='RBF', 
                 zeta=2.0, noise_e=0.002, noise_f=0.1,
-                lmax=4, nmax=3, rcut=5.0, json_file=None):
+                lmax=4, nmax=3, rcut=5.0, json_file=None,
+                overwrite=False):
         """
         Setup and train GPR model from images
 
@@ -1051,15 +1053,16 @@ class GP():
         if json_file is not None and os.path.exists(json_file):
             instance = cls.load(json_file)
             # Allow the user to change the kernel and noise
-            if instance.noise_e != noise_e:
-                instance.noise_e = noise_e
-            if instance.noise_f != noise_f:
-                instance.noise_f = noise_f
-            if instance.kernel.name != kernel:
-                if kernel == "RBF":
-                    instance.kernel = RBF_mb(para=[1.0, 0.1], zeta=zeta)
-                else:
-                    instance.kernel = Dot_mb(para=[2, 2.0], zeta=zeta)
+            if overwrite:
+                if instance.noise_e != noise_e:
+                    instance.noise_e = noise_e
+                if instance.noise_f != noise_f:
+                    instance.noise_f = noise_f
+                if instance.kernel.name != kernel:
+                    if kernel == "RBF":
+                        instance.kernel = RBF_mb(para=[1.0, 0.1], zeta=zeta)
+                    else:
+                        instance.kernel = Dot_mb(para=[2, 2.0], zeta=zeta)
             instance.fit()
             instance.set_K_inv()
         else:

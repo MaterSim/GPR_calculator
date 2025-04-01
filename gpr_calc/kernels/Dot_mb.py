@@ -15,7 +15,7 @@ class Dot_mb():
         self.device = device
 
     def __str__(self):
-        return "{:.3f}**2 *Dot(length={:.3f})".format(self.sigma, self.sigma0)
+        return "{:.3f}**2 *Dot({:.3f})".format(self.sigma, self.sigma0)
 
     def load_from_dict(self, dict0):
         self.sigma = dict0["sigma"]

@@ -32,7 +32,7 @@ class RBF_mb():
         self.ncpu = ncpu
 
     def __str__(self):
-        return "{:.5f}**2 *RBF(length={:.5f})".format(self.sigma, self.l)
+        return "{:.5f}**2 *RBF({:.5f})".format(self.sigma, self.l)
 
     def load_from_dict(self, dict0):
         self.sigma = dict0["sigma"]

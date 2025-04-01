@@ -18,8 +18,7 @@ if rank == 0:
     hostname = socket.gethostname()
     with open('rankfile.txt', 'w') as f:
         for i in range(ncpu):
-            cpu_id = i + size
-            f.write(f'rank {i}={hostname} slot={cpu_id}\n')
+            f.write(f'rank {i}={hostname} slot={i+size}\n')
 
 # Set VASP calculator
 os.system("module load vasp/6.4.3")

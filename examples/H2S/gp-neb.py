@@ -25,7 +25,7 @@ os.environ["ASE_VASP_COMMAND"] = (
     "mpirun --bind-to core --map-by rankfile:file=../rankfile.txt "
     f"-np {ncpu} vasp_std")
 os.environ["VASP_PP_PATH"] = "/projects/mmi/potcarFiles/VASP6.4"
-kpts = [3, 3, 1]
+kpts = [2, 2, 1]
 
 # Set NEB Images
 init, final, tag = 'POSCAR_initial', 'POSCAR_final', 'h2s-RBF'
@@ -43,7 +43,7 @@ gp_model = GP.set_GPR(images, base_calc,
 # Set the GP calculators
 for i, image in enumerate(images):
     base_calc = get_vasp_calculator(kpts=kpts, directory=f"calc_{i}")
-    image.calc = GPR(base=base_calc, ff=gp_model, freq=10, tag=tag)
+    image.calc = GPR(base=base_calc, ff=gp_model, freq=20, tag=tag)
 
 # Run NEB calculation
 images, engs_gpr, _ = neb_calc(images, steps=1000, algo='FIRE', trajectory='neb.traj')

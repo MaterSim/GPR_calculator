@@ -9,7 +9,7 @@ import os
 import matplotlib as mpl
 mpl.use("Agg")
 import matplotlib.pyplot as plt
-plt.style.use("ggplot")
+#plt.style.use("ggplot")
 
 def PyXtal(sgs, species, numIons, conventional=True):
     """

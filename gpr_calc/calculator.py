@@ -83,12 +83,13 @@ class GPR(Calculator):
             self.results["energy"] = eng
             self.results["forces"] = forces
 
-            # update model
-            freq = max([1, self.freq * 20 // self.parameters.ff.N_forces])
+            # Decide the frequency of fitting the model
+            freq = max([2, self.freq // 2]) if self.parameters.ff.N_forces > 100 else self.freq
+
             if self.parameters.ff.N_queue > freq or self.parameters.ff.N_energy_queue >= 2:
                 self.parameters.ff.fit(opt=True, show=False)
                 if rank == 0 and self.save:
-                    self.parameters.ff.save(f'{self.tag}-gpr.json', f'{self.tag}-gpr.db')
+                    self.parameters.ff.save(f'{self.tag}-gpr.json', f'{self.tag}-gpr.db', verbose=False)
                     print(self.parameters.ff)
 
                 #print("Validate the model")
