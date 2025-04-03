@@ -14,8 +14,11 @@ class GPR(Calculator):
     def __init__(self, **kwargs):
         Calculator.__init__(self, **kwargs)
         self.results = {}
-        self.update = True
-        self.verbose = True #False
+        self.force_base = False
+        self.allow_base = True
+        self.update_gpr = True
+        self.verbose = True
+        self.ignore_E_std = True
         #print(self.name)
         #self.name = 'GPR'
         # Set the tag for the model
@@ -35,10 +38,12 @@ class GPR(Calculator):
             self.save = True
 
     def freeze(self):
+        self.allow_base = False
         self.update = False
 
     def unfreeze(self):
         self.update = True
+        self.allow_base = True
 
     def calculate(self, atoms=None, properties=['energy', 'forces'], system_changes=all_changes):
 
@@ -52,17 +57,21 @@ class GPR(Calculator):
         # print("Ensure the atoms same across ranks", rank, atoms.arrays['positions'].shape)
         atoms.positions = comm.bcast(atoms.positions, root=0)
         atoms.cell.array = comm.bcast(atoms.cell.array, root=0)
+        gp_model = self.parameters.ff
 
         self._calculate(atoms, properties, system_changes)
-        e_tol = len(atoms) * self.parameters.ff.noise_e
-        f_tol = 1.2 * self.parameters.ff.noise_f
+        if self.ignore_E_std:
+            e_tol = 100 #* len(atoms) * gp_model.noise_e
+        else:
+            e_tol = 1.2 * len(atoms) * gp_model.noise_e
+        f_tol = 1.2 * gp_model.noise_f
         E_std, F_std = self.results['var_e']*len(atoms), self.results['var_f'].max()
         E = self.results['energy']
         Fmax = np.abs(self.results['forces']).max()
         #if rank==0: print(f"# Decide model in rank-{rank}, {E:.4f}/{E_std:.5f}, {Fmax:.4f}/{F_std:.4f}")
         # print(f"Debug: dummy0 rank-{rank}", atoms.get_potential_energy(), atoms.get_forces()[-1])
         #import sys; sys.exit()
-        if self.update and (E_std > e_tol or F_std > max([f_tol, Fmax/10])):
+        if self.force_base or (self.allow_base and (E_std > e_tol or F_std > max([f_tol, Fmax/5]))):
             #print(f"# Enter loop in rank-{rank}, {E:.4f}, {Fmax:.4f}")
             self.parameters.ff.count_use_base += 1
             if rank == 0:
@@ -82,36 +91,29 @@ class GPR(Calculator):
             self.parameters.ff.add_structure(data)
             self.results["energy"] = eng
             self.results["forces"] = forces
-
-            # Decide the frequency of fitting the model
-            freq = max([2, self.freq // 2]) if self.parameters.ff.N_forces > 100 else self.freq
-
-            if self.parameters.ff.N_queue > freq or self.parameters.ff.N_energy_queue >= 2:
-                self.parameters.ff.fit(opt=True, show=False)
-                if rank == 0 and self.save:
-                    self.parameters.ff.save(f'{self.tag}-gpr.json', f'{self.tag}-gpr.db', verbose=False)
-                    print(self.parameters.ff)
-
-                #print("Validate the model")
-                self.parameters.ff.validate_data(show=True)
-                if self.parameters.ff.error['energy_mae'] > 0.1 or \
-                    self.parameters.ff.error['forces_mae'] > 0.3:
-                    print("ERROR: The error is too large, check the data.")
-                    print(self.parameters.ff.error)
-                    print("The program stops here!\n")
-                    import sys; sys.exit()
-
-                #print(f"Test-[Debug]-dummy-calc-ff-{rank}")
-                #dummy = comm.bcast([1, 2, 3, 4], root=0)
-                #print(f"[Debug]-dummy-calc-ff-{rank}", dummy)
-                #import sys; sys.exit()
             atoms.calc = self
         else:
-            self.parameters.ff.count_use_surrogate += 1
+            gp_model.count_use_surrogate += 1
             if rank == 0:
                 print(f"From Surrogate  E: {E_std:.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}/{Fmax:.3f}")
-        #print(f"rank-{rank} exits the calculator", atoms.positions.shape)
-        #comm.barrier()
+
+        # Check if needs to update the gp model
+        freq = max([2, self.freq // 2]) if self.parameters.ff.N_forces > 100 else self.freq
+        if self.update_gpr and (gp_model.N_queue > freq or gp_model.N_energy_queue >= 2):
+            gp_model.fit(opt=True, show=False, maxiter=10)
+            #gp_model.fit(opt=True, show=False, maxiter=5)
+            if rank == 0 and self.save:
+                gp_model.save(f'{self.tag}-gpr.json', f'{self.tag}-gpr.db', verbose=False)
+                print(gp_model)
+
+            #print("Validate the model")
+            gp_model.validate_data(show=True)
+            if gp_model.error['energy_mae'] > 0.1 or \
+                gp_model.error['forces_mae'] > 0.3:
+                print("ERROR: The error is too large, check the data.")
+                print(gp_model.error)
+                print("The program stops here!\n")
+                import sys; sys.exit()
 
     def _calculate(self, atoms, properties, system_changes):
         """

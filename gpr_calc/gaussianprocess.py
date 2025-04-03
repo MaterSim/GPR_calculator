@@ -201,7 +201,7 @@ class GP():
         else:
             return MLL
 
-    def optimize(self, fun, theta0, bounds):
+    def optimize(self, fun, theta0, bounds, maxiter=10):
         """
         Optimize the hyperparameters of the GPR model from scipy.minimize
 
@@ -209,16 +209,17 @@ class GP():
             fun: the function to minimize
             theta0: initial guess of hyperparameters
             bounds: bounds of hyperparameters
+            maxiter: the maximum number of iterations
         """
         # print(f"Optimizing function rank-{self.rank}", theta0, bounds)
         opt_res = minimize(fun, theta0,
                            method="L-BFGS-B",
                            bounds=bounds,
                            jac=True,
-                           options={'maxiter': 10, 'ftol': 1e-2})
+                           options={'maxiter': maxiter, 'ftol': 1e-2})
         return opt_res.x, opt_res.fun
 
-    def fit(self, TrainData=None, show=True, opt=True):
+    def fit(self, TrainData=None, show=True, opt=True, maxiter=10):
         """
         Fit the GPR model with optional MPI support
 
@@ -226,6 +227,7 @@ class GP():
             TrainData: a dictionary of energy/force/db data
             show: bool, print the information or not
             opt: bool, optimize the hyperparameters or not
+            maxiter: int, the maximum number of iterations for optimization
         """
         if TrainData is None:
             self.update_y_train()
@@ -269,8 +271,8 @@ class GP():
             hyper_bounds += [self.noise_bounds]
 
         if opt:
-            if self.rank == 0: print(f"\nUpdate GP model => {self.N_queue}")
-            params, _ = self.optimize(obj_func, hyper_params, hyper_bounds)
+            if self.rank == 0: print(f"Update GP model => {self.N_queue}/{maxiter}")
+            params, _ = self.optimize(obj_func, hyper_params, hyper_bounds, maxiter=maxiter)
             # print(f"Optimized hyperparameters rank-{self.rank}", params, fun)
             params = self.comm.bcast(params, root=0)
 
@@ -292,27 +294,17 @@ class GP():
             K += noise
 
             # self.logging.info("Starting Cholesky Decomp on rank 0")
-            try:
-                self.L_ = cholesky(K, lower=True)  # Line 2
-                self._K_inv = None
-            except np.linalg.LinAlgError as exc:
-                exc.args = ("The kernel, %s, is not returning a "
-                            "positive definite matrix. Try gradually "
-                            "increasing the 'alpha' parameter of your "
-                            "GaussianProcessRegressor estimator."
-                            % self.kernel,) + exc.args
-                raise
+            self.L_ = cholesky(K, lower=True)  # Line 2
             self.alpha_ = cho_solve((self.L_, True), self.y_train)
             self.logging.info("Cholesky Decomp is Complete on rank 0")
         else:
             self.L_ = None
             self.alpha_ = None
-            self._K_inv = None
 
         # Broadcast L_ and alpha_ to all ranks
         self.L_ = self.comm.bcast(self.L_, root=0)
         self.alpha_ = self.comm.bcast(self.alpha_, root=0)
-        self._K_inv = self.comm.bcast(self._K_inv, root=0)
+        self._K_inv = None #self.comm.bcast(self._K_inv, root=0)
 
         # Synchronize the ranks
         self.comm.barrier()
@@ -926,7 +918,7 @@ class GP():
             return E, F, S
 
 
-    def add_structure(self, data, N_max=10, tol_e_var=1.2, tol_f_var=1.2, add_force=True):
+    def add_structure(self, data, N_max=20, tol_e_var=1.2, tol_f_var=1.2, add_force=True):
         """
         Add the training points from a given structure base on the followings:
             1, compute the (E, F, E_var, F_var) based on the current model
@@ -940,6 +932,7 @@ class GP():
             tol_e_var: the threshold for energy variance
             tol_f_var: the threshold for force variance
             add_force: bool, add force data or not
+            N_max: the maximum number of force points to add
         """
         tol_e_var *= self.noise_e
         tol_f_var *= self.noise_f
@@ -968,10 +961,9 @@ class GP():
             E_std = 2 * tol_e_var
             F_std = 2 * tol_f_var * np.ones((len(atoms), 3))
 
-        # QZ: to debug
-        #if self.rank == 0:
-        #    print(f"Debug: E_std: {E_std}, dE: {E[0]-E1[0]}, E: {E[0]}, E1: {E1[0]}")
-        if E_std > tol_e_var or abs(E[0] - E1[0]) > 1.2 * tol_e_var:
+        # QZ: Always add energy data to improve the model
+        #if np.max(E_std) > tol_e_var or abs(E[0] - E1[0]) > 1.2 * tol_e_var:
+        if True: #E_std > tol_e_var or abs(E[0] - E1[0]) > 1.2 * tol_e_var:
             pts_to_add["energy"] = my_data["energy"]
             N_energy = 1
             energy_in = True
