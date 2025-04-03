@@ -50,7 +50,7 @@ for i, image in enumerate(images):
 for i, climb in enumerate([False, True, False]):
     neb, refs = neb_calc(images, steps=50, algo='FIRE',
                          fmax=noise_f, trajectory='neb.traj',
-                         climb=True, use_ref=True)
+                         climb=climb, use_ref=True)
 
     images = neb.images
 
