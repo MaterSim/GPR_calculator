@@ -1094,7 +1094,7 @@ class GP():
                 image.calc = base
                 # For vasp calculator, set the directory for each image
                 if hasattr(image.calc, 'set'):
-                    image.calc.set(directory = f"calc_{i}")
+                    image.calc.set(directory = f"GP/calc_{i}")
                 eng = image.get_potential_energy()
                 forces = image.get_forces()
                 print(f"Calculate E/F for image {i}: {eng:.6f}")

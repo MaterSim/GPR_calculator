@@ -27,13 +27,13 @@ os.environ["VASP_PP_PATH"] = "/projects/mmi/potcarFiles/VASP6.4"
 
 # Modify the parameters here
 init, final, numImages= 'POSCAR_initial', 'POSCAR_final', 7
-noise_e, noise_f, tag = 0.05, 0.08, 'h2s-RBF'
-#noise_e, noise_f, tag = 0.025, 0.08, 'h2s-RBF'
-kpts = [2, 2, 1]
+noise_e, noise_f, tag = 0.03, 0.075, 'h2s_RBF'
+kpts = [3, 3, 1]
+traj = 'gp_neb.traj'
 
 # Initialize the NEB images
-if os.path.exists('neb.traj'):
-    images = read('neb.traj', index=':')[-numImages:]
+if os.path.exists(traj):
+    images = read(traj, index=':')[-numImages:]
 else:
     images = init_images(init, final, numImages, IDPP=True, mic=True)
 
@@ -43,7 +43,7 @@ noise_e = max([0.0004, noise_e/len(images[0])]) # Ensure noise_e is not too smal
 gp = GP.set_GPR(images, base_calc, noise_e=noise_e, noise_f=noise_f,
                 json_file=tag+'-gpr.json', overwrite=True)
 for i, image in enumerate(images):
-    base_calc = get_vasp(kpts=kpts, directory=f"calc_{i}")
+    base_calc = get_vasp(kpts=kpts, directory=f"GP/calc_{i}")
     image.calc = GPR(base=base_calc, ff=gp, freq=10, tag=tag)
     # Only invoke update_gpr on the first image
     image.calc.update_gpr = (i == 1)
@@ -51,7 +51,7 @@ for i, image in enumerate(images):
 # Run NEB calculation
 for i, climb in enumerate([False, True, False]):
     neb, refs = neb_calc(images, steps=50, algo='FIRE',
-                         fmax=noise_f, trajectory='neb.traj',
+                         fmax=noise_f, trajectory=traj,
                          climb=climb, use_ref=True)
 
     images = neb.images
@@ -60,7 +60,7 @@ for i, climb in enumerate([False, True, False]):
         print('NEB residuals:', neb.residuals)
         label = f'GPR ({gp.count_use_base}/{gp.count_use_surrogate})'
         data = [(images, refs, 'VASP'), (images, neb.energies, label)]
-        plot_path(data, title='H2S on Pd(111)', figname=f'neb-{i}.png')
+        plot_path(data, title='H2S on Pd(100)', figname=f'gp_neb_{i}.png')
     
     if neb.converged:
         break
