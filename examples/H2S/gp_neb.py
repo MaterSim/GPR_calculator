@@ -20,7 +20,7 @@ if rank == 0:
             f.write(f'rank {i}={hostname} slot={i+size}\n')
 
 # Set VASP calculator
-cmd = "mpirun --bind-to core --map-by rankfile:file=../rankfile.txt "
+cmd = "mpirun --bind-to core --map-by rankfile:file=../../rankfile.txt "
 os.system("module load vasp/6.4.3")
 os.environ["ASE_VASP_COMMAND"] = cmd + f"-np {ncpu} vasp_std"
 os.environ["VASP_PP_PATH"] = "/projects/mmi/potcarFiles/VASP6.4"
