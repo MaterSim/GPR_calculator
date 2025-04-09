@@ -7,6 +7,7 @@ from gpr_calc.utilities import set_mpi, get_vasp
 # Modify the parameters here
 init, final, numImages= 'POSCAR_initial', 'POSCAR_final', 7
 noise_e, noise_f, kpts = 0.03, 0.075, [3, 3, 1]
+noise_e_min = 0.0003
 tag, traj, title = 'H2S', 'gp_neb.traj', 'H2S on Pd(100)'
 
 # Set MPI and VASP calculator
@@ -22,19 +23,18 @@ images = get_images(init, final, numImages, traj=traj,
 
 # Set the GP calculators
 base_calc = get_vasp(kpts=kpts)
-noise_e = max([0.0004, noise_e/len(images[0])]) # Ensure noise_e is not too small
+noise_e = max([noise_e_min, noise_e/len(images[0])]) 
 gp = GP.set_GPR(images, base_calc, noise_e=noise_e, noise_f=noise_f,
                 json_file=tag+'-gpr.json', overwrite=True)
 for i, image in enumerate(images):
     base_calc = get_vasp(kpts=kpts, directory=f"GP/calc_{i}")
     image.calc = GPR(base=base_calc, ff=gp, freq=10, tag=tag)
-    # Only invoke update_gpr on the first image
-    image.calc.update_gpr = (i == 1)
+    image.calc.update_gpr = (i == len(images) - 2)
 
 # Run NEB calculation
 for i, climb in enumerate([False, True, False]):
     neb, refs = neb_calc(images, steps=50, algo='FIRE',
-                         fmax=noise_f, trajectory=traj,
+                         fmax=noise_f, traj=traj,
                          climb=climb, use_ref=True)
 
     images = neb.images

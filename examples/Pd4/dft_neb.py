@@ -10,8 +10,8 @@ os.environ["VASP_PP_PATH"] = "/projects/mmi/potcarFiles/VASP6.4"
 
 # Modify the parameters here
 init, final, numImages= 'POSCAR_initial', 'POSCAR_final', 7
-kpts = [3, 3, 1]
-traj = 'dft_neb.traj'
+kpts = [2, 2, 1]
+traj, title = 'dft_neb.traj', 'Pd4 on MgO(100)'
 
 # Initialize the NEB images
 images = get_images(init, final, numImages, traj=traj,
@@ -29,4 +29,4 @@ neb = neb_calc(images, steps=200, algo='FIRE', fmax=0.075,
 # Plot the NEB path
 print('NEB residuals:', neb.residuals)
 data = [(images, neb.energies, 'VASP')]
-plot_path(data, title='H2S on Pd(100)', figname=f'dft_neb.png')
+plot_path(data, title=title, figname=f'dft_neb.png')

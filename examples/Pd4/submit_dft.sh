@@ -1,10 +1,9 @@
 #!/bin/bash
-
 #SBATCH --partition=Apus
-#SBATCH -J Pd4-gp-rbf
+#SBATCH -J Pd4-dft
 #SBATCH --nodes=1
+#SBATCH --ntasks-per-node=96
 #SBATCH --exclusive
-#SBATCH --ntasks-per-node=96 #32
 #SBATCH --time=48:00:00
 #SBATCH --mem=96G     
 
@@ -15,7 +14,7 @@ echo "Job ID/Name : $SLURM_JOBID / $SLURM_JOB_NAME"
 echo "Start Time : $(date)"
 
 start_time=$(date +%s)
-mpirun -np 24 python gp_neb.py > log-neb.dat
+python dft_neb.py > log_dft_neb.dat
 end_time=$(date +%s)
 run_time=$((end_time - start_time))
 echo "Total runtime: $run_time seconds"

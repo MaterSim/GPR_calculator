@@ -1,65 +1,49 @@
-import os, socket, psutil
-from mpi4py import MPI
-from ase.io import read
-from gpr_calc.NEB import neb_calc, init_images, plot_path, get_vasp
+import os
+from gpr_calc.NEB import neb_calc, get_images, plot_path
 from gpr_calc.calculator import GPR
 from gpr_calc.gaussianprocess import GP
+from gpr_calc.utilities import set_mpi, get_vasp
 
-# Set MPI
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()
-size = comm.Get_size()
-cpu_count = psutil.cpu_count(logical=False)
-ncpu = cpu_count - size
+# Modify the parameters here
+init, final, numImages= 'POSCAR_initial', 'POSCAR_final', 7
+noise_e, noise_f, kpts = 0.05, 0.075, [2, 2, 1]
+noise_e_min = 0.0003
+tag, traj, title = 'Pd4', 'gp_neb.traj', 'Pd4 on MgO(100)'
 
-# Create rankfile for process binding
-if rank == 0:
-    hostname = socket.gethostname()
-    with open('rankfile.txt', 'w') as f:
-        for i in range(ncpu):
-            f.write(f'rank {i}={hostname} slot={i+size}\n')
-
-# Set VASP calculator
-cmd = "mpirun --bind-to core --map-by rankfile:file=../rankfile.txt "
+# Set MPI and VASP calculator
+rank, ncpu = set_mpi()
+cmd = "mpirun --bind-to core --map-by rankfile:file=../../rankfile.txt "
 os.system("module load vasp/6.4.3")
 os.environ["ASE_VASP_COMMAND"] = cmd + f"-np {ncpu} vasp_std"
 os.environ["VASP_PP_PATH"] = "/projects/mmi/potcarFiles/VASP6.4"
 
-# Modify the parameters here
-init, final, numImages= 'POSCAR_initial', 'POSCAR_final', 7
-noise_e, noise_f, tag = 0.075, 0.075, 'pd4-RBF'
-kpts = [2, 2, 1]
-
 # Initialize the NEB images
-if os.path.exists('neb.traj'):
-    images = read('neb.traj', index=':')[-numImages:]
-else:
-    images = init_images(init, final, numImages, IDPP=True, mic=True)
+images = get_images(init, final, numImages, traj=traj,
+                    IDPP=True, mic=True)
 
 # Set the GP calculators
 base_calc = get_vasp(kpts=kpts)
-noise_e = max([0.0004, noise_e/len(images[0])]) # Ensure noise_e is not too small
+noise_e = max([noise_e_min, noise_e/len(images[0])])
 gp = GP.set_GPR(images, base_calc, noise_e=noise_e, noise_f=noise_f,
                 json_file=tag+'-gpr.json', overwrite=True)
 for i, image in enumerate(images):
-    base_calc = get_vasp(kpts=kpts, directory=f"calc_{i}")
+    base_calc = get_vasp(kpts=kpts, directory=f"GP/calc_{i}")
     image.calc = GPR(base=base_calc, ff=gp, freq=10, tag=tag)
-    # Only invoke update_gpr on the first image
-    image.calc.update_gpr = (i == 1)
+    image.calc.update_gpr = (i == len(images) - 2)
 
+# Run NEB calculation
 for i, climb in enumerate([False, True, False]):
     neb, refs = neb_calc(images, steps=50, algo='FIRE',
-                         fmax=noise_f, trajectory='neb.traj',
+                         fmax=noise_f, traj=traj,
                          climb=climb, use_ref=True)
 
     images = neb.images
-
     # Plot the NEB path
     if rank == 0:
         print('NEB residuals:', neb.residuals)
         label = f'GPR ({gp.count_use_base}/{gp.count_use_surrogate})'
         data = [(images, refs, 'VASP'), (images, neb.energies, label)]
-        plot_path(data, title='Pd4 on MgO(100)', figname=f'neb-{i}.png')
-    
+        plot_path(data, title=title, figname=f'gp_neb_{i}.png')
+
     if neb.converged:
         break

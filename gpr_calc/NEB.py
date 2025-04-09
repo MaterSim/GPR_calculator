@@ -50,8 +50,8 @@ def neb_calc(images, calculator=None, algo='BFGS',
     if algo == 'BFGS':
         opt = BFGS(neb, trajectory=traj, append_trajectory=True)
     elif algo == 'FIRE':
-        if trajectory is not None:
-            traj1 = Trajectory(traj1, 'a')
+        if traj is not None:
+            traj1 = Trajectory(traj, 'a')
             opt = FIRE(neb, trajectory=traj1)
         else:
             opt = FIRE(neb)
