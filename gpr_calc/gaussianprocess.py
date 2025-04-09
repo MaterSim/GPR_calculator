@@ -93,9 +93,9 @@ class GP():
         self.N_queue = 0
 
         # For the track of function calls
-        self.count_fits = 0
-        self.count_use_base = 0
-        self.count_use_surrogate = 0
+        self.fits = 0
+        self.use_base = 0
+        self.use_surrogate = 0
 
         # For the track of parameters
         if self.rank == 0: self.logging.info(self)
@@ -107,8 +107,8 @@ class GP():
             s += " {:d} energy ({:.5f})".format(self.N_energy, self.noise_e)
             s += " {:d} forces ({:.5f})\n".format(self.N_forces, self.noise_f)
 
-        if self.count_use_base > 0:
-            N1, N2, N3 = self.count_use_base, self.count_use_surrogate, self.count_fits
+        if self.use_base > 0:
+            N1, N2, N3 = self.use_base, self.use_surrogate, self.fits
             s += "Total base/surrogate/gpr_fit calls: {}/{}/{}\n".format(N1, N2, N3)
         return s
 
@@ -313,7 +313,7 @@ class GP():
         self.N_energy_queue = 0
         self.N_forces_queue = 0
         self.N_queue = 0
-        self.count_fits += 1
+        self.fits += 1
         self.set_K_inv()
 
     def predict(self, X, stress=False, total_E=False, return_std=False, return_cov=False):
@@ -1023,7 +1023,7 @@ class GP():
             self.remove_train_pts(pts_e, pts_f)
 
     @classmethod
-    def set_GPR(cls, images, base, kernel='RBF', 
+    def set_GPR(cls, images, base, kernel='RBF',
                 zeta=2.0, noise_e=0.002, noise_f=0.1,
                 lmax=4, nmax=3, rcut=5.0, json_file=None,
                 overwrite=False):

@@ -8,7 +8,7 @@ from ase.io import read
 
 def neb_calc(images, calculator=None, algo='BFGS',
              fmax=0.05, steps=100, k=0.1,
-             climb=False, trajectory=None,
+             climb=False, traj=None,
              use_ref=False):
     """
     NEB calculation with ASE's NEB module
@@ -22,7 +22,7 @@ def neb_calc(images, calculator=None, algo='BFGS',
         steps: maximum number of steps
         k: spring constant (optional)
         climb: climb option (optional)
-        trajectory: trajectory file name (optional)
+        traj: trajectory file name (optional)
         use_ref: if True, return the reference energies
 
     Returns:
@@ -47,22 +47,22 @@ def neb_calc(images, calculator=None, algo='BFGS',
 
     # Set the optimizer
     if algo == 'BFGS':
-        opt = BFGS(neb, trajectory=trajectory, append_trajectory=True)
+        opt = BFGS(neb, trajectory=traj, append_trajectory=True)
     elif algo == 'FIRE':
         if trajectory is not None:
-            traj = Trajectory(trajectory, 'a')
-            opt = FIRE(neb, trajectory=traj)
+            traj1 = Trajectory(traj1, 'a')
+            opt = FIRE(neb, trajectory=traj1)
         else:
             opt = FIRE(neb)
     else:
         raise ValueError('Invalid algorithm for NEB calculation')
     opt.run(fmax=fmax, steps=steps)
-    neb.nsteps = opt.nsteps
+    neb.nsteps = opt.nsteps + 1
     neb.converged = opt.converged()
 
     for i, image in enumerate(images):
         # Use the reference energy for the first and last images
-        if image.calc.name == 'gpr': 
+        if image.calc.name == 'gpr':
             if i in [0, len(images)-1]:
                 neb.energies[i] = image.calc.parameters.ff.train_y['energy'][i]*len(image)
             else:
@@ -88,8 +88,9 @@ def neb_calc(images, calculator=None, algo='BFGS',
     else:
         return neb
 
-def init_images(init, final, num_images=5, vaccum=0.0, 
-                IDPP=False, mic=False, apply_constraint=False):
+def get_images(init, final, num_images=5, vaccum=0.0,
+               traj=None, IDPP=False, mic=False,
+               apply_constraint=False):
     """
     Generate initial images from ASE's NEB module
     The number of images generated is self.num_images - 2
@@ -99,6 +100,7 @@ def init_images(init, final, num_images=5, vaccum=0.0,
         final: final structure file
         num_images: number of images
         vaccum: vacuum size in angstrom
+        traj: trajectory file name
         IDPP: use the improved dimer
         mic: use the minimum image convention
         apply_constraint: apply constraint to the images
@@ -106,7 +108,9 @@ def init_images(init, final, num_images=5, vaccum=0.0,
     Returns:
         images: list of initial images for NEB calculation
     """
-    from ase.io import read
+    if traj is not None and os.path.exists(traj):
+        images = read(traj, index=':')[-num_images:]
+        return images
 
     initial, final = read(init), read(final)
     num_images = num_images
@@ -151,7 +155,7 @@ def plot_path(data, unit='eV', fontsize=15, figname='neb_path.png',
     from matplotlib.ticker import MaxNLocator
     from scipy.interpolate import make_interp_spline
 
-    plt.figure(figsize=(8, 6)) 
+    plt.figure(figsize=(8, 6))
     for d in data:
         (images, Y, label) = d
         tmp = np.array([image.positions for image in images])
@@ -184,43 +188,6 @@ def plot_path(data, unit='eV', fontsize=15, figname='neb_path.png',
     plt.tight_layout()
     plt.savefig(figname, dpi=300)
     plt.close()
-
-def get_vasp(**kwargs):
-    """
-    Set up and return a VASP calculator with specified parameters.
-
-    Args:
-        **kwargs: Additional VASP parameters to override defaults
-        
-    Returns:
-        ase.calculators.vasp.Vasp: Configured VASP calculator
-    """
-    from ase.calculators.vasp import Vasp
-
-    vasp_args = {
-        "txt": 'vasp.out',
-        "prec": 'Accurate',
-        "encut": 400,
-        "algo": 'Fast',
-        "xc": 'pbe',
-        "icharg": 2,
-        "ediff": 1.0e-4,
-        "ediffg": -0.03,
-        "ismear": 1,
-        "sigma": 0.1,
-        "ibrion": -1,
-        "isym": 0,
-        "idipol": 3,
-        "ldipol": True,
-        "lwave": False,
-        "lcharg": False,
-        "lreal": 'Auto',
-        "npar": 2,
-        "kpts": [2, 2, 1],
-    }
-    vasp_args.update(kwargs)
-    
-    return Vasp(**vasp_args)
 
 
 def plot_progress(trajectory, calc, N_images, start=0, interval=50,

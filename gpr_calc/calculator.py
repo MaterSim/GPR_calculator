@@ -68,12 +68,13 @@ class GPR(Calculator):
         E_std, F_std = self.results['var_e']*len(atoms), self.results['var_f'].max()
         E = self.results['energy']
         Fmax = np.abs(self.results['forces']).max()
-        #if rank==0: print(f"# Decide model in rank-{rank}, {E:.4f}/{E_std:.5f}, {Fmax:.4f}/{F_std:.4f}")
-        # print(f"Debug: dummy0 rank-{rank}", atoms.get_potential_energy(), atoms.get_forces()[-1])
+        E_fail = E_std > e_tol
+        f_ref = max(f_tol, Fmax/2.5) # Play with this value
+        force_fail = not (F_std < f_ref).all()
         #import sys; sys.exit()
-        if self.force_base or (self.allow_base and (E_std > e_tol or F_std > max([f_tol, Fmax/5]))):
+        if self.force_base or (self.allow_base and (E_fail or force_fail)):
             #print(f"# Enter loop in rank-{rank}, {E:.4f}, {Fmax:.4f}")
-            self.parameters.ff.count_use_base += 1
+            self.parameters.ff.use_base += 1
             if rank == 0:
                 atoms.calc = self.parameters.base
                 eng = atoms.get_potential_energy()
@@ -93,7 +94,7 @@ class GPR(Calculator):
             self.results["forces"] = forces
             atoms.calc = self
         else:
-            gp_model.count_use_surrogate += 1
+            gp_model.use_surrogate += 1
             if rank == 0:
                 print(f"From Surrogate  E: {E_std:.3f}/{e_tol:.3f}/{E:.3f}, F: {F_std:.3f}/{f_tol:.3f}/{Fmax:.3f}")
 

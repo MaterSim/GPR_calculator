@@ -1,41 +1,24 @@
-import os, socket, psutil
-from mpi4py import MPI
-from ase.io import read
-from gpr_calc.NEB import neb_calc, init_images, plot_path, get_vasp
+import os
+from gpr_calc.NEB import neb_calc, get_images, plot_path
 from gpr_calc.calculator import GPR
 from gpr_calc.gaussianprocess import GP
+from gpr_calc.utilities import set_mpi, get_vasp
 
-# Set MPI
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()
-size = comm.Get_size()
-cpu_count = psutil.cpu_count(logical=False)
-ncpu = cpu_count - size
+# Modify the parameters here
+init, final, numImages= 'POSCAR_initial', 'POSCAR_final', 7
+noise_e, noise_f, kpts = 0.03, 0.075, [3, 3, 1]
+tag, traj, title = 'H2S', 'gp_neb.traj', 'H2S on Pd(100)'
 
-# Create rankfile for process binding
-if rank == 0:
-    hostname = socket.gethostname()
-    with open('rankfile.txt', 'w') as f:
-        for i in range(ncpu):
-            f.write(f'rank {i}={hostname} slot={i+size}\n')
-
-# Set VASP calculator
+# Set MPI and VASP calculator
+rank, ncpu = set_mpi()
 cmd = "mpirun --bind-to core --map-by rankfile:file=../../rankfile.txt "
 os.system("module load vasp/6.4.3")
 os.environ["ASE_VASP_COMMAND"] = cmd + f"-np {ncpu} vasp_std"
 os.environ["VASP_PP_PATH"] = "/projects/mmi/potcarFiles/VASP6.4"
 
-# Modify the parameters here
-init, final, numImages= 'POSCAR_initial', 'POSCAR_final', 7
-noise_e, noise_f, tag = 0.03, 0.075, 'h2s_RBF'
-kpts = [3, 3, 1]
-traj = 'gp_neb.traj'
-
 # Initialize the NEB images
-if os.path.exists(traj):
-    images = read(traj, index=':')[-numImages:]
-else:
-    images = init_images(init, final, numImages, IDPP=True, mic=True)
+images = get_images(init, final, numImages, traj=traj,
+                    IDPP=True, mic=True)
 
 # Set the GP calculators
 base_calc = get_vasp(kpts=kpts)
@@ -60,7 +43,7 @@ for i, climb in enumerate([False, True, False]):
         print('NEB residuals:', neb.residuals)
         label = f'GPR ({gp.count_use_base}/{gp.count_use_surrogate})'
         data = [(images, refs, 'VASP'), (images, neb.energies, label)]
-        plot_path(data, title='H2S on Pd(100)', figname=f'gp_neb_{i}.png')
-    
+        plot_path(data, title=title, figname=f'gp_neb_{i}.png')
+
     if neb.converged:
         break

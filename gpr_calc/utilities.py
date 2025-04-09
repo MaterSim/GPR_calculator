@@ -404,3 +404,62 @@ def tuple_to_list(data, mode='force'):
             X1.append((X[c:c+ind], ELE[c:c+ind]))
             c += ind
     return X1
+
+def get_vasp(**kwargs):
+    """
+    Set up and return a VASP calculator with specified parameters.
+
+    Args:
+        **kwargs: Additional VASP parameters to override defaults
+
+    Returns:
+        ase.calculators.vasp.Vasp: Configured VASP calculator
+    """
+    from ase.calculators.vasp import Vasp
+
+    vasp_args = {
+        "txt": 'vasp.out',
+        "prec": 'Accurate',
+        "encut": 400,
+        "algo": 'Fast',
+        "xc": 'pbe',
+        "icharg": 2,
+        "ediff": 1.0e-4,
+        "ediffg": -0.03,
+        "ismear": 1,
+        "sigma": 0.1,
+        "ibrion": -1,
+        "isym": 0,
+        "idipol": 3,
+        "ldipol": True,
+        "lwave": False,
+        "lcharg": False,
+        "lreal": 'Auto',
+        "npar": 2,
+        "kpts": [2, 2, 1],
+    }
+    vasp_args.update(kwargs)
+
+    return Vasp(**vasp_args)
+
+def set_mpi():
+    """
+    Set MPI for the current process
+    """
+    import socket, psutil
+    from mpi4py import MPI
+
+    # Get the rank and size of the MPI communicator
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+    cpu_count = psutil.cpu_count(logical=False)
+    ncpu = cpu_count - size
+
+    # Create rankfile for process binding
+    if rank == 0:
+        hostname = socket.gethostname()
+        with open('rankfile.txt', 'w') as f:
+            for i in range(ncpu):
+                f.write(f'rank {i}={hostname} slot={i+size}\n')
+    return rank, ncpu

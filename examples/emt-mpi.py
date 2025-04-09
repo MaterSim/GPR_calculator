@@ -1,7 +1,7 @@
 from ase.calculators.emt import EMT
 from gpr_calc.gaussianprocess import GP
 from gpr_calc.calculator import GPR
-from gpr_calc.NEB import neb_calc, init_images, neb_plot_path
+from gpr_calc.NEB import neb_calc, get_images, plot_path
 from mpi4py import MPI
 
 # Set MPI
@@ -13,31 +13,25 @@ init, final = 'database/initial.traj', 'database/final.traj'
 num_images = 5
 fmax = 0.05
 
-# Run NEB with EMT calculator
-images = init_images(init, final, num_images)
-if rank == 0:
-    images, engs, steps = neb_calc(images, EMT(), fmax=fmax)
-    data = [(images, engs, f'EMT ({(steps+1)*(len(images)-2)+2})')]
-
 # Run NEB with gpr calculators
-for etol in [0.02, 0.1, 0.2]:
-    images = init_images(init, final, num_images)
+data = []
+for (etol, ftol) in zip([0.05, 0.1], [0.05, 0.1]):
+    images = get_images(init, final, num_images)
 
     # initialize GPR model
-    gp_model = GP.set_GPR(images,
-                          base=EMT(),
-                          noise_e=etol/len(images[0]),
-                          noise_f=0.1)
+    gp = GP.set_GPR(images,
+                    base=EMT(),
+                    noise_e=etol/len(images[0]),
+                    noise_f=ftol)
     # Set GPR calculator
-    calc = GPR(base=EMT(), ff=gp_model, save=False)
+    calc = GPR(base=EMT(), ff=gp, save=False)
 
     # Run NEB calculation
-    images, engs, _ = neb_calc(images, calc, fmax=fmax)
-
+    neb = neb_calc(images, calc, fmax=fmax)
     if rank == 0:
-        N_calls = gp_model.count_use_base
-        data.append((images, engs, f'GPR-{etol:.2f} ({N_calls})'))
-        print(gp_model, '\n\n')
+        N1, N2 = gp.use_base, gp.use_surrogate
+        data.append((neb.images, neb.energies, f'GPR-{ftol:.2f} ({N1}/{N2})'))
+        print(gp, '\n\n')
 
 if rank == 0:
-    neb_plot_path(data, figname='NEB-test.png')
+    plot_path(data, figname='NEB-test.png')

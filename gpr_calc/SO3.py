@@ -500,7 +500,7 @@ def compute_cs(pos, nmax, lmax, rcut, alpha, cutoff, use_mpi=False):
     phis = np.arctan2(pos[:,1], pos[:,0])
 
     # determine the size of the m axis
-    msize = 2*lmax+1
+    msize = 2 * lmax + 1
     # initialize an array for the spherical harmonics
     ylms = np.zeros((len(Ris), lmax+1, msize), dtype=np.complex128)
 
