@@ -1,6 +1,7 @@
 """
 NEB related functions
 """
+import os
 from ase.mep import NEB
 from ase.geometry import find_mic
 from ase.io.trajectory import Trajectory

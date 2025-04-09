@@ -1,1 +1,1 @@
-rm -rf *calc_* *.db *.json gpr.log rankfile.txt slurm-* neb*.traj log-*
+rm -rf *.db *.json gpr.log rankfile.txt slurm-* *.traj log-*
