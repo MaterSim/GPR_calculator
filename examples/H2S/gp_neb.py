@@ -32,8 +32,8 @@ for i, image in enumerate(images):
     image.calc.update_gpr = (i == len(images) - 2)
 
 # Run NEB calculation
-for i, climb in enumerate([False, True, False]):
-    neb, refs = neb_calc(images, steps=50, algo='FIRE',
+for i, climb in enumerate([True, True, True]):
+    neb, refs = neb_calc(images, steps=100, algo='FIRE',
                          fmax=noise_f, traj=traj,
                          climb=climb, use_ref=True)
 
@@ -41,7 +41,7 @@ for i, climb in enumerate([False, True, False]):
     # Plot the NEB path
     if rank == 0:
         print('NEB residuals:', neb.residuals)
-        label = f'GPR ({gp.count_use_base}/{gp.count_use_surrogate})'
+        label = f'GPR ({gp.use_base}/{gp.use_surrogate})'
         data = [(images, refs, 'VASP'), (images, neb.energies, label)]
         plot_path(data, title=title, figname=f'gp_neb_{i}.png')
 
