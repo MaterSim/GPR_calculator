@@ -127,7 +127,7 @@ The trained GPR model is saved as:
 
 The following figure illustrates a typical NEB path calculated using the GPR calculator:
 
-![NEB Path](https://raw.githubusercontent.com/MaterSim/GPR_calculator/master/examples/database/NEB-test.png)
+![NEB Path](https://raw.githubusercontent.com/MaterSim/GPR_calculator/master/examples/database/NEB-emt.png)
 
 The results demonstrate that the GPR calculator, even with a limited number of base calculator calls, can achieve reasonable accuracy compared to the reference calculation. A smaller energy uncertainty threshold (`etol`) generally leads to more accurate results. In scenarios where each base calculator call is computationally expensive, the GPR calculator offers a significant speedup without sacrificing accuracy. This approach is particularly beneficial for handling computationally demanding tasks such as large-scale NEB calculations for surface diffusion and reaction studies.
 
